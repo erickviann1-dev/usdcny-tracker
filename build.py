@@ -31,6 +31,7 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).parent))
 from data_fetcher import get_master_data
 from analytics   import run_full_analysis, latest_snapshot
+from tools.build_notebook import build_replication_notebook
 
 
 def df_to_records(df: pd.DataFrame, cols=None) -> list[dict]:
@@ -66,6 +67,9 @@ def main():
             "dxy", "dxy_ret",
             "raw_carry", "carry_ma20", "carry_ma60", "carry_ma120",
             "carry_pct_rank", "carry_pct_rank_2y",
+            # v3.1 — money-market funding rates + hedged-carry proxy
+            "shibor_1y", "us_1y", "mm_spread", "mm_carry",
+            "cip_dev_pct", "hedged_carry_proxy", "hedged_carry_pct_rank",
             "cip_fair_spot", "cip_deviation",
             "reg_predicted", "reg_residual", "reg_predicted_uni", "reg_residual_uni",
             "reg_beta_spread", "reg_beta_dxy", "reg_r2",
@@ -91,6 +95,78 @@ def main():
     print(f"  Raw carry:          {snap['raw_carry']}%")
 
     append_build_log(snap, quality, size_kb, len(df))
+
+    # --- Replication notebook ---
+    build_replication_notebook(snap.get("date", "unknown"), snap)
+
+    # --- Excel export ---
+    write_excel(df, snap, payload["series"])
+
+
+def write_excel(df, snap, series_records):
+    """Write docs/usdcny_tracker.xlsx with three sheets: series, snapshot, methodology."""
+    from openpyxl import Workbook
+    from openpyxl.utils.dataframe import dataframe_to_rows
+
+    wb = Workbook()
+
+    # Sheet 1: series
+    ws1 = wb.active
+    ws1.title = "series"
+    cols = [
+        "us_2y", "cn_2y", "yield_spread",
+        "usdcny", "usdcnh", "pboc_fix", "onoffshore_gap",
+        "dxy", "dxy_ret",
+        "raw_carry", "carry_ma20", "carry_ma60", "carry_ma120",
+        "carry_pct_rank", "carry_pct_rank_2y",
+        "shibor_1y", "us_1y", "mm_spread", "mm_carry",
+        "cip_dev_pct", "hedged_carry_proxy", "hedged_carry_pct_rank",
+        "cip_fair_spot", "cip_deviation",
+        "reg_predicted", "reg_residual", "reg_predicted_uni", "reg_residual_uni",
+        "reg_beta_spread", "reg_beta_dxy", "reg_r2",
+        "mispricing_score",
+        "alpha_cny_dxy", "expected_fix",
+        "fixing_bias", "fixing_bias_raw",
+        "bias_20d_mean", "bias_60d_mean",
+        "defense_intensity", "policy_score",
+        "composite_score", "composite_score_smooth",
+    ]
+    available = [c for c in cols if c in df.columns]
+    export_df = df[available].copy()
+    export_df.index = export_df.index.strftime("%Y-%m-%d")
+    export_df.index.name = "date"
+    export_df = export_df.reset_index()
+
+    for r_idx, row in enumerate(dataframe_to_rows(export_df, index=False, header=True), 1):
+        for c_idx, val in enumerate(row, 1):
+            cell = ws1.cell(row=r_idx, column=c_idx, value=val)
+
+    # Sheet 2: snapshot
+    ws2 = wb.create_sheet("snapshot")
+    snap_keys = list(snap.keys())
+    for c_idx, k in enumerate(snap_keys, 1):
+        ws2.cell(row=1, column=c_idx, value=k)
+        ws2.cell(row=2, column=c_idx, value=snap[k])
+
+    # Sheet 3: methodology
+    ws3 = wb.create_sheet("methodology")
+    ws3.append(["Layer", "Name", "Formula", "Description"])
+    ws3.append(["Layer 1", "Unhedged Raw Carry",
+                "raw_carry = US_2Y − CN_2Y",
+                "Nominal carry incentive before hedging costs"])
+    ws3.append(["Layer 2", "Multivariate OLS Mispricing",
+                "USD/CNY = α + β₁·Spread + β₂·DXY + ε (252d rolling)",
+                "Residual isolates China-specific factors after controlling for DXY"])
+    ws3.append(["Layer 3", "DXY-Adjusted Fixing Bias",
+                "fixing_bias = pboc_fix − S × (1 + α × ΔDXY)",
+                "Clean PBOC policy signal after stripping overnight DXY noise"])
+    ws3.append(["Composite", "Composite Score",
+                "W₁·carry_rank + W₂·mispricing_score + W₃·policy_score",
+                "Weighted blend (0.35/0.30/0.35), 0-100 scale"])
+
+    xlsx_path = Path(__file__).parent / "docs" / "usdcny_tracker.xlsx"
+    wb.save(xlsx_path)
+    print(f"✓ Wrote {xlsx_path} ({xlsx_path.stat().st_size // 1024} KB)")
 
 
 def append_build_log(snap, quality, size_kb, n_rows):

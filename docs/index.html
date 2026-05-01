@@ -1469,13 +1469,14 @@ footer.site strong { color: var(--ink); font-weight: 500; }
                 <div class="chapter-num">01</div>
                 <div class="chapter-title-block">
                     <div class="chapter-eyebrow" data-i18n="ch01.eyebrow">Layer One · Carry Feasibility</div>
-                    <h2 data-i18n-html="ch01.title">Unhedged Raw Carry — 名义敞口套利</h2>
+                    <h2 data-i18n-html="ch01.title">Carry Monitor — From Gross Spread to Hedged P&amp;L</h2>
                     <p class="chapter-lead" data-i18n-html="ch01.lead">
-                        Free APIs do not expose USD/CNY swap points or NDF forward quotes.
-                        We therefore track the <strong>nominal 2-year yield differential</strong> —
-                        the gross carry-trade incentive <em>before</em> hedging costs. This is
-                        the depth of inversion that fund-flow speculation responds to,
-                        not a true risk-adjusted P&L estimate.
+                        The "water pressure" of carry-trade capital: how much can you earn
+                        borrowing CNY and lending USD? We track both the <strong>raw 2Y yield
+                        differential</strong> and a <strong>CIP-implied hedged carry proxy</strong>
+                        that strips out forward-point costs. When hedged carry is positive and
+                        rising, speculative outflow pressure is structurally building — regardless
+                        of what the spot rate does today.
                     </p>
                 </div>
             </div>
@@ -1484,16 +1485,19 @@ footer.site strong { color: var(--ink); font-weight: 500; }
 
             <div class="method-box">
                 <span class="method-label" data-i18n="method">Method</span>
-                <h3 data-i18n="method.def">Definition</h3>
+                <h3 data-i18n="method.carry">Carry Decomposition</h3>
                 <div class="formula">
-Raw Carry         = US_2Y − CN_2Y
-Carry Pctile (1Y) = rank of today's carry vs trailing 252 trading days
-Carry Pctile (2Y) = rank vs trailing 504 trading days
+Raw Carry            = US_2Y − CN_2Y                           <em>(gross incentive)</em>
+CIP Basis (swap cost)= (USD/CNY_actual − CIP_fair) / spot × 100  <em>(% hedging cost)</em>
+Hedged Carry Proxy   = Raw Carry − CIP Basis                   <em>(net after forward hedge)</em>
+MM Spread (1Y)       = UST_1Y − Shibor_1Y                      <em>(funding-rate analog)</em>
                 </div>
-                <p>
-                    True hedged carry would equal Raw Carry minus the annualised swap cost.
-                    Without forward quotes, that calculation is infeasible. The <em>residual</em>
-                    hedged-carry signal lives in the CIP basis (Layer 02).
+                <p data-i18n-html="ch01.method.note">
+                    Free APIs do not expose real swap-point quotes. We derive the hedging cost
+                    from Covered Interest Parity: the CIP basis measures how far the actual
+                    spot deviates from what arbitrage-free forwards imply. A <strong>positive</strong>
+                    hedged carry proxy means real arbitrage profit exists after hedging —
+                    historically rare and a sign of USD funding stress or capital-control friction.
                 </p>
             </div>
 
@@ -1511,6 +1515,22 @@ Carry Pctile (2Y) = rank vs trailing 504 trading days
                     <div class="chart-card-sub">Pressure metric vs CNH–CNY discount</div>
                 </div>
                 <div id="chart-carry" style="height:480px"></div>
+            </div>
+
+            <div class="chart-card">
+                <div class="chart-card-head">
+                    <div class="chart-card-title" data-i18n="chart.hedgedCarry">Carry Decomposition — Raw vs Hedged</div>
+                    <div class="chart-card-sub" data-i18n="chart.hedgedCarrySub">Hedged carry = raw carry minus CIP basis (forward-hedge cost proxy)</div>
+                </div>
+                <div id="chart-carry-decomp" style="height:480px"></div>
+            </div>
+
+            <div class="chart-card">
+                <div class="chart-card-head">
+                    <div class="chart-card-title" data-i18n="chart.mmFunding">Money-Market Funding Layer — 1Y Tenor</div>
+                    <div class="chart-card-sub" data-i18n="chart.mmFundingSub">Short-end funding rate differential (modern Libor-Shibor analog)</div>
+                </div>
+                <div id="chart-mm" style="height:440px"></div>
             </div>
 
             <div class="findings">
@@ -1767,6 +1787,8 @@ Defense Intensity = − rolling_mean(bias, 20d) × 10000  [pips]
                 <div class="dl-row">
                     <a class="dl-btn" id="download-csv" href="#" download="usdcny_tracker.csv" data-i18n="data.csv">↓ Download CSV (full series)</a>
                     <a class="dl-btn ghost" id="download-json" href="data.json" download data-i18n="data.json">↓ Download data.json</a>
+                    <a class="dl-btn ghost" href="usdcny_tracker.xlsx" download data-i18n="data.xlsx">↓ Download Excel (.xlsx)</a>
+                    <a class="dl-btn ghost" href="usdcny_tracker_replication.ipynb" download data-i18n="data.ipynb">↓ Replication Notebook (.ipynb)</a>
                 </div>
             </div>
         </section>
@@ -1815,7 +1837,7 @@ Defense Intensity = − rolling_mean(bias, 20d) × 10000  [pips]
         <footer class="site">
             <div class="row">
                 <div>
-                    <strong>USD/CNY Macro-Policy Divergence Tracker</strong> · v3.0.1 · 2Y Focus<br>
+                    <strong>USD/CNY Macro-Policy Divergence Tracker</strong> · v3.2.2 · 2Y Focus<br>
                     <span data-i18n="footer.gen">Generated</span> <span id="footer-ts">—</span> · <span data-i18n="footer.disclaimer">For research purposes only — not investment advice.</span>
                 </div>
                 <div style="text-align:right">
@@ -1828,6 +1850,6 @@ Defense Intensity = − rolling_mean(bias, 20d) × 10000  [pips]
     </main>
 </div>
 
-<script src="dashboard.js?v=3.0.1"></script>
+<script src="dashboard.js?v=3.2.2"></script>
 </body>
 </html>

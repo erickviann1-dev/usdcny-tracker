@@ -46,6 +46,14 @@ def calc_carry(df: pd.DataFrame) -> pd.DataFrame:
 
     out["raw_carry"] = out["yield_spread"]
 
+    # v3.1 — Money-market spread (Libor-Shibor analog, using UST 1Y as Libor successor)
+    # If both 1Y money-market rates are present, expose the short-term carry too.
+    # The 2Y vs 1Y comparison itself reveals term-structure stress.
+    if "us_1y" in out.columns and "shibor_1y" in out.columns:
+        out["mm_carry"] = out["us_1y"] - out["shibor_1y"]
+    elif "mm_spread" in out.columns:
+        out["mm_carry"] = out["mm_spread"]
+
     # Under CIP, the cost of hedging a 2Y USD position via FX swap ≈ yield differential
     # Positive raw_carry → hedge costs almost exactly that amount in fair markets.
     # The *deviation* from this parity (excess hedged carry) is the CIP basis (Layer 2).
@@ -197,6 +205,34 @@ def calc_mispricing(df: pd.DataFrame) -> pd.DataFrame:
     out["mispricing_score"] = _dual_percentile_score(
         out["cip_deviation"], out["reg_residual"]
     )
+
+    # ── v3.1 · Hedged-Carry Proxy ──────────────────────────────
+    # Without paid swap-point feeds we can't get true Hedged Carry directly.
+    # But CIP deviation IS the residual after the implied forward cost,
+    # so we can derive an analytically-correct proxy:
+    #
+    #   raw_carry            = US_2Y − CN_2Y                     (% per year)
+    #   cip_deviation        = spot − cip_fair_spot              (CNY units)
+    #   cip_dev_pct          = cip_deviation / spot × 100        (%)
+    #   hedged_carry_proxy   = raw_carry − cip_dev_pct           (% per year)
+    #
+    # Interpretation:
+    #   • If CIP holds perfectly → hedged_carry_proxy ≈ 0 (no free lunch)
+    #   • Positive proxy → real arbitrage opportunity exists after hedging
+    #     (rare; signals dislocated USD funding or capital-control friction)
+    #   • Negative proxy → hedging more than wipes out the carry (PBOC
+    #     defence + capital outflow pressure baked into forward points)
+    if "raw_carry" in out.columns and "cip_deviation" in out.columns and "usdcny" in out.columns:
+        out["cip_dev_pct"]        = (out["cip_deviation"] / out["usdcny"]) * 100
+        out["hedged_carry_proxy"] = out["raw_carry"] - out["cip_dev_pct"]
+
+        # 252-day percentile rank — how rare is today's hedged opportunity?
+        out["hedged_carry_pct_rank"] = (
+            out["hedged_carry_proxy"]
+            .rolling(252, min_periods=60)
+            .apply(lambda x: stats.percentileofscore(x.dropna(), x.iloc[-1])
+                   if len(x.dropna()) > 1 else 50, raw=False)
+        )
 
     return out
 
@@ -405,6 +441,12 @@ def latest_snapshot(df: pd.DataFrame) -> dict:
         "raw_carry":         g("raw_carry"),
         "carry_pct_rank":    g("carry_pct_rank",    ".0f"),
         "carry_pct_rank_2y": g("carry_pct_rank_2y", ".0f"),
+        # v3.1 — money-market & hedged carry
+        "shibor_1y":            g("shibor_1y"),
+        "us_1y":                g("us_1y"),
+        "mm_spread":            g("mm_spread"),
+        "hedged_carry_proxy":   g("hedged_carry_proxy"),
+        "hedged_carry_pct_rank":g("hedged_carry_pct_rank", ".0f"),
         "cip_deviation":     g("cip_deviation"),
         "reg_residual":      g("reg_residual"),
         "reg_residual_uni":  g("reg_residual_uni"),

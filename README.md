@@ -2,10 +2,11 @@
 
 > 一个量化"美中政策压力 vs 市场定价"博弈的三层宏观追踪器，2 年期利差焦点。
 >
-> **当前版本：v3.0.1**（双语 EN/中 · 静态站点 · GitHub Actions 每日构建）
+> **当前版本：v3.2**（双语 · FRED 代码透明 · Excel/Notebook 导出 · GitHub Actions 每日构建）
 >
 > **For Cursor / future contributors:** before editing, read in this order →
 > `README.md` (this file) → `CHANGELOG.md` (what's been done & why, 最新条目在最上) →
+> `ROADMAP.md` (**what to do next, ordered by ROI** — pick from here unless the user asks otherwise) →
 > `REFERENCE_STUDY.md` (design rationale, what NOT to revert).
 > Before destructive edits run `python tools/snapshot.py <tag>` to archive state
 > (snapshots both `docs/` and `web/` since v3.0.1; pre-v3.0 snapshots only have `web/`).
@@ -188,6 +189,12 @@ composite = W_CARRY × carry_pct_rank
 4. ~~**dashboard.js 缓存失效问题**~~ → v3.0.1 done
    - `<script src="dashboard.js?v=3.0.1">` 查询字符串
    - 约定：每次改 `dashboard.js` 必须同步 bump CHANGELOG 版本号 + script 标签的 `?v=`
+
+5. ~~**Hedged Carry 真实化（部分）**~~ → v3.1 done
+   - 不靠付费 swap points，用 CIP 基差解析法：`hedged_carry_proxy = raw_carry − cip_deviation_pct`
+   - 加 1Y 货币市场层：Shibor 1Y（akshare）+ UST 1Y（FRED `DGS1`）+ `mm_spread = us_1y − shibor_1y`（Libor-Shibor 现代版）
+   - 4 个新 KPI 卡：Hedged Carry / MM Spread / Shibor 1Y / UST 1Y
+   - 真实 swap-locked P&L 仍需付费数据，但研究级近似已就绪
 
 ### 🔴 仍未解决 — P0
 

@@ -556,6 +556,69 @@ def fetch_fx_akshare() -> pd.DataFrame:
     return out
 
 
+def fetch_shibor_1y() -> pd.Series:
+    """
+    Shibor 1Y rate (% annualised), the CN-side money-market funding cost
+    that anchors the FX swap-point implied yield. Used in v3.1 hedged-carry
+    proxy: a CIP-fair 1Y FX swap should cost approximately
+    (SOFR1Y_or_UST1Y − Shibor1Y) — deviations reveal CIP basis stress.
+    Source: akshare `rate_interbank` (PBOC SHIBOR).
+    """
+    try:
+        import akshare as ak  # lazy import (akshare is heavy; matches other fetchers)
+        df = ak.rate_interbank(
+            market="上海银行同业拆借市场",   # akshare correct market name
+            symbol="Shibor人民币",
+            indicator="1年",
+        )
+    except Exception as e:
+        st.warning(f"shibor 1y akshare failed: {e}")
+        return pd.Series(dtype=float, name="shibor_1y")
+
+    if df is None or df.empty:
+        return pd.Series(dtype=float, name="shibor_1y")
+
+    df.columns = df.columns.str.strip()
+    # akshare Shibor returns ['报告日', '利率', '涨跌']
+    date_col = next(
+        (c for c in df.columns if "报告" in c or "日期" in c or "date" in c.lower()),
+        df.columns[0],
+    )
+    val_col = next(
+        (c for c in df.columns if "利率" in c or "Shibor" in c or "rate" in c.lower()),
+        [c for c in df.columns if c != date_col][0],
+    )
+    s = pd.Series(
+        pd.to_numeric(df[val_col], errors="coerce").values,
+        index=pd.to_datetime(df[date_col]),
+        name="shibor_1y",
+    ).sort_index()
+    return s.dropna()
+
+
+def fetch_us_1y() -> pd.Series:
+    """
+    US 1Y Treasury yield (% annualised) via FRED CSV (no auth).
+    Series: DGS1 — Market Yield on US Treasury Securities at 1-Year
+    Constant Maturity. The natural USD-side counterpart to Shibor 1Y.
+    """
+    try:
+        url = "https://fred.stlouisfed.org/graph/fredgraph.csv?id=DGS1"
+        raw = pd.read_csv(url)
+        if raw.shape[1] < 2:
+            return pd.Series(dtype=float, name="us_1y")
+        date_col, val_col = raw.columns[0], raw.columns[1]
+        s = pd.Series(
+            pd.to_numeric(raw[val_col], errors="coerce").values,
+            index=pd.to_datetime(raw[date_col], errors="coerce"),
+            name="us_1y",
+        ).sort_index().dropna()
+        return s
+    except Exception as e:
+        st.warning(f"FRED DGS1 fetch failed: {e}")
+        return pd.Series(dtype=float, name="us_1y")
+
+
 @st.cache_data(ttl=3600, show_spinner=False)
 def get_master_data() -> tuple[pd.DataFrame, dict]:
     """
@@ -571,10 +634,12 @@ def get_master_data() -> tuple[pd.DataFrame, dict]:
         pboc_fix    — PBOC daily fixing
         onoffshore_gap — usdcnh - usdcny (CNH premium/discount)
     """
-    bonds = fetch_bond_yields()
-    fx    = fetch_fx_spot()
-    fix   = fetch_pboc_fixing()
-    dxy   = fetch_dxy()
+    bonds    = fetch_bond_yields()
+    fx       = fetch_fx_spot()
+    fix      = fetch_pboc_fixing()
+    dxy      = fetch_dxy()
+    shibor1y = fetch_shibor_1y()      # v3.1: money-market CN funding cost
+    us1y     = fetch_us_1y()          # v3.1: money-market US funding cost
 
     # If yfinance gave us nothing, try akshare for FX
     if fx.empty or "usdcny" not in fx.columns or fx["usdcny"].notna().sum() < 30:
@@ -616,9 +681,20 @@ def get_master_data() -> tuple[pd.DataFrame, dict]:
         df["dxy"] = dxy.reindex(idx, method="ffill")
         df["dxy_ret"] = df["dxy"].pct_change()    # daily % return → overnight proxy
 
+    # v3.1 — Money-market 1Y funding rates (Shibor / UST 1Y)
+    if not shibor1y.empty:
+        df["shibor_1y"] = shibor1y.reindex(idx, method="ffill")
+    if not us1y.empty:
+        df["us_1y"] = us1y.reindex(idx, method="ffill")
+
     # Derived columns
     if "us_2y" in df and "cn_2y" in df:
         df["yield_spread"] = df["us_2y"] - df["cn_2y"]
+
+    # v3.1 — Money-market spread (USD−CNY), the Libor-Shibor analog using
+    # SOFR-anchored 1Y UST as the USD leg (legacy Libor was discontinued 2023-06).
+    if "us_1y" in df and "shibor_1y" in df:
+        df["mm_spread"] = df["us_1y"] - df["shibor_1y"]
 
     if "usdcnh" in df and "usdcny" in df:
         df["onoffshore_gap"] = df["usdcnh"] - df["usdcny"]
@@ -626,12 +702,14 @@ def get_master_data() -> tuple[pd.DataFrame, dict]:
     df = df.dropna(how="all").ffill(limit=5)
 
     quality = {
-        "cn_2y":    df["cn_2y"].notna().mean()    if "cn_2y"    in df else 0,
-        "us_2y":    df["us_2y"].notna().mean()    if "us_2y"    in df else 0,
-        "usdcny":   df["usdcny"].notna().mean()   if "usdcny"   in df else 0,
-        "usdcnh":   df["usdcnh"].notna().mean()   if "usdcnh"   in df else 0,
-        "pboc_fix": df["pboc_fix"].notna().mean() if "pboc_fix" in df else 0,
-        "dxy":      df["dxy"].notna().mean()      if "dxy"      in df else 0,
+        "cn_2y":     df["cn_2y"].notna().mean()     if "cn_2y"     in df else 0,
+        "us_2y":     df["us_2y"].notna().mean()     if "us_2y"     in df else 0,
+        "usdcny":    df["usdcny"].notna().mean()    if "usdcny"    in df else 0,
+        "usdcnh":    df["usdcnh"].notna().mean()    if "usdcnh"    in df else 0,
+        "pboc_fix":  df["pboc_fix"].notna().mean()  if "pboc_fix"  in df else 0,
+        "dxy":       df["dxy"].notna().mean()       if "dxy"       in df else 0,
+        "shibor_1y": df["shibor_1y"].notna().mean() if "shibor_1y" in df else 0,
+        "us_1y":     df["us_1y"].notna().mean()     if "us_1y"     in df else 0,
     }
 
     return df, quality

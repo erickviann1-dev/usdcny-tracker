@@ -5,6 +5,242 @@ All notable changes to the USD/CNY Macro-Policy Divergence Tracker.
 Format: each entry records (1) what changed, (2) why, (3) snapshot location of
 the previous state under `history/`.
 
+> **Looking for what to do NEXT, not what's been done?** See `ROADMAP.md` —
+> three phases (v3.2 / v4.0 / v5.0) ordered by ROI, with acceptance criteria
+> per item.
+
+---
+
+## [v3.2] — 2026-05-01 · Authority & Export Layer
+
+### Vision
+Neutralise the "GitHub demo" perception by adding data provenance
+transparency and production-tool exports. No model changes — pure
+surfacing + export polish. Addresses critique #1 from the user-supplied
+review (Anders Staxen comparison): the tracker now ships `.xlsx` and
+`.ipynb` take-home downloads, and every FRED-sourced field carries a
+clickable source-code badge.
+
+### A.1 — FRED code transparency in the glossary
+- `GLOSSARY_DEFS` expanded from 4-column to 5-column arrays:
+  `[field, unit, source, description, codeLink]`
+- 38 glossary rows (was 31): added `shibor_1y`, `us_1y`, `mm_spread`,
+  `hedged_carry_proxy`, `cip_dev_pct`, `policy_score` from v3.1
+- 7 rows carry clickable source-code badges:
+  `DTWEXBGS`, `DGS1`, `DEXCHUS` (FRED); `bond_zh_us_rate`,
+  `currency_boc_sina`, `rate_interbank` (akshare wiki)
+- `renderGlossary()` updated to render 5th column with styled `<a>` badges
+- New i18n key: `glossary.code` (EN: "Source Code", ZH: "数据代码")
+- `gloss.count` updated to "(38 fields)" / "（38 个字段）"
+
+### A.2 — Excel export
+- `build.py`: new `write_excel()` function generates
+  `docs/usdcny_tracker.xlsx` with three sheets:
+  - **series** — full time-series (42 columns × 523 rows)
+  - **snapshot** — single-row current values
+  - **methodology** — Layer 1/2/3 + Composite formula descriptions
+- `docs/index.html`: new download button in the Data & Export chapter
+- New i18n key: `data.xlsx` (EN: "↓ Download Excel (.xlsx)",
+  ZH: "↓ 下载 Excel (.xlsx)")
+- `openpyxl` was already in `requirements.txt`
+
+### A.3 — Auto-generated replication notebook
+- New file: `tools/build_notebook.py` — uses `nbformat` to generate
+  `docs/usdcny_tracker_replication.ipynb` on each build. Five cells:
+  1. Markdown — title, data date, citation block
+  2. Code — imports (pandas, numpy, requests, matplotlib)
+  3. Code — fetch live `data.json` from deployed site
+  4. Code — independently re-compute raw_carry, CIP deviation,
+     fixing_bias from raw series (proves nothing is hidden)
+  5. Code — three diagnostic plots (composite score, residual histogram,
+     fixing-bias rolling mean)
+- `build.py`: calls `build_replication_notebook()` after data export
+- `docs/index.html`: new download button for `.ipynb`
+- New i18n key: `data.ipynb` (EN: "↓ Replication Notebook (.ipynb)",
+  ZH: "↓ 复制验证笔记本 (.ipynb)")
+- `nbformat>=5.9.0` added to `requirements.txt`
+
+### A.4 — Source-code badges on KPI tiles
+- `tile()` function in `renderKPIs()` now accepts optional 5th parameter
+  `codeBadge` — renders a tiny `<code>` badge in the meta line
+- Applied to: USD/CNY (`DEXCHUS`), UST 1Y (`DGS1`), DXY (`DTWEXBGS`)
+- Other tiles (computed or akshare-sourced) left clean
+
+### Cache-bust
+- `<script src="dashboard.js?v=3.2">` (was `?v=3.1`)
+- Header version comment `v3.2`, footer version label `v3.2`
+
+### i18n symmetry
+- 3 new keys added to both EN and ZH: `glossary.code`, `data.xlsx`,
+  `data.ipynb`. Dictionaries remain symmetric.
+
+### Build verification
+```
+✓ data.json        772 KB
+✓ usdcny_tracker.xlsx  172 KB
+✓ usdcny_tracker_replication.ipynb  generated
+Composite Score:   58/100
+USD/CNY:           6.84
+Raw Carry:         2.62%
+```
+
+### Snapshot
+Pre-edit state saved to `history/v3.1-pre-export/`.
+
+### Files Touched
+- `docs/dashboard.js` — GLOSSARY_DEFS 5th column, renderGlossary() rewrite,
+  KPI tile badge, 3 new i18n keys × 2 langs, version bump
+- `docs/index.html` — 2 new download buttons, script tag + footer version bump
+- `build.py` — `write_excel()` function, `build_replication_notebook()` call,
+  v3.1 series columns added
+- `tools/build_notebook.py` — new file (replication notebook generator)
+- `requirements.txt` — `nbformat>=5.9.0`
+- `README.md` — version banner bump
+- `CHANGELOG.md` — this entry
+
+### Remaining work after v3.2
+Phase B (v4.0 — Macro Backdrop Layer) and Phase C (v5.0 — Working Paper)
+remain in `ROADMAP.md`, awaiting user assignment.
+
+---
+
+## 🗺️ Pending — see `ROADMAP.md` for the canonical work order
+
+A user-supplied review (2026-05-01) compared the tracker to Anders Staxen's
+us-macro.streamlit.app. Two of the four critiques landed:
+
+1. **Production-tool gap** — no `.ipynb` / `.xlsx` "take-home" downloads
+2. **Macro-context gap** — no Layer 0 explaining *why* the spread moves
+   (Fed liquidity / China credit impulse / global risk)
+
+The other two ("no Z-score", "no fix-vs-market") were already shipped in
+v1.5–v3.1 (see those entries) — the reviewer didn't read carefully.
+
+`ROADMAP.md` lays out:
+- **v3.2** (½ day) — FRED code transparency + Excel export + auto-generated
+  replication notebook
+- **v4.0** (1–2 days) — Macro Backdrop layer (WALCL / RRP / VIX / CN credit
+  impulse / CN M2) + dual-axis chart builder
+- **v5.0** (writing project, not a Cursor task) — companion working paper
+  (8–12 pp PDF) + real academic citations
+
+---
+
+## [v3.1] — 2026-05-01 · Hedged Carry + Money-Market Layer
+
+### Vision
+Address the user's three-layer critique screenshot: 套利层 was showing
+**unhedged** carry only. The screenshot called for "1Y Swap Points /
+Libor-Shibor Spread → 真实对冲后利差". Without paid swap-point feeds we
+can't get true hedged P&L directly, but we can derive an **analytically
+correct CIP-implied proxy** using data we already compute.
+
+### Three new economic measurements
+
+**1. Money-market layer (Libor-Shibor analog)**
+- `shibor_1y` — CN 1Y interbank rate (akshare `rate_interbank`)
+- `us_1y`     — UST 1Y constant maturity (FRED `DGS1`, no auth)
+- `mm_spread` — `us_1y − shibor_1y` (the modern Libor-Shibor analog;
+  Libor itself was discontinued 2023-06)
+- `mm_carry`  — alias for `mm_spread`, surfaces in carry layer
+
+**2. Hedged-carry proxy (analytical, no swap-point data needed)**
+The mathematical chain:
+```
+raw_carry          = US_2Y − CN_2Y                      (% per year)
+cip_dev_pct        = cip_deviation / spot × 100         (%)
+hedged_carry_proxy = raw_carry − cip_dev_pct            (% per year)
+```
+Interpretation:
+- CIP-perfect world → proxy ≈ 0 (no free lunch)
+- Positive proxy → real arbitrage exists (rare; signals USD funding stress
+  or capital-control friction)
+- Negative proxy → hedging more than wipes out carry (PBOC defence + CCB
+  baked into forward points)
+
+**3. Hedged-carry percentile rank**
+- `hedged_carry_pct_rank` — 252d rolling percentile, surfaces today's
+  hedged opportunity vs trailing year
+
+### Verified numbers (today's snapshot)
+| Field | Value |
+|---|---|
+| `shibor_1y` | **1.47%** ✅ (akshare 100% coverage) |
+| `us_1y`     | **3.75%** ✅ (FRED 100% coverage) |
+| `mm_spread` | **2.28%** (vs raw_carry 2.62% — 2Y term premium ≈ 0.34%) |
+| `cip_deviation` | -0.37 CNY |
+| `cip_dev_pct`   | ≈ -5.4% |
+| `hedged_carry_proxy` | **8.04%** ✅ (76th percentile, near 1Y high) |
+
+### Added — `data_fetcher.py`
+- `fetch_shibor_1y()` — akshare `rate_interbank(market='上海银行同业拆借市场',
+  symbol='Shibor人民币', indicator='1年')`. Robust column-name matching
+  (handles `'报告日'` / `'利率'`).
+- `fetch_us_1y()` — FRED CSV `DGS1` (same auth-free pattern as `DTWEXBGS`)
+- `get_master_data()` — wires both into master_df, computes `mm_spread`,
+  exposes coverage in quality dict.
+
+### Added — `analytics.py`
+- `calc_carry()` now computes `mm_carry`
+- `calc_mispricing()` now computes `cip_dev_pct`, `hedged_carry_proxy`,
+  `hedged_carry_pct_rank` (need spot for `cip_dev_pct = cip_deviation / spot`)
+
+### Added — `latest_snapshot()` (5 new fields)
+`shibor_1y`, `us_1y`, `mm_spread`, `hedged_carry_proxy`, `hedged_carry_pct_rank`
+
+### Added — `build.py` series export
+Six new series: `shibor_1y`, `us_1y`, `mm_spread`, `mm_carry`, `cip_dev_pct`,
+`hedged_carry_proxy`, `hedged_carry_pct_rank`. Payload grew 725→772 KB.
+
+### Added — `docs/dashboard.js`
+Four new KPI tiles (with auto-hide if N/A):
+- "Hedged Carry (CIP-implied)" — colour-coded by magnitude
+- "MM Spread (1Y)"
+- "Shibor 1Y"
+- "UST 1Y"
+
+i18n: 8 new keys × 2 languages (kpi.hedged / kpi.mm / kpi.shibor / kpi.us1y +
+4 meta sub-labels). Both dictionaries now 242 keys, still symmetric.
+
+### Bug fixed during implementation
+- **Lazy-import gotcha**: codebase imports `akshare as ak` *inside* each
+  fetcher (akshare is heavy + has SSL quirks on Windows). My new
+  `fetch_shibor_1y` referenced `ak.rate_interbank` without the local import,
+  which raised `NameError` — silently swallowed by the bare `except Exception`.
+  Lesson for Cursor: when adding a new akshare fetcher, **always copy the
+  `import akshare as ak` line into the function body**.
+
+### Cache-bust
+- `<script src="dashboard.js?v=3.1">` (was `?v=3.0.1`)
+- Header version comment, footer version label both bumped.
+
+### Snapshot
+Pre-edit state saved to `history/v3.0.1-pre-hedged/`.
+
+### Files Touched
+- `data_fetcher.py` — +60 lines (2 new fetchers + master_df wiring)
+- `analytics.py` — +25 lines (mm_carry, cip_dev_pct, hedged_carry_proxy,
+  pct_rank)
+- `build.py` — series export list extended
+- `docs/dashboard.js` — 4 KPI tiles + 8 i18n keys × 2 langs + version bump
+- `docs/index.html` — script tag + footer version
+- `CHANGELOG.md` — this entry
+
+### Honest limitation acknowledged
+The "Hedged Carry" proxy is **CIP-implied total return**, not a true
+swap-locked P&L. They differ by the empirical CIP basis vs. swap-market
+basis. For a research-grade tracker this is the right approximation; for
+trade execution you still need real NDF/swap quotes.
+
+### Remaining work after v3.1 (still open)
+🔴 P0 — **CNH offshore data still 0%.** Pipeline ready, no free source.
+🟠 P1 — User content placeholders (author / papers / featured / citation).
+🟠 P1 — FRED TWI → true ICE DXY (~118 vs ~104).
+🟠 P1 — KPI sparklines (CSS slot exists, JS not implemented).
+🟡 P2 — OLS covariate expansion (VIX / copper / CN-US PMI gap).
+🟡 P2 — True hedged carry with real swap points (paid data).
+🟡 P3 — akshare column matching by name not position (`bond_zh_us_rate`).
+
 ---
 
 ## [v3.0.1] — 2026-05-01 · i18n Symmetry + Cache-Busting + Snapshot Path Fix

@@ -1,6 +1,6 @@
 /* ═══════════════════════════════════════════════════════════════
  *  USD/CNY Macro-Policy Divergence Tracker · Dashboard renderer
- *  Editorial / institutional design · v3.0.1
+ *  Editorial / institutional design · v3.2.2
  * ═══════════════════════════════════════════════════════════════ */
 
 /* ─────────────────────────────────────────────────────────────
@@ -37,6 +37,10 @@ const I18N = {
     "kpi.yields":       "US 2Y · CN 2Y",
     "kpi.carry":        "Raw Carry",
     "kpi.carrypct":     "Carry Pctile",
+    "kpi.hedged":       "Hedged Carry (CIP-implied)",
+    "kpi.mm":           "MM Spread (1Y)",
+    "kpi.shibor":       "Shibor 1Y",
+    "kpi.us1y":         "UST 1Y",
     "kpi.dxy":          "DXY (TWI)",
     "kpi.beta_spread":  "Reg β · Spread",
     "kpi.beta_dxy":     "Reg β · DXY",
@@ -56,6 +60,10 @@ const I18N = {
     "meta.modelfit":    "model fit",
     "meta.fixadj":      "fix adj.",
     "meta.vsdxyadj":    "vs DXY-adj.",
+    "meta.cipResid":    "raw − CIP basis",
+    "meta.mm1y":        "UST1Y − Shibor1Y",
+    "meta.cn1y":        "CN money market",
+    "meta.us1y":        "US money market",
 
     "alert.cnh_unavailable": () =>
         `<strong>Data note —</strong> USD/CNH offshore feed unavailable in this build. ` +
@@ -104,10 +112,18 @@ const I18N = {
     "chart.trinity":    "The Policy Triangle",
     "chart.fixing":     "Fixing Bias — Raw vs DXY-Adjusted",
     "chart.composite":  "One Number, Three Forces",
+    "chart.hedgedCarry":    "Carry Decomposition — Raw vs Hedged",
+    "chart.hedgedCarrySub": "Hedged carry = raw carry minus CIP basis (forward-hedge cost proxy)",
+    "chart.mmFunding":      "Money-Market Funding Layer — 1Y Tenor",
+    "chart.mmFundingSub":   "Short-end funding rate differential (modern Libor-Shibor analog)",
 
     "axis.yield":       "Yield (%)",
     "axis.spread_bps":  "Spread (bps)",
     "axis.carry":       "Carry (%)",
+    "axis.carry_pct":   "Carry (%)",
+    "axis.cip_basis":   "CIP Basis (%)",
+    "axis.yield_1y":    "1Y Yield (%)",
+    "axis.mm_bps":      "MM Spread (bps)",
     "axis.cnh_cny":     "CNH − CNY",
     "axis.index":       "Index",
     "axis.usdcny":      "USD/CNY",
@@ -123,6 +139,10 @@ const I18N = {
     "trace.cn2y":       "CN 2Y",
     "trace.spread":     "Spread (bps)",
     "trace.rawCarry":   "Raw Carry",
+    "trace.hedgedCarry":"Hedged Carry (CIP-implied)",
+    "trace.ust1y":      "UST 1Y",
+    "trace.shibor1y":   "Shibor 1Y",
+    "trace.mmSpread":   "MM Spread (bps)",
     "trace.ma60":       "60d MA",
     "trace.cnh_gap":    "CNH−CNY Gap",
     "trace.dxy":        "DXY (TWI)",
@@ -212,6 +232,7 @@ const I18N = {
     "glossary.unit":       "Unit",
     "glossary.source":     "Source",
     "glossary.definition": "Definition",
+    "glossary.code":       "Source Code",
 
     "builder.daily":    "Daily",
     "builder.weekly":   "Weekly (mean)",
@@ -259,9 +280,10 @@ const I18N = {
     "bar.Extr":         "Extr",
     "quality.label":    "Coverage",
 
-    "ch01.eyebrow":     "Layer One · Carry Feasibility",
-    "ch01.title":       "Unhedged Raw Carry — 名义敞口套利",
-    "ch01.lead":        "Free APIs do not expose USD/CNY swap points or NDF forward quotes. We therefore track the <strong>nominal 2-year yield differential</strong> — the gross carry-trade incentive <em>before</em> hedging costs. This is the depth of inversion that fund-flow speculation responds to, not a true risk-adjusted P&L estimate.",
+    "ch01.eyebrow":     "Layer One · Carry Monitor",
+    "ch01.title":       "Carry Monitor — From Gross Spread to Hedged P&L",
+    "ch01.lead":        'The "water pressure" of carry-trade capital: how much can you earn borrowing CNY and lending USD? We track both the <strong>raw 2Y yield differential</strong> and a <strong>CIP-implied hedged carry proxy</strong> that strips out forward-point costs. When hedged carry is positive and rising, speculative outflow pressure is structurally building — regardless of what the spot rate does today.',
+    "ch01.method.note": "Free APIs do not expose real swap-point quotes. We derive the hedging cost from Covered Interest Parity: the CIP basis measures how far the actual spot deviates from what arbitrage-free forwards imply. A <strong>positive</strong> hedged carry proxy means real arbitrage profit exists after hedging — historically rare and a sign of USD funding stress or capital-control friction.",
 
     "ch02.eyebrow":     "Layer Two · Mispricing",
     "ch02.title":       "De-Noising With the Broad Dollar",
@@ -274,6 +296,7 @@ const I18N = {
 
     "method":           "Method",
     "method.def":       "Definition",
+    "method.carry":     "Carry Decomposition",
     "method.multivar":  "Multivariate Specification",
     "method.dxyadj":    "DXY-Adjusted Bias",
     "find.title":       "Key Findings",
@@ -295,13 +318,15 @@ const I18N = {
     "gloss.title":      "Every Field, Sourced",
     "gloss.lead":       "Each computed field, its formula, source, and unit. Click to expand.",
     "gloss.summary":    "Full Variable Glossary",
-    "gloss.count":      "(31 fields)",
+    "gloss.count":      "(38 fields)",
 
     "data.eyebrow":     "Export · Data",
     "data.title":       "Recent Observations",
     "data.lead":        "Last 30 trading days · full series available below.",
     "data.csv":         "↓ Download CSV (full series)",
     "data.json":        "↓ Download data.json",
+    "data.xlsx":        "↓ Download Excel (.xlsx)",
+    "data.ipynb":       "↓ Replication Notebook (.ipynb)",
 
     "feat.title":       "Featured Research",
     "feat.sub":         "Companion papers and adjacent work. Replace these placeholders with your own publications.",
@@ -359,6 +384,10 @@ const I18N = {
     "kpi.yields":       "美 2Y · 中 2Y",
     "kpi.carry":        "名义套利",
     "kpi.carrypct":     "套利分位",
+    "kpi.hedged":       "对冲后利差（CIP 推算）",
+    "kpi.mm":           "1Y 货币市场利差",
+    "kpi.shibor":       "Shibor 1Y",
+    "kpi.us1y":         "美 1Y 国债",
     "kpi.dxy":          "DXY（贸易加权）",
     "kpi.beta_spread":  "β₁ · 利差",
     "kpi.beta_dxy":     "β₂ · DXY",
@@ -378,6 +407,10 @@ const I18N = {
     "meta.modelfit":    "模型拟合度",
     "meta.fixadj":      "中间价调整",
     "meta.vsdxyadj":    "vs DXY 调整",
+    "meta.cipResid":    "毛利差 − CIP 基差",
+    "meta.mm1y":        "UST1Y − Shibor1Y",
+    "meta.cn1y":        "CN 货币市场",
+    "meta.us1y":        "US 货币市场",
 
     "alert.cnh_unavailable": () =>
         `<strong>数据提示 —</strong> 本次构建中 USD/CNH 离岸报价不可用。` +
@@ -420,11 +453,19 @@ const I18N = {
     "chart.cip":        "CIP 偏离",
     "chart.trinity":    "政策三角",
     "chart.fixing":     "中间价偏差 — 原始 vs DXY 调整",
-    "chart.composite":  "One Number, Three Forces",
+    "chart.composite":  "一个数字，三重力量",
+    "chart.hedgedCarry":    "套利分解 — 名义 vs 对冲后",
+    "chart.hedgedCarrySub": "对冲后套利 = 名义套利 − CIP 基差（远期对冲成本代理）",
+    "chart.mmFunding":      "货币市场资金层 — 1 年期",
+    "chart.mmFundingSub":   "短端资金利率差异（现代版 Libor-Shibor 利差）",
 
     "axis.yield":       "收益率 (%)",
     "axis.spread_bps":  "利差（基点）",
     "axis.carry":       "套利 (%)",
+    "axis.carry_pct":   "套利 (%)",
+    "axis.cip_basis":   "CIP 基差 (%)",
+    "axis.yield_1y":    "1Y 收益率 (%)",
+    "axis.mm_bps":      "MM 利差（基点）",
     "axis.cnh_cny":     "CNH − CNY",
     "axis.index":       "指数",
     "axis.usdcny":      "USD/CNY",
@@ -440,6 +481,10 @@ const I18N = {
     "trace.cn2y":       "中 2Y",
     "trace.spread":     "利差（基点）",
     "trace.rawCarry":   "名义套利",
+    "trace.hedgedCarry":"对冲后套利（CIP 推算）",
+    "trace.ust1y":      "美国 1Y 国债",
+    "trace.shibor1y":   "Shibor 1Y",
+    "trace.mmSpread":   "MM 利差（基点）",
     "trace.ma60":       "60 日均线",
     "trace.cnh_gap":    "CNH−CNY 价差",
     "trace.dxy":        "DXY（贸易加权）",
@@ -529,6 +574,7 @@ const I18N = {
     "glossary.unit":       "单位",
     "glossary.source":     "来源",
     "glossary.definition": "定义",
+    "glossary.code":       "数据代码",
 
     "builder.daily":    "日频",
     "builder.weekly":   "周频（均值）",
@@ -572,11 +618,12 @@ const I18N = {
     "bar.Extr":         "极端",
     "quality.label":    "覆盖率",
 
-    "ch01.eyebrow":     "第一层 · 套利可行性",
+    "ch01.eyebrow":     "第一层 · 套利监控",
     "ch02.eyebrow":     "第二层 · 定价偏离",
     "ch03.eyebrow":     "第三层 · 政策意图",
     "method":           "方法论",
     "method.def":       "定义",
+    "method.carry":     "套利分解",
     "method.multivar":  "多变量规格",
     "method.dxyadj":    "DXY 调整偏差",
     "find.title":       "关键发现",
@@ -591,13 +638,15 @@ const I18N = {
 
     "gloss.eyebrow":    "参考 · 术语表",
     "gloss.summary":    "完整术语表",
-    "gloss.count":      "（31 个字段）",
+    "gloss.count":      "（38 个字段）",
 
     "data.eyebrow":     "导出 · 数据",
     "data.title":       "近期观测数据",
     "data.lead":        "最近 30 个交易日 · 完整序列见下方。",
     "data.csv":         "↓ 下载 CSV（完整序列）",
     "data.json":        "↓ 下载 data.json",
+    "data.xlsx":        "↓ 下载 Excel (.xlsx)",
+    "data.ipynb":       "↓ 复制验证笔记本 (.ipynb)",
 
     "feat.title":       "研究精选",
     "feat.sub":         "伴随论文与相关工作。请将占位符替换为您自己的出版物。",
@@ -627,8 +676,9 @@ const I18N = {
     "hero.display":     "量化<em>套利压力</em>与<em>央行政策意图</em>之间的博弈。",
     "hero.lead":        "<span class=\"drop-cap\">一</span>个以 2 年期限为焦点的 USD/CNY 三层压力仪表盘——从毛利差，到 DXY 正交化回归残差，到每日中间价的隐性防御态势。一个数字告诉你：防线还守不守得住。",
 
-    "ch01.title":       "名义敞口套利 (Unhedged Raw Carry)",
-    "ch01.lead":        "免费 API 无法获取 USD/CNY 掉期点或 NDF 远期报价。因此本模块仅追踪<strong>名义 2 年期利差</strong>——对冲成本之前的毛套利激励。这是资金流投机所关注的「利差深度」，而非真实风险调整后收益。",
+    "ch01.title":       "套利监控 — 从毛利差到对冲后 P&L",
+    "ch01.lead":        "套利资本的「水压」：借人民币、投美元，能赚多少？我们同时追踪<strong>名义 2 年期利差</strong>和<strong>CIP 隐含对冲后套利代理</strong>（扣除远期对冲成本）。当对冲后套利为正且趋势上行时，投机性资本外流压力正在结构性积聚——无论今天即期汇率怎么走。",
+    "ch01.method.note": "免费 API 无法获取真实掉期点报价。我们通过抛补利率平价（CIP）反推对冲成本：CIP 基差衡量的是实际即期汇率偏离无套利远期隐含值的程度。对冲后套利代理为<strong>正值</strong>意味着扣除对冲成本后仍存在真实套利利润——历史上很少出现，通常预示美元融资压力或资本管制摩擦。",
     "ch02.title":       "用美元广义指数去噪",
     "ch02.lead":        "纯利差-汇率回归混淆了两个驱动因素：中美利差和美元广义走势。如果利差扩大的同时 DXY 也在上涨，人民币稳定其实是合理的——并非干预。因此升级为<strong>多变量 OLS</strong>，将 USD/CNY 对利差<em>和</em> DXY 同时回归。残差隔离了中国特有因素。",
     "ch02.pullquote":   "只有在过滤掉美元广义噪音之后，残差才成为风险溢价与政策干预动态的干净读数。",
@@ -762,38 +812,44 @@ const PLOTLY_CONFIG = { responsive: true, displaylogo: false,
                         modeBarButtonsToRemove: ["lasso2d", "select2d", "autoScale2d"] };
 
 const GLOSSARY_DEFS = [
-    ["us_2y",            "%",      "akshare bond_zh_us_rate", "US 2Y Treasury yield"],
-    ["cn_2y",            "%",      "akshare bond_zh_us_rate", "China 2Y govt bond yield"],
-    ["yield_spread",     "%",      "computed",                "us_2y − cn_2y"],
-    ["usdcny",           "CNY",    "yfinance / PBOC proxy",   "Onshore USD/CNY spot"],
-    ["usdcnh",           "CNY",    "yfinance",                "Offshore USD/CNH spot"],
-    ["pboc_fix",         "CNY",    "akshare currency_boc_sina","PBOC daily central parity"],
-    ["dxy",              "index",  "FRED DTWEXBGS",           "Trade-weighted broad dollar index"],
-    ["dxy_ret",          "ret",    "computed",                "DXY daily pct change"],
-    ["onoffshore_gap",   "CNY",    "computed",                "usdcnh − usdcny"],
-    ["raw_carry",        "%",      "computed",                "us_2y − cn_2y (Layer 01)"],
-    ["carry_ma20",       "%",      "computed",                "20d MA of raw_carry"],
-    ["carry_ma60",       "%",      "computed",                "60d MA of raw_carry"],
-    ["carry_ma120",      "%",      "computed",                "120d MA of raw_carry"],
-    ["carry_pct_rank",   "0–100",  "computed",                "Pctile vs trailing 252d"],
-    ["carry_pct_rank_2y","0–100",  "computed",                "Pctile vs trailing 504d"],
-    ["cip_fair_spot",    "CNY",    "computed",                "CIP-implied fair value"],
-    ["cip_deviation",    "CNY",    "computed",                "usdcny − cip_fair_spot"],
-    ["reg_predicted",    "CNY",    "OLS multivariate",        "α + β₁·spread + β₂·DXY"],
-    ["reg_residual",     "CNY",    "computed",                "actual − multivariate model"],
-    ["reg_predicted_uni","CNY",    "OLS univariate",          "Single-var (legacy)"],
-    ["reg_residual_uni", "CNY",    "computed",                "actual − univariate model"],
-    ["reg_beta_spread",  "coef",   "computed",                "β₁ in multivariate OLS"],
-    ["reg_beta_dxy",     "coef",   "computed",                "β₂ in multivariate OLS"],
-    ["reg_r2",           "0–1",    "computed",                "Multivariate model R²"],
-    ["mispricing_score", "0–100",  "computed",                "Avg pctile of CIP & regr residual"],
-    ["alpha_cny_dxy",    "coef",   "computed",                "Rolling β of CNY ret on DXY ret"],
-    ["expected_fix",     "CNY",    "computed",                "DXY-adjusted expected fix"],
-    ["fixing_bias",      "CNY",    "computed",                "pboc_fix − expected_fix (Layer 03)"],
-    ["fixing_bias_raw",  "CNY",    "computed",                "pboc_fix − anchor (legacy)"],
-    ["bias_20d_mean",    "CNY",    "computed",                "20d avg fixing_bias"],
-    ["defense_intensity","CNY",    "computed",                "−rolling_mean(bias,20d)"],
-    ["composite_score",  "0–100",  "weighted blend",          "Final pressure reading"],
+    ["us_2y",            "%",      "akshare bond_zh_us_rate", "US 2Y Treasury yield",            "bond_zh_us_rate|https://github.com/akfamily/akshare/wiki"],
+    ["cn_2y",            "%",      "akshare bond_zh_us_rate", "China 2Y govt bond yield",        "bond_zh_us_rate|https://github.com/akfamily/akshare/wiki"],
+    ["yield_spread",     "%",      "computed",                "us_2y − cn_2y",                   ""],
+    ["usdcny",           "CNY",    "yfinance / PBOC proxy",   "Onshore USD/CNY spot",            "DEXCHUS|https://fred.stlouisfed.org/series/DEXCHUS"],
+    ["usdcnh",           "CNY",    "yfinance",                "Offshore USD/CNH spot",           ""],
+    ["pboc_fix",         "CNY",    "akshare currency_boc_sina","PBOC daily central parity",      "currency_boc_sina|https://github.com/akfamily/akshare/wiki"],
+    ["dxy",              "index",  "FRED DTWEXBGS",           "Trade-weighted broad dollar index","DTWEXBGS|https://fred.stlouisfed.org/series/DTWEXBGS"],
+    ["dxy_ret",          "ret",    "computed",                "DXY daily pct change",            ""],
+    ["onoffshore_gap",   "CNY",    "computed",                "usdcnh − usdcny",                ""],
+    ["raw_carry",        "%",      "computed",                "us_2y − cn_2y (Layer 01)",        ""],
+    ["carry_ma20",       "%",      "computed",                "20d MA of raw_carry",             ""],
+    ["carry_ma60",       "%",      "computed",                "60d MA of raw_carry",             ""],
+    ["carry_ma120",      "%",      "computed",                "120d MA of raw_carry",            ""],
+    ["carry_pct_rank",   "0–100",  "computed",                "Pctile vs trailing 252d",         ""],
+    ["carry_pct_rank_2y","0–100",  "computed",                "Pctile vs trailing 504d",         ""],
+    ["cip_fair_spot",    "CNY",    "computed",                "CIP-implied fair value",          ""],
+    ["cip_deviation",    "CNY",    "computed",                "usdcny − cip_fair_spot",          ""],
+    ["reg_predicted",    "CNY",    "OLS multivariate",        "α + β₁·spread + β₂·DXY",         ""],
+    ["reg_residual",     "CNY",    "computed",                "actual − multivariate model",     ""],
+    ["reg_predicted_uni","CNY",    "OLS univariate",          "Single-var (legacy)",             ""],
+    ["reg_residual_uni", "CNY",    "computed",                "actual − univariate model",       ""],
+    ["reg_beta_spread",  "coef",   "computed",                "β₁ in multivariate OLS",         ""],
+    ["reg_beta_dxy",     "coef",   "computed",                "β₂ in multivariate OLS",         ""],
+    ["reg_r2",           "0–1",    "computed",                "Multivariate model R²",           ""],
+    ["mispricing_score", "0–100",  "computed",                "Avg pctile of CIP & regr residual",""],
+    ["alpha_cny_dxy",    "coef",   "computed",                "Rolling β of CNY ret on DXY ret", ""],
+    ["expected_fix",     "CNY",    "computed",                "DXY-adjusted expected fix",       ""],
+    ["fixing_bias",      "CNY",    "computed",                "pboc_fix − expected_fix (Layer 03)",""],
+    ["fixing_bias_raw",  "CNY",    "computed",                "pboc_fix − anchor (legacy)",      ""],
+    ["bias_20d_mean",    "CNY",    "computed",                "20d avg fixing_bias",             ""],
+    ["defense_intensity","CNY",    "computed",                "−rolling_mean(bias,20d)",         ""],
+    ["composite_score",  "0–100",  "weighted blend",          "Final pressure reading",          ""],
+    ["shibor_1y",        "%",      "akshare rate_interbank",  "Shibor 1Y interbank rate",        "rate_interbank|https://github.com/akfamily/akshare/wiki"],
+    ["us_1y",            "%",      "FRED DGS1",              "US 1Y Treasury yield",            "DGS1|https://fred.stlouisfed.org/series/DGS1"],
+    ["mm_spread",        "%",      "computed",                "us_1y − shibor_1y",               ""],
+    ["hedged_carry_proxy","%",     "computed",                "raw_carry − cip_dev_pct",         ""],
+    ["cip_dev_pct",      "%",      "computed",                "cip_deviation / spot × 100",      ""],
+    ["policy_score",     "0–100",  "computed",                "Fixing-bias percentile",          ""],
 ];
 
 let CURRENT_DATA = null;
@@ -889,8 +945,11 @@ function renderKPIs(s) {
     const biasCls  = isNaN(bias)  ? "" : bias < -0.005 ? "bull" : bias > 0.005 ? "bear" : "";
 
     const isNA = (v) => !v || v === "N/A" || v === "nan" || v === "—";
-    const tile = (label, value, cls = "", meta = "") => {
+    const tile = (label, value, cls = "", meta = "", codeBadge = "") => {
         if (isNA(value)) return null;
+        const badge = codeBadge
+            ? ` <code style="font-family:'JetBrains Mono',monospace;font-size:9px;background:var(--bg-tint);padding:1px 4px;border-radius:3px;color:var(--muted);margin-left:4px">${codeBadge}</code>`
+            : "";
         return `
             <div class="kpi-tile">
                 <div>
@@ -898,19 +957,25 @@ function renderKPIs(s) {
                     <div class="kpi-tile-value ${cls}">${value}</div>
                 </div>
                 <div class="kpi-tile-meta">
-                    <span>${meta}</span>
+                    <span>${meta}${badge}</span>
                 </div>
             </div>`;
     };
 
     const tiles = [
-        tile(t("kpi.usdcny"),      s.usdcny,                          "",      t("meta.onshore")),
+        tile(t("kpi.usdcny"),      s.usdcny,                          "",      t("meta.onshore"),    "DEXCHUS"),
         tile(t("kpi.usdcnh"),      s.usdcnh,                          "",      t("meta.hongkong")),
         tile(t("kpi.fix"),         s.pboc_fix,                        "",      t("meta.bjt")),
         tile(t("kpi.yields"),      `${s.us_2y}% · ${s.cn_2y}%`,       "",      t("meta.yields")),
         tile(t("kpi.carry"),       `${s.raw_carry}%`,                 carryCls, t("meta.uscn2y")),
         tile(t("kpi.carrypct"),    `${s.carry_pct_rank} / 100`,       "",      t("meta.vs252d")),
-        tile(t("kpi.dxy"),         s.dxy,                             "",      t("meta.fred")),
+        tile(t("kpi.hedged"),      isNA(s.hedged_carry_proxy) ? "—" : `${s.hedged_carry_proxy}%`,
+                                                                       hedgedCls(s.hedged_carry_proxy),
+                                                                                t("meta.cipResid")),
+        tile(t("kpi.mm"),          isNA(s.mm_spread) ? "—" : `${s.mm_spread}%`, "", t("meta.mm1y")),
+        tile(t("kpi.shibor"),      isNA(s.shibor_1y) ? "—" : `${s.shibor_1y}%`, "", t("meta.cn1y")),
+        tile(t("kpi.us1y"),        isNA(s.us_1y)     ? "—" : `${s.us_1y}%`,     "", t("meta.us1y"),    "DGS1"),
+        tile(t("kpi.dxy"),         s.dxy,                             "",      t("meta.fred"),       "DTWEXBGS"),
         tile(t("kpi.beta_spread"), s.reg_beta_spread,                 "",      t("meta.afterdxy")),
         tile(t("kpi.beta_dxy"),    s.reg_beta_dxy,                    "",      t("meta.broadDollar")),
         tile(t("kpi.r2"),          isNA(s.reg_r2) ? "—" : `${(parseFloat(s.reg_r2)*100).toFixed(1)}%`, "", t("meta.modelfit")),
@@ -925,6 +990,13 @@ function biasInPips(v) {
     const x = parseFloat(v);
     if (isNaN(x)) return "—";
     return `${(x * 10000).toFixed(0)} pips`;
+}
+
+// v3.1 — class for hedged-carry tile colour
+function hedgedCls(v) {
+    const x = parseFloat(v);
+    if (isNaN(x)) return "";
+    return x > 4 ? "bear" : x > 1 ? "warn" : x < -1 ? "bull" : "";
 }
 
 /* ─────────────────────────────────────────────────────────────
@@ -1039,6 +1111,64 @@ function renderCharts(series) {
         yaxis2: { ...LAYOUT_BASE.yaxis, domain: [0, 0.34], title: { text: t("axis.cnh_cny"), font: { size: 10 } } },
         margin: { l: 60, r: 24, t: 16, b: 50 },
     }, PLOTLY_CONFIG);
+
+    /* Carry decomposition — raw vs hedged */
+    const elDecomp = document.getElementById("chart-carry-decomp");
+    const elMm = document.getElementById("chart-mm");
+    if (elDecomp) {
+    const cipBasis = get("cip_dev_pct");
+    const hedgedCarry = get("hedged_carry_proxy");
+    Plotly.newPlot("chart-carry-decomp", [
+        { x: dates, y: get("raw_carry"), name: t("trace.rawCarry"), type: "scatter",
+          line: { color: COLORS.line1, width: 1.8 },
+          xaxis: "x", yaxis: "y" },
+        { x: dates, y: hedgedCarry, name: t("trace.hedgedCarry"), type: "scatter",
+          line: { color: COLORS.warn, width: 2.2 },
+          fill: "tozeroy", fillcolor: "rgba(161,98,7,0.12)",
+          xaxis: "x", yaxis: "y" },
+        { x: dates, y: get("carry_ma60"), name: t("trace.ma60"), type: "scatter",
+          line: { color: COLORS.muted, width: 1, dash: "dot" },
+          xaxis: "x", yaxis: "y" },
+        { x: dates, y: cipBasis, name: t("trace.cipBasis"), type: "bar",
+          marker: { color: cipBasis.map(v => v == null ? COLORS.muted : v > 0 ? COLORS.bull : COLORS.bear),
+                    opacity: 0.55 },
+          xaxis: "x2", yaxis: "y2" },
+    ], {
+        ...LAYOUT_BASE,
+        grid: { rows: 2, columns: 1, pattern: "independent", roworder: "top to bottom" },
+        xaxis:  { ...LAYOUT_BASE.xaxis, anchor: "y",  domain: [0, 1] },
+        yaxis:  { ...LAYOUT_BASE.yaxis, domain: [0.42, 1], title: { text: t("axis.carry_pct"), font: { size: 10 } } },
+        xaxis2: { ...LAYOUT_BASE.xaxis, anchor: "y2", domain: [0, 1] },
+        yaxis2: { ...LAYOUT_BASE.yaxis, domain: [0, 0.34], title: { text: t("axis.cip_basis"), font: { size: 10 } } },
+        margin: { l: 60, r: 24, t: 16, b: 50 },
+    }, PLOTLY_CONFIG);
+    }
+
+    /* Money-market funding layer — 1Y */
+    if (elMm) {
+    Plotly.newPlot("chart-mm", [
+        { x: dates, y: get("us_1y"), name: t("trace.ust1y"), type: "scatter",
+          line: { color: COLORS.line1, width: 1.8 },
+          xaxis: "x", yaxis: "y" },
+        { x: dates, y: get("shibor_1y"), name: t("trace.shibor1y"), type: "scatter",
+          line: { color: COLORS.line2, width: 1.8 },
+          xaxis: "x", yaxis: "y" },
+        { x: dates,
+          y: get("mm_spread").map(v => v == null ? null : v * 100),
+          name: t("trace.mmSpread"), type: "bar",
+          marker: { color: get("mm_spread").map(v => v == null ? COLORS.muted : v > 0 ? COLORS.bear : COLORS.bull),
+                    opacity: 0.6 },
+          xaxis: "x2", yaxis: "y2" },
+    ], {
+        ...LAYOUT_BASE,
+        grid: { rows: 2, columns: 1, pattern: "independent", roworder: "top to bottom" },
+        xaxis:  { ...LAYOUT_BASE.xaxis, anchor: "y",  domain: [0, 1] },
+        yaxis:  { ...LAYOUT_BASE.yaxis, domain: [0.42, 1], title: { text: t("axis.yield_1y"), font: { size: 10 } } },
+        xaxis2: { ...LAYOUT_BASE.xaxis, anchor: "y2", domain: [0, 1] },
+        yaxis2: { ...LAYOUT_BASE.yaxis, domain: [0, 0.34], title: { text: t("axis.mm_bps"), font: { size: 10 } } },
+        margin: { l: 60, r: 24, t: 16, b: 50 },
+    }, PLOTLY_CONFIG);
+    }
 
     /* DXY */
     Plotly.newPlot("chart-dxy", [
@@ -1251,10 +1381,17 @@ function renderFindings(s) {
  * ───────────────────────────────────────────────────────────── */
 function renderGlossary() {
     const tbl = document.getElementById("glossary-table");
-    const rows = GLOSSARY_DEFS.map(([code, unit, source, desc]) =>
-        `<tr><td>${code}</td><td>${unit}</td><td>${source}</td><td>${desc}</td></tr>`
-    ).join("");
-    tbl.innerHTML = `<thead><tr><th>${t("glossary.field")}</th><th>${t("glossary.unit")}</th><th>${t("glossary.source")}</th><th>${t("glossary.definition")}</th></tr></thead><tbody>${rows}</tbody>`;
+    const rows = GLOSSARY_DEFS.map(([field, unit, source, desc, codeLink]) => {
+        let codeTd;
+        if (!codeLink) {
+            codeTd = "—";
+        } else {
+            const [code, url] = codeLink.split("|");
+            codeTd = `<a href="${url}" target="_blank" rel="noopener" style="font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--bg-tint);padding:2px 6px;border-radius:3px;text-decoration:none;color:var(--navy)">${code}</a>`;
+        }
+        return `<tr><td>${field}</td><td>${unit}</td><td>${source}</td><td>${desc}</td><td>${codeTd}</td></tr>`;
+    }).join("");
+    tbl.innerHTML = `<thead><tr><th>${t("glossary.field")}</th><th>${t("glossary.unit")}</th><th>${t("glossary.source")}</th><th>${t("glossary.definition")}</th><th>${t("glossary.code")}</th></tr></thead><tbody>${rows}</tbody>`;
 }
 
 /* ─────────────────────────────────────────────────────────────

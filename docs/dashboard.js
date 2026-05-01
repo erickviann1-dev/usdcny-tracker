@@ -1,10 +1,10 @@
 /* ═══════════════════════════════════════════════════════════════
  *  USD/CNY Macro-Policy Divergence Tracker · Dashboard renderer
- *  Editorial / institutional design · v3.2.7
+ *  Editorial / institutional design · v3.2.8
  * ═══════════════════════════════════════════════════════════════ */
 
 /** Single source for top bar + cache-bust alignment (footer & script tag in index.html). */
-const TRACKER_VERSION = "3.2.7";
+const TRACKER_VERSION = "3.2.8";
 
 /* ─────────────────────────────────────────────────────────────
  *  I18N Engine + Dictionaries
@@ -1108,6 +1108,12 @@ function renderKPIs(s) {
             </div>`;
     };
 
+    const hedgedMeta = s.hedged_carry_method === "market_1y"
+        ? t("meta.hedgedMarket1y")
+        : s.hedged_carry_method === "cip_proxy_2y"
+        ? t("meta.hedgedCip2y")
+        : t("meta.cipResid");
+
     const tiles = [
         tile(t("kpi.usdcny"),      s.usdcny,                          "",      t("meta.onshore"),    "DEXCHUS"),
         tile(t("kpi.usdcnh"),      s.usdcnh,                          "",      t("meta.hongkong")),
@@ -1115,11 +1121,6 @@ function renderKPIs(s) {
         tile(t("kpi.yields"),      `${s.us_2y}% · ${s.cn_2y}%`,       "",      t("meta.yields")),
         tile(t("kpi.carry"),       `${s.raw_carry}%`,                 carryCls, t("meta.uscn2y")),
         tile(t("kpi.carrypct"),    `${s.carry_pct_rank} / 100`,       "",      t("meta.vs252d")),
-    const hedgedMeta = s.hedged_carry_method === "market_1y"
-        ? t("meta.hedgedMarket1y")
-        : s.hedged_carry_method === "cip_proxy_2y"
-        ? t("meta.hedgedCip2y")
-        : t("meta.cipResid");
         tile(t("kpi.hedged"),      isNA(s.hedged_carry_proxy) ? "—" : `${s.hedged_carry_proxy}%`,
                                                                        hedgedCls(s.hedged_carry_proxy),
                                                                                 hedgedMeta),

@@ -24,4 +24,4 @@ desktop.ini
 credentials.json
 
 # Large generated data (rebuilt by CI)
-web/data.json
+docs/data.json

@@ -78,7 +78,7 @@ def main():
         ]),
     }
 
-    out_path = Path(__file__).parent / "web" / "data.json"
+    out_path = Path(__file__).parent / "docs" / "data.json"
     out_path.parent.mkdir(exist_ok=True)
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(payload, f, indent=2, default=str, ensure_ascii=False)

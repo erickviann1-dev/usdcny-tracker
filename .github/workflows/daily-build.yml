@@ -32,13 +32,13 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add web/data.json BUILD_LOG.md
+          git add docs/data.json BUILD_LOG.md
           # Only commit if there are changes
           git diff --cached --quiet || git commit -m "$(cat <<EOF
           auto: daily data update $(date -u +%Y-%m-%d)
 
-          Score: $(python -c "import json; d=json.load(open('web/data.json')); print(d['snapshot'].get('composite_score','—'))")/100
-          USD/CNY: $(python -c "import json; d=json.load(open('web/data.json')); print(d['snapshot'].get('usdcny','—'))")
+          Score: $(python -c "import json; d=json.load(open('docs/data.json')); print(d['snapshot'].get('composite_score','—'))")/100
+          USD/CNY: $(python -c "import json; d=json.load(open('docs/data.json')); print(d['snapshot'].get('usdcny','—'))")
           EOF
           )"
           git push

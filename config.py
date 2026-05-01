@@ -17,6 +17,9 @@ W_CARRY   = 0.35   # Layer 1 weight
 W_MISPR   = 0.30   # Layer 2 weight
 W_FIXING  = 0.35   # Layer 3 weight
 
+# Composite narrative band (matches PRESSURE_ZONES "High" band lower bound)
+COMPOSITE_HIGH_THRESHOLD = 75  # sustained readings above → elevated structural stress
+
 # ── Color Palette ────────────────────────────────────────────
 COLOR_BG        = "#0d1117"
 COLOR_CARD      = "#161b22"

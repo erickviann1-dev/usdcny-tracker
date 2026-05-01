@@ -32,6 +32,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 from data_fetcher import get_master_data
 from analytics   import run_full_analysis, latest_snapshot
 from tools.build_notebook import build_replication_notebook
+from config import W_CARRY, W_MISPR, W_FIXING, COMPOSITE_HIGH_THRESHOLD
 
 
 def df_to_records(df: pd.DataFrame, cols=None) -> list[dict]:
@@ -72,7 +73,7 @@ def main():
             "cip_dev_pct", "hedged_carry_proxy", "hedged_carry_pct_rank",
             "cip_fair_spot", "cip_deviation",
             "reg_predicted", "reg_residual", "reg_predicted_uni", "reg_residual_uni",
-            "reg_beta_spread", "reg_beta_dxy", "reg_r2",
+            "reg_beta_spread", "reg_beta_dxy", "reg_r2", "reg_residual_z",
             "mispricing_score",
             "alpha_cny_dxy", "expected_fix",
             "fixing_bias", "fixing_bias_raw",
@@ -80,6 +81,14 @@ def main():
             "defense_intensity", "policy_score",
             "composite_score", "composite_score_smooth",
         ]),
+        "methodology": {
+            "w_carry": round(W_CARRY, 2),
+            "w_mispr": round(W_MISPR, 2),
+            "w_fixing": round(W_FIXING, 2),
+            "high_threshold": COMPOSITE_HIGH_THRESHOLD,
+            "reg_window_days": 252,
+            "reg_residual_z_window_days": 252,
+        },
     }
 
     out_path = Path(__file__).parent / "docs" / "data.json"
@@ -123,7 +132,7 @@ def write_excel(df, snap, series_records):
         "cip_dev_pct", "hedged_carry_proxy", "hedged_carry_pct_rank",
         "cip_fair_spot", "cip_deviation",
         "reg_predicted", "reg_residual", "reg_predicted_uni", "reg_residual_uni",
-        "reg_beta_spread", "reg_beta_dxy", "reg_r2",
+        "reg_beta_spread", "reg_beta_dxy", "reg_r2", "reg_residual_z",
         "mispricing_score",
         "alpha_cny_dxy", "expected_fix",
         "fixing_bias", "fixing_bias_raw",
@@ -161,8 +170,11 @@ def write_excel(df, snap, series_records):
                 "fixing_bias = pboc_fix − S × (1 + α × ΔDXY)",
                 "Clean PBOC policy signal after stripping overnight DXY noise"])
     ws3.append(["Composite", "Composite Score",
-                "W₁·carry_rank + W₂·mispricing_score + W₃·policy_score",
-                "Weighted blend (0.35/0.30/0.35), 0-100 scale"])
+                f"{W_CARRY:.0%}·carry_pct_rank + {W_MISPR:.0%}·mispricing_score + {W_FIXING:.0%}·policy_score",
+                f"Weighted blend 0–100; «High» band begins at {COMPOSITE_HIGH_THRESHOLD}"])
+    ws3.append(["Layer 2+", "Residual z-score",
+                "(reg_residual − rolling mean) / rolling σ over 252d",
+                "In-sample standardisation of multivariate ε; charted in diagnostics panel"])
 
     xlsx_path = Path(__file__).parent / "docs" / "usdcny_tracker.xlsx"
     wb.save(xlsx_path)

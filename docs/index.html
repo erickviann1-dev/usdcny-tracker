@@ -1316,7 +1316,7 @@ footer.site strong { color: var(--ink); font-weight: 500; }
             <div class="brand-mark">SD</div>
             <div class="brand-text">
                 USD/CNY Macro-Policy Tracker
-                <small id="topbar-version">2Y FOCUS · v3.2.5</small>
+                <small id="topbar-version">2Y FOCUS · v3.2.6</small>
             </div>
         </a>
         <div class="topbar-spacer"></div>
@@ -1368,6 +1368,8 @@ footer.site strong { color: var(--ink); font-weight: 500; }
                 <li><a href="#chapter-02"><span class="num">02</span> <span data-i18n="nav.mispricing">Mispricing</span></a></li>
                 <li><a href="#chapter-03"><span class="num">03</span> <span data-i18n="nav.policy">Policy Intent</span></a></li>
                 <li><a href="#composite"><span class="num">∑</span> <span data-i18n="nav.composite">Composite Trend</span></a></li>
+                <li><a href="#composite-method"><span class="num">§</span> <span data-i18n="nav.method">Composite methodology</span></a></li>
+                <li><a href="#history-stress"><span class="num">◷</span> <span data-i18n="nav.history">Historical stress lens</span></a></li>
                 <li><a href="#builder"><span class="num">⊞</span> <span data-i18n="nav.builder">Build a Chart</span></a></li>
                 <li><a href="#glossary"><span class="num">⊕</span> <span data-i18n="nav.glossary">Glossary</span></a></li>
                 <li><a href="#data"><span class="num">↓</span> <span data-i18n="nav.data">Data &amp; Export</span></a></li>
@@ -1545,6 +1547,18 @@ MM Spread (1Y)       = UST_1Y − Shibor_1Y                      <em>(funding-ra
                 <div id="chart-mm" style="height:440px"></div>
             </div>
 
+            <div class="method-box" id="roadmap-layer1">
+                <span class="method-label" data-i18n="roadmap.label">Roadmap</span>
+                <h3 data-i18n="roadmap.swap.title">Real swap points, forwards &amp; NDF</h3>
+                <p class="chapter-lead" data-i18n-html="roadmap.swap.body">
+                    This build uses a <strong>CIP-implied hedged-carry proxy</strong> because public APIs do not expose
+                    onshore swap-point strips. The next upgrade is to layer in <strong>USD/CNY forward points</strong>,
+                    <strong>CNH forwards</strong>, <strong>NDF</strong> pricing, and <strong>multi-tenor</strong>
+                    (1M–2Y) hedged carry — separating onshore CNY from offshore CNH — so Layer 1 reflects
+                    tradable economics rather than only theoretical pressure.
+                </p>
+            </div>
+
             <div class="findings">
                 <h4 data-i18n="find.title">Key Findings</h4>
                 <ul id="findings-01">
@@ -1620,6 +1634,34 @@ CIP fair value (Layer 02·A):
             <div class="chart-grid-2">
                 <div class="chart-card">
                     <div class="chart-card-head">
+                        <div class="chart-card-title" data-i18n="chart.regBetas">Rolling OLS — β₁ &amp; β₂</div>
+                        <div class="chart-card-sub" data-i18n="chart.regBetasSub">252d window: USD/CNY ~ spread + DXY</div>
+                    </div>
+                    <div id="chart-reg-betas-roll" style="height:280px"></div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-card-head">
+                        <div class="chart-card-title" data-i18n="chart.regFit">Model fit &amp; residual z-score</div>
+                        <div class="chart-card-sub" data-i18n="chart.regFitSub">In-sample R² and rolling (ε−μ)/σ (not pseudo-OOS)</div>
+                    </div>
+                    <div id="chart-reg-fit-roll" style="height:280px"></div>
+                </div>
+            </div>
+
+            <div class="method-box">
+                <span class="method-label" data-i18n="roadmap.label">Roadmap</span>
+                <h3 data-i18n="roadmap.reg.title">Model stability &amp; alternatives</h3>
+                <p class="chapter-lead" data-i18n-html="roadmap.reg.body">
+                    Rolling coefficients and R² are a first diagnostic step. Further work: expanding-factor controls
+                    (e.g. terms-of-trade proxies), <strong>pseudo out-of-sample</strong> forecasts, and comparison vs.
+                    <strong>rolling OLS with shorter windows, ridge, or small VARs</strong> — published only when
+                    the specification passes stability checks rather than a single static β.
+                </p>
+            </div>
+
+            <div class="chart-grid-2">
+                <div class="chart-card">
+                    <div class="chart-card-head">
                         <div class="chart-card-title">CIP Deviation</div>
                         <div class="chart-card-sub">Spot − CIP-implied fair value</div>
                     </div>
@@ -1651,6 +1693,18 @@ CIP fair value (Layer 02·A):
                         bank.
                     </p>
                 </div>
+            </div>
+
+            <div class="method-box" id="roadmap-layer3">
+                <span class="method-label" data-i18n="roadmap.label">Roadmap</span>
+                <h3 data-i18n="roadmap.policy.title">Policy toolkit monitor</h3>
+                <p class="chapter-lead" data-i18n-html="roadmap.policy.body">
+                    Fixing bias is one observable lever. A fuller toolkit would add <strong>CNH liquidity / CNH Hibor</strong>,
+                    <strong>PBOC offshore bill issuance</strong>, <strong>FX risk reserve ratio</strong> changes,
+                    evidence of <strong>counter-cyclical factor</strong> use, <strong>verbal guidance</strong>,
+                    <strong>state-bank spot behaviour</strong>, and the <strong>CNY–CNH spread</strong> — wired in as
+                    data becomes available in this open pipeline.
+                </p>
             </div>
 
             <div class="method-box">
@@ -1723,6 +1777,66 @@ Defense Intensity = − rolling_mean(bias, 20d) × 10000  [pips]
             </div>
             <div class="chart-card">
                 <div id="chart-composite" style="height:420px"></div>
+            </div>
+
+            <div class="method-box" id="composite-method">
+                <span class="method-label" data-i18n="method.composite.label">Composite methodology</span>
+                <h3 data-i18n="method.composite.title">Weights, standardisation &amp; the 75 line</h3>
+                <div id="composite-method-body" class="chapter-lead"></div>
+            </div>
+        </section>
+
+        <!-- ═══════════════════ HISTORICAL STRESS ═══════════════════ -->
+        <section id="history-stress" class="chapter">
+            <div class="chapter-head">
+                <div class="chapter-num">◷</div>
+                <div class="chapter-title-block">
+                    <div class="chapter-eyebrow" data-i18n="hist.eyebrow">Credibility · Historical stress lens</div>
+                    <h2 data-i18n-html="hist.title">Episodes to read against the dashboard</h2>
+                    <p class="chapter-lead" data-i18n-html="hist.lead">
+                        This is <strong>not</strong> a formal event-study or backtest: public rebuilt series lack
+                        point-in-time feeds. Use the table as a qualitative checklist — did composite, fixing bias,
+                        hedged-carry proxy, and regression residual <em>co-move</em> ahead of known stress windows?
+                    </p>
+                </div>
+            </div>
+            <div class="interp-matrix">
+                <table>
+                    <thead>
+                        <tr>
+                            <th data-i18n="hist.col.period">Window</th>
+                            <th data-i18n="hist.col.context">Context</th>
+                            <th data-i18n="hist.col.watch">What to check on this site</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td data-i18n="hist.r2015.p">2015</td>
+                            <td data-i18n="hist.r2015.c">CNY reform + devaluation pressure</td>
+                            <td data-i18n-html="hist.r2015.w">Composite vs carry percentile; fixing bias turning defensive; residual volatility.</td>
+                        </tr>
+                        <tr>
+                            <td data-i18n="hist.r2018.p">2018</td>
+                            <td data-i18n="hist.r2018.c">US–China trade war</td>
+                            <td data-i18n-html="hist.r2018.w">Policy score vs spreads; whether mispricing layer leads spot once DXY is filtered.</td>
+                        </tr>
+                        <tr>
+                            <td data-i18n="hist.r2022.p">2022</td>
+                            <td data-i18n="hist.r2022.c">Strong USD / Fed cycle</td>
+                            <td data-i18n-html="hist.r2022.w">DXY-orthogonalised residual — clean China-specific signal vs broad dollar.</td>
+                        </tr>
+                        <tr>
+                            <td data-i18n="hist.r2023.p">2023</td>
+                            <td data-i18n="hist.r2023.c">CNY near 7.30 defence narrative</td>
+                            <td data-i18n-html="hist.r2023.w">Sustained composite &gt; 75 with negative fixing bias; hedged-carry proxy trajectory.</td>
+                        </tr>
+                        <tr>
+                            <td data-i18n="hist.r20245.p">2024–25</td>
+                            <td data-i18n="hist.r20245.c">Managed defence / range-trading phase</td>
+                            <td data-i18n-html="hist.r20245.w">Rolling β stability; residual z extremes; policy percentile vs carry percentile divergence.</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </section>
 
@@ -1849,7 +1963,7 @@ Defense Intensity = − rolling_mean(bias, 20d) × 10000  [pips]
         <footer class="site">
             <div class="row">
                 <div>
-                    <strong>USD/CNY Macro-Policy Divergence Tracker</strong> · v3.2.5 · 2Y Focus<br>
+                    <strong>USD/CNY Macro-Policy Divergence Tracker</strong> · v3.2.6 · 2Y Focus<br>
                     <span data-i18n="footer.gen">Generated</span> <span id="footer-ts">—</span> · <span data-i18n="footer.disclaimer">For research purposes only — not investment advice.</span>
                 </div>
                 <div style="text-align:right">
@@ -1862,6 +1976,6 @@ Defense Intensity = − rolling_mean(bias, 20d) × 10000  [pips]
     </main>
 </div>
 
-<script src="dashboard.js?v=3.2.5"></script>
+<script src="dashboard.js?v=3.2.6"></script>
 </body>
 </html>

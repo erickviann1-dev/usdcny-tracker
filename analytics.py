@@ -234,6 +234,13 @@ def calc_mispricing(df: pd.DataFrame) -> pd.DataFrame:
                    if len(x.dropna()) > 1 else 50, raw=False)
         )
 
+    # Rolling-window z-score of multivariate residual (in-sample distribution)
+    if "reg_residual" in out.columns:
+        rr = out["reg_residual"]
+        mu = rr.rolling(252, min_periods=60).mean()
+        sig = rr.rolling(252, min_periods=60).std()
+        out["reg_residual_z"] = (rr - mu) / sig.replace(0, np.nan)
+
     return out
 
 
@@ -453,6 +460,7 @@ def latest_snapshot(df: pd.DataFrame) -> dict:
         "reg_beta_spread":   g("reg_beta_spread", ".3f"),
         "reg_beta_dxy":      g("reg_beta_dxy",    ".4f"),
         "reg_r2":            g("reg_r2", ".3f"),
+        "reg_residual_z":    g("reg_residual_z", ".2f"),
         "alpha_cny_dxy":     g("alpha_cny_dxy", ".3f"),
         "expected_fix":      g("expected_fix",  ".4f"),
         "fixing_bias":       g("fixing_bias"),

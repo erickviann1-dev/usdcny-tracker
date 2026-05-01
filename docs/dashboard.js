@@ -1,10 +1,10 @@
 /* ═══════════════════════════════════════════════════════════════
  *  USD/CNY Macro-Policy Divergence Tracker · Dashboard renderer
- *  Editorial / institutional design · v3.2.5
+ *  Editorial / institutional design · v3.2.6
  * ═══════════════════════════════════════════════════════════════ */
 
 /** Single source for top bar + cache-bust alignment (footer & script tag in index.html). */
-const TRACKER_VERSION = "3.2.5";
+const TRACKER_VERSION = "3.2.6";
 
 /* ─────────────────────────────────────────────────────────────
  *  I18N Engine + Dictionaries
@@ -119,6 +119,53 @@ const I18N = {
     "chart.hedgedCarrySub": "Hedged carry = raw carry minus CIP basis (forward-hedge cost proxy)",
     "chart.mmFunding":      "Money-Market Funding Layer — 1Y Tenor",
     "chart.mmFundingSub":   "Short-end funding rate differential (modern Libor-Shibor analog)",
+    "chart.regBetas":       "Rolling OLS — β₁ & β₂",
+    "chart.regBetasSub":    "252d window: USD/CNY ~ spread + DXY",
+    "chart.regFit":         "Model fit & residual z-score",
+    "chart.regFitSub":      "In-sample R² and rolling (ε−μ)/σ (not pseudo-OOS)",
+
+    "roadmap.label":        "Roadmap",
+    "roadmap.swap.title":   "Real swap points, forwards & NDF",
+    "roadmap.swap.body":    "This build uses a <strong>CIP-implied hedged-carry proxy</strong> because public APIs do not expose onshore swap strips. The next upgrade is to layer in <strong>USD/CNY forward points</strong>, <strong>CNH forwards</strong>, <strong>NDF</strong> pricing, and <strong>multi-tenor</strong> (1M–2Y) hedged carry — onshore vs offshore — so Layer 1 reflects tradable economics, not only theoretical pressure.",
+    "roadmap.reg.title":    "Model stability & alternatives",
+    "roadmap.reg.body":     "Rolling coefficients and R² are a first diagnostic. Further work: richer controls, <strong>pseudo out-of-sample</strong> forecasts, and benchmarks vs <strong>ridge / VAR</strong> — published when the specification survives stability tests.",
+    "roadmap.policy.title": "Policy toolkit monitor",
+    "roadmap.policy.body":  "Fixing bias is one lever. A fuller panel would add <strong>CNH liquidity / Hibor</strong>, <strong>offshore bills</strong>, <strong>FX risk reserve</strong> changes, <strong>counter-cyclical factor</strong> usage, <strong>verbal guidance</strong>, <strong>state-bank spot flow</strong>, and the <strong>CNY–CNH spread</strong> as feeds land in the open pipeline.",
+
+    "method.composite.label": "Composite methodology",
+    "method.composite.title": "Weights, standardisation & the 75 line",
+    "method.composite.p1": (a, b, c) =>
+        `Each layer outputs a <strong>0–100</strong> score built from percentile ranks. The headline composite is ` +
+        `<strong>${a}%</strong> × Layer-1 carry percentile + <strong>${b}%</strong> × Layer-2 mispricing score + ` +
+        `<strong>${c}%</strong> × Layer-3 policy percentile. Values are pinned in <code>config.py</code> and echoed under ` +
+        `<code>methodology</code> in <code>data.json</code>.`,
+    "method.composite.p2": () =>
+        "<strong>Standardisation.</strong> Layer 1: trailing percentile of raw carry vs history. Layer 2: average of " +
+        "percentile ranks of CIP deviation and multivariate regression residual. Layer 3: percentile of DXY-adjusted fixing bias " +
+        "(high = less defensive / more market-led softness).",
+    "method.composite.p3": (h) =>
+        `The <strong>High</strong> pressure colour band starts at <strong>${h}</strong> (75–90 on the sidebar). That line is a ` +
+        `<em>reporting convention</em> linking the headline score to the zone legend — not a backtested crisis trigger.`,
+    "method.composite.p4": (rw) =>
+        `The multivariate OLS coefficients and R² use a <strong>${rw}</strong>-trading-day rolling window. The residual z-score uses the same span on the residual level: (ε − μ) / σ.`,
+
+    "hist.eyebrow":         "Credibility · Historical stress lens",
+    "hist.title":           "Episodes to read against the dashboard",
+    "hist.lead":            "This is <strong>not</strong> a formal event-study: rebuilt public series are not point-in-time. " +
+        "Use the table as a qualitative checklist — did composite, fixing bias, hedged-carry proxy, and residual <em>line up</em> ahead of known stress windows?",
+    "hist.col.period":      "Window",
+    "hist.col.context":     "Context",
+    "hist.col.watch":       "What to check on this site",
+    "hist.r2015.p": "2015",   "hist.r2015.c": "CNY reform + devaluation pressure",
+    "hist.r2015.w": "Composite vs carry percentile; fixing bias turning defensive; residual volatility.",
+    "hist.r2018.p": "2018",   "hist.r2018.c": "US–China trade war",
+    "hist.r2018.w": "Policy score vs spreads; whether the mispricing layer leads spot after DXY is filtered.",
+    "hist.r2022.p": "2022",   "hist.r2022.c": "Strong USD / Fed cycle",
+    "hist.r2022.w": "DXY-orthogonalised residual — isolating China-specific stress vs broad dollar.",
+    "hist.r2023.p": "2023",   "hist.r2023.c": "CNY near 7.30 defence narrative",
+    "hist.r2023.w": "Sustained composite > 75 with negative fixing bias; hedged-carry proxy path.",
+    "hist.r20245.p": "2024–25", "hist.r20245.c": "Managed defence / range phase",
+    "hist.r20245.w": "Rolling β stability; residual z extremes; policy vs carry percentile divergence.",
 
     "axis.yield":       "Yield (%)",
     "axis.spread_bps":  "Spread (bps)",
@@ -137,6 +184,9 @@ const I18N = {
     "axis.defense_60d": "Defense / 60d",
     "axis.pressure":    "Pressure",
     "axis.value":       "Value",
+    "axis.betaCoef":    "β coefficients",
+    "axis.r2short":     "R²",
+    "axis.residZ":      "Residual z",
 
     "trace.us2y":       "US 2Y",
     "trace.cn2y":       "CN 2Y",
@@ -166,6 +216,10 @@ const I18N = {
     "trace.defense":    "Defense intensity",
     "trace.scoreRaw":   "Score (raw)",
     "trace.score5d":    "Score (5d)",
+    "trace.betaSpreadRoll": "β₁ · spread",
+    "trace.betaDxyRoll":    "β₂ · DXY",
+    "trace.r2Roll":         "R²",
+    "trace.residZ":         "Residual z",
 
     "reg.beta_spread":  "β₁ · Spread",
     "reg.beta_dxy":     "β₂ · DXY",
@@ -263,6 +317,8 @@ const I18N = {
     "nav.mispricing":   "Mispricing",
     "nav.policy":       "Policy Intent",
     "nav.composite":    "Composite Trend",
+    "nav.method":       "Composite methodology",
+    "nav.history":      "Historical stress lens",
     "nav.builder":      "Build a Chart",
     "nav.glossary":     "Glossary",
     "nav.data":         "Data & Export",
@@ -463,6 +519,48 @@ const I18N = {
     "chart.hedgedCarrySub": "对冲后套利 = 名义套利 − CIP 基差（远期对冲成本代理）",
     "chart.mmFunding":      "货币市场资金层 — 1 年期",
     "chart.mmFundingSub":   "短端资金利率差异（现代版 Libor-Shibor 利差）",
+    "chart.regBetas":       "滚动 OLS — β₁ 与 β₂",
+    "chart.regBetasSub":    "252 个交易日窗口：USD/CNY ~ 利差 + DXY",
+    "chart.regFit":         "模型拟合与残差 z 分数",
+    "chart.regFitSub":      "样本内 R² 与滚动 (ε−μ)/σ（非样本外检验）",
+
+    "roadmap.label":        "路线图",
+    "roadmap.swap.title":   "真实掉期点、远期与 NDF",
+    "roadmap.swap.body":    "当前版本因公开数据限制，使用 <strong>CIP 隐含对冲后套利代理</strong>。下一步拟接入 <strong>USD/CNY 远期点</strong>、<strong>CNH 远期</strong>、<strong>NDF</strong> 及 <strong>多期限（1M–2Y）</strong> 对冲收益，区分在岸与离岸，使第一层更贴近可交易的经济学含义。",
+    "roadmap.reg.title":    "模型稳定性与替代设定",
+    "roadmap.reg.body":     "滚动系数与 R² 是第一步诊断。后续可扩展控制变量、<strong>伪样本外</strong>预测，并与 <strong>岭回归 / VAR</strong> 等对照——仅在设定通过稳定性检验后对外固化。",
+    "roadmap.policy.title": "政策工具箱监控",
+    "roadmap.policy.body":  "中间价偏差只是工具之一。完整面板可纳入 <strong>CNH 流动性 / CNH Hibor</strong>、<strong>离岸央票</strong>、<strong>外汇风险准备金</strong>调整、<strong>逆周期因子</strong>信号、<strong>口头引导</strong>、<strong>大行即期行为</strong>与 <strong>CNY–CNH 价差</strong>，视数据入 pipeline 情况迭代。",
+
+    "method.composite.label": "综合指数方法论",
+    "method.composite.title": "权重、标准化与 75 分界线",
+    "method.composite.p1": (a, b, c) =>
+        `每一层先产出 <strong>0–100</strong> 的分位化得分。头条综合分 = ` +
+        `<strong>${a}%</strong> × 第一层（利差套利分位）+ <strong>${b}%</strong> × 第二层（定价偏离分）+ ` +
+        `<strong>${c}%</strong> × 第三层（经 DXY 调整的中间价政策分位）。权重写在 <code>config.py</code>，构建时写入 <code>data.json</code> 的 <code>methodology</code>。`,
+    "method.composite.p2": () =>
+        "<strong>标准化方式。</strong>第一层：名义利差的历史分位；第二层：CIP 偏离与多变量回归残差的分位平均；第三层：经 DXY 调整的中间价偏差分位（分值高 = 防御弱 / 更随市场走弱）。",
+    "method.composite.p3": (h) =>
+        `侧边栏「高压」色带从 <strong>${h}</strong> 起（75–90 区间）。该阈值是 <em>与色阶对齐的披露约定</em>，并非经严格回测的危机触发线。`,
+    "method.composite.p4": (rw) =>
+        `多变量 OLS 的系数与 R² 使用 <strong>${rw}</strong> 个交易日滚动窗口。残差 z 分数在同一窗口长度内对残差水平做标准化：(ε − μ) / σ。`,
+
+    "hist.eyebrow":         "可信度 · 历史压力视角",
+    "hist.title":           "可与仪表盘对照的压力片段",
+    "hist.lead":            "本节 <strong>不是</strong> 正式事件研究或回测：公开重建序列难以做到完全时点一致。下表作为定性清单——在已知压力窗口前，综合分、中间价偏差、对冲后套利代理与残差是否<strong>共振</strong>？",
+    "hist.col.period":      "时段",
+    "hist.col.context":     "背景",
+    "hist.col.watch":       "在本站重点看什么",
+    "hist.r2015.p": "2015",   "hist.r2015.c": "汇改与贬值压力",
+    "hist.r2015.w": "综合分 vs 利差分位；中间价偏防御；残差波动。",
+    "hist.r2018.p": "2018",   "hist.r2018.c": "中美贸易摩擦",
+    "hist.r2018.w": "政策分 vs 利差；剔除 DXY 后错定价层是否领先即期。",
+    "hist.r2022.p": "2022",   "hist.r2022.c": "强势美元 / 美联储周期",
+    "hist.r2022.w": "DXY 正交化残差——区分中国因素与美元 beta。",
+    "hist.r2023.p": "2023",   "hist.r2023.c": "CNY 临近 7.30 的防守叙事",
+    "hist.r2023.w": "综合分持续高于 75 且中间价偏负；对冲后套利代理路径。",
+    "hist.r20245.p": "2024–25", "hist.r20245.c": "有管理浮动 / 区间阶段",
+    "hist.r20245.w": "滚动 β 是否漂移；残差 z 极值；政策分位与套利分位是否背离。",
 
     "axis.yield":       "收益率 (%)",
     "axis.spread_bps":  "利差（基点）",
@@ -481,6 +579,9 @@ const I18N = {
     "axis.defense_60d": "防御 / 60 日",
     "axis.pressure":    "压力",
     "axis.value":       "数值",
+    "axis.betaCoef":    "β 系数",
+    "axis.r2short":     "R²",
+    "axis.residZ":      "残差 z",
 
     "trace.us2y":       "美 2Y",
     "trace.cn2y":       "中 2Y",
@@ -510,6 +611,10 @@ const I18N = {
     "trace.defense":    "防御强度",
     "trace.scoreRaw":   "分数（原始）",
     "trace.score5d":    "分数（5 日平滑）",
+    "trace.betaSpreadRoll": "β₁ · 利差",
+    "trace.betaDxyRoll":    "β₂ · DXY",
+    "trace.r2Roll":         "R²",
+    "trace.residZ":         "残差 z",
 
     "reg.beta_spread":  "β₁ · 利差",
     "reg.beta_dxy":     "β₂ · DXY",
@@ -606,6 +711,8 @@ const I18N = {
     "nav.mispricing":   "定价偏离",
     "nav.policy":       "政策意图",
     "nav.composite":    "综合趋势",
+    "nav.method":       "综合指数方法论",
+    "nav.history":      "历史压力参考",
     "nav.builder":      "自建图表",
     "nav.glossary":     "术语表",
     "nav.data":         "数据导出",
@@ -732,6 +839,23 @@ function applyStaticI18n() {
     });
 }
 
+function renderCompositeMethodology(data) {
+    const el = document.getElementById("composite-method-body");
+    if (!el) return;
+    const m = data.methodology || {};
+    const pc = Math.round((Number(m.w_carry) || 0.35) * 100);
+    const pm = Math.round((Number(m.w_mispr) || 0.30) * 100);
+    const pf = Math.round((Number(m.w_fixing) || 0.35) * 100);
+    const hi = m.high_threshold != null ? Number(m.high_threshold) : 75;
+    const rw = m.reg_window_days != null ? Number(m.reg_window_days) : 252;
+    el.innerHTML = [
+        `<p>${t("method.composite.p1", pc, pm, pf)}</p>`,
+        `<p>${t("method.composite.p2")}</p>`,
+        `<p>${t("method.composite.p3", hi)}</p>`,
+        `<p>${t("method.composite.p4", rw)}</p>`,
+    ].join("");
+}
+
 function renderAll(data) {
     applyStaticI18n();
     renderTopbar(data);
@@ -748,6 +872,7 @@ function renderAll(data) {
     renderTable(data.series);
     renderDownload(data.series);
     renderBuilder(data.series);
+    renderCompositeMethodology(data);
     renderCitation(data);
     renderChartTitles();
 }
@@ -765,12 +890,16 @@ function renderChartTitles() {
         "chart-composite":        "chart.composite",
     };
     for (const [id, key] of Object.entries(map)) {
-        const el = document.getElementById(id);
-        if (!el) continue;
-        const card = el.closest(".chart-card");
+        const plotEl = document.getElementById(id);
+        if (!plotEl) continue;
+        const card = plotEl.closest(".chart-card");
         if (!card) continue;
         const head = card.querySelector(".chart-card-head");
-        if (head) head.textContent = t(key);
+        if (!head) continue;
+        const titleEl = head.querySelector(".chart-card-title");
+        if (titleEl?.dataset.i18n) continue;
+        if (titleEl) titleEl.textContent = t(key);
+        else head.textContent = t(key);
     }
 }
 
@@ -843,6 +972,7 @@ const GLOSSARY_DEFS = [
     ["reg_beta_spread",  "coef",   "computed",                "β₁ in multivariate OLS",         ""],
     ["reg_beta_dxy",     "coef",   "computed",                "β₂ in multivariate OLS",         ""],
     ["reg_r2",           "0–1",    "computed",                "Multivariate model R²",           ""],
+    ["reg_residual_z",   "z",      "computed",                "Rolling z-score of multivariate residual",""],
     ["mispricing_score", "0–100",  "computed",                "Avg pctile of CIP & regr residual",""],
     ["alpha_cny_dxy",    "coef",   "computed",                "Rolling β of CNY ret on DXY ret", ""],
     ["expected_fix",     "CNY",    "computed",                "DXY-adjusted expected fix",       ""],
@@ -1222,6 +1352,40 @@ function renderCharts(series) {
         yaxis: { ...LAYOUT_BASE.yaxis, title: { text: t("axis.residual_cny"), font: { size: 10 } }, zeroline: true },
     }, PLOTLY_CONFIG);
 
+    Plotly.newPlot("chart-reg-betas-roll", [
+        { x: dates, y: get("reg_beta_spread"), name: t("trace.betaSpreadRoll"), type: "scatter",
+          line: { color: COLORS.line1, width: 1.6 } },
+        { x: dates, y: get("reg_beta_dxy"), name: t("trace.betaDxyRoll"), type: "scatter",
+          line: { color: COLORS.line2, width: 1.6 } },
+    ], {
+        ...LAYOUT_BASE,
+        yaxis: { ...LAYOUT_BASE.yaxis, title: { text: t("axis.betaCoef"), font: { size: 10 } }, zeroline: true },
+    }, PLOTLY_CONFIG);
+
+    Plotly.newPlot("chart-reg-fit-roll", [
+        { x: dates, y: get("reg_r2"), name: t("trace.r2Roll"), type: "scatter",
+          line: { color: COLORS.navy, width: 1.8 }, yaxis: "y" },
+        { x: dates, y: get("reg_residual_z"), name: t("trace.residZ"), type: "scatter",
+          line: { color: COLORS.ochre, width: 1.4 }, yaxis: "y2" },
+    ], {
+        ...LAYOUT_BASE,
+        yaxis: {
+            ...LAYOUT_BASE.yaxis,
+            title: { text: t("axis.r2short"), font: { size: 10 } },
+            rangemode: "tozero",
+            side: "left",
+        },
+        yaxis2: {
+            ...LAYOUT_BASE.yaxis,
+            title: { text: t("axis.residZ"), font: { size: 10 } },
+            overlaying: "y",
+            side: "right",
+            showgrid: false,
+            zeroline: true,
+        },
+        margin: { l: 52, r: 52, t: 16, b: 40 },
+    }, PLOTLY_CONFIG);
+
     /* CIP deviation */
     Plotly.newPlot("chart-cip", [
         { x: dates, y: get("cip_deviation"), name: t("trace.cipBasis"), type: "scatter",
@@ -1461,6 +1625,8 @@ const BUILDER_FIELDS = [
     { key: "carry_pct_rank",   label: "Carry Pctile" },
     { key: "cip_deviation",    label: "CIP Dev" },
     { key: "reg_residual",     label: "Residual (multi)" },
+    { key: "reg_residual_z",   label: "Residual z" },
+    { key: "reg_r2",           label: "Reg R²" },
     { key: "reg_residual_uni", label: "Residual (uni)" },
     { key: "fixing_bias",      label: "Fixing Bias" },
     { key: "fixing_bias_raw",  label: "Bias (raw)" },

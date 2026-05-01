@@ -434,6 +434,107 @@ const I18N = {
 
     "cite.retrieved":   "获取于",
     "cite.generated":   "生成于",
+
+    "html.loader":      "正在加载市场数据……",
+    "html.download":    "下载",
+    "html.begin":       "开始 →",
+    "html.contents":    "目录",
+    "html.papers":      "相关研究",
+    "html.lineage":     "方法论渊源",
+    "html.zones":       "压力区间",
+
+    "nav.gauge":        "压力仪表盘",
+    "nav.carry":        "套利可行性",
+    "nav.mispricing":   "定价偏离",
+    "nav.policy":       "政策意图",
+    "nav.composite":    "综合趋势",
+    "nav.builder":      "自建图表",
+    "nav.glossary":     "术语表",
+    "nav.data":         "数据导出",
+
+    "zone.Low":         "低",
+    "zone.Moderate":    "温和",
+    "zone.Elevated":    "偏高",
+    "zone.High":        "高压",
+    "zone.Extreme":     "极端",
+
+    "hero.overline":    "截至",
+    "score.label":      "综合政策压力",
+    "bar.Low":          "低",
+    "bar.Mod":          "温和",
+    "bar.Elev":         "偏高",
+    "bar.High":         "高",
+    "bar.Extr":         "极端",
+    "quality.label":    "覆盖率",
+
+    "ch01.eyebrow":     "第一层 · 套利可行性",
+    "ch02.eyebrow":     "第二层 · 定价偏离",
+    "ch03.eyebrow":     "第三层 · 政策意图",
+    "method":           "方法论",
+    "method.def":       "定义",
+    "method.multivar":  "多变量规格",
+    "method.dxyadj":    "DXY 调整偏差",
+    "find.title":       "关键发现",
+
+    "synth.eyebrow":    "综合 · 复合趋势",
+    "build.eyebrow":    "探索 · 自建图表",
+    "build.freq":       "频率",
+    "build.series":     "系列",
+    "build.daily":      "日频",
+    "build.weekly":     "周频（均值）",
+    "build.monthly":    "月频（均值）",
+
+    "gloss.eyebrow":    "参考 · 术语表",
+    "gloss.summary":    "完整术语表",
+    "gloss.count":      "（31 个字段）",
+
+    "data.eyebrow":     "导出 · 数据",
+    "data.title":       "近期观测数据",
+    "data.lead":        "最近 30 个交易日 · 完整序列见下方。",
+    "data.csv":         "↓ 下载 CSV（完整序列）",
+    "data.json":        "↓ 下载 data.json",
+
+    "feat.title":       "研究精选",
+    "feat.sub":         "伴随论文与相关工作。请将占位符替换为您自己的出版物。",
+    "cite.label":       "引用方式",
+    "footer.gen":       "生成于",
+    "footer.disclaimer":"仅供研究使用——非投资建议。",
+
+    "interp.scenario":  "情景",
+    "interp.carry":     "套利",
+    "interp.bias":      "偏差",
+    "interp.impl":      "含义",
+    "interp.maxT":      "最大张力",
+    "interp.highUp":    "高 ↑",
+    "interp.strongNeg": "强烈负值",
+    "interp.maxTd":     "央行消耗外储坚守防线——警惕失守。",
+    "interp.managed":   "有序贬值",
+    "interp.zero":      "≈ 0",
+    "interp.managedd":  "央行允许有序走弱。",
+    "interp.comfort":   "舒适区",
+    "interp.lowDown":   "低 ↓",
+    "interp.comfortd":  "无政策两难。",
+    "interp.strong":    "人民币走强",
+    "interp.negLow":    "负值 / 低",
+    "interp.pos":       "正值",
+    "interp.strongd":   "央行抵制<em>升值</em>。",
+
+    "hero.display":     "量化<em>套利压力</em>与<em>央行政策意图</em>之间的博弈。",
+    "hero.lead":        "<span class=\"drop-cap\">一</span>个以 2 年期限为焦点的 USD/CNY 三层压力仪表盘——从毛利差，到 DXY 正交化回归残差，到每日中间价的隐性防御态势。一个数字告诉你：防线还守不守得住。",
+
+    "ch01.title":       "名义敞口套利 (Unhedged Raw Carry)",
+    "ch01.lead":        "免费 API 无法获取 USD/CNY 掉期点或 NDF 远期报价。因此本模块仅追踪<strong>名义 2 年期利差</strong>——对冲成本之前的毛套利激励。这是资金流投机所关注的"利差深度"，而非真实风险调整后收益。",
+    "ch02.title":       "用美元广义指数去噪",
+    "ch02.lead":        "纯利差-汇率回归混淆了两个驱动因素：中美利差和美元广义走势。如果利差扩大的同时 DXY 也在上涨，人民币稳定其实是合理的——并非干预。因此升级为<strong>多变量 OLS</strong>，将 USD/CNY 对利差<em>和</em> DXY 同时回归。残差隔离了中国特有因素。",
+    "ch02.pullquote":   "只有在过滤掉美元广义噪音之后，残差才成为风险溢价与政策干预动态的干净读数。",
+    "ch03.title":       "解码每日中间价",
+    "ch03.lead":        "北京下午 4:30 收盘到 9:15 中间价之间，隔了一整个纽约交易时段。隔夜 DXY 波动会打印出机械性的 CNY 变动——朴素模型会误判为干预。我们剥离这些，然后读取剩余部分：央行的<strong>真实防御态势</strong>。",
+    "synth.title":      "一个数字，三重力量",
+    "synth.lead":       "三层加权混合。关注持续突破 75+ 的时段——历史上这些往往是转折点。",
+    "build.title":      "自定义视图",
+    "build.lead":       "选择任意组合的底层序列，浏览器端实时渲染，无需服务器。",
+    "gloss.title":      "每个字段，有据可查",
+    "gloss.lead":       "每个计算字段的公式、来源和单位。点击展开。",
   },
 };
 
@@ -460,10 +561,12 @@ function switchLang(lang) {
 
 function applyStaticI18n() {
     document.querySelectorAll("[data-i18n]").forEach(el => {
-        el.textContent = t(el.dataset.i18n);
+        if (!el.dataset.i18nOrig) el.dataset.i18nOrig = el.textContent;
+        el.textContent = LANG === "en" ? el.dataset.i18nOrig : t(el.dataset.i18n);
     });
     document.querySelectorAll("[data-i18n-html]").forEach(el => {
-        el.innerHTML = t(el.dataset.i18nHtml);
+        if (!el.dataset.i18nOrigHtml) el.dataset.i18nOrigHtml = el.innerHTML;
+        el.innerHTML = LANG === "en" ? el.dataset.i18nOrigHtml : t(el.dataset.i18nHtml);
     });
 }
 

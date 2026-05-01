@@ -1,0 +1,22 @@
+{
+  "tag": "v3.0-bilingual",
+  "timestamp": "2026-05-01T13:14:33.885742",
+  "files_saved": [
+    "analytics.py",
+    "data_fetcher.py",
+    "build.py",
+    "config.py",
+    "charts.py",
+    "app.py"
+  ],
+  "files_skipped": [
+    "web/index.html",
+    "web/dashboard.js",
+    "web/data.json"
+  ],
+  "git_sha": "f515e711a62c6e31847f7a400c6c3d8aacd7730b",
+  "git_dirty": true,
+  "git_status": [
+    "?? history/v3.0-bilingual/"
+  ]
+}

@@ -34,9 +34,15 @@ ROOT = Path(__file__).parent.parent.resolve()
 HISTORY = ROOT / "history"
 
 SNAPSHOT_FILES = [
+    # Public site (renamed from web/ → docs/ for GitHub Pages, v3.0)
+    "docs/index.html",
+    "docs/dashboard.js",
+    "docs/data.json",
+    # Legacy web/ paths kept so old snapshots still work if files exist
     "web/index.html",
     "web/dashboard.js",
     "web/data.json",
+    # Python pipeline
     "analytics.py",
     "data_fetcher.py",
     "build.py",

@@ -2,10 +2,17 @@
 
 > 一个量化"美中政策压力 vs 市场定价"博弈的三层宏观追踪器，2 年期利差焦点。
 >
+> **当前版本：v3.0.1**（双语 EN/中 · 静态站点 · GitHub Actions 每日构建）
+>
 > **For Cursor / future contributors:** before editing, read in this order →
-> `README.md` (this file) → `CHANGELOG.md` (what's been done & why) →
+> `README.md` (this file) → `CHANGELOG.md` (what's been done & why, 最新条目在最上) →
 > `REFERENCE_STUDY.md` (design rationale, what NOT to revert).
-> Before destructive edits run `python tools/snapshot.py <tag>` to archive state.
+> Before destructive edits run `python tools/snapshot.py <tag>` to archive state
+> (snapshots both `docs/` and `web/` since v3.0.1; pre-v3.0 snapshots only have `web/`).
+>
+> **Cache-busting convention:** every release that touches `docs/dashboard.js`
+> MUST bump the query string in `<script src="dashboard.js?v=X.Y.Z">` to match
+> the new version, or browsers will keep serving the old JS.
 
 ## 项目本质
 
@@ -28,12 +35,16 @@ usdcny-tracker/
 ├── analytics.py          三层量化引擎（核心逻辑都在这）
 ├── config.py             阈值、权重、配色
 ├── requirements.txt
-├── app.py                Streamlit 版本（参考，主交付物是 web/）
+├── app.py                Streamlit 版本（参考，主交付物是 docs/）
 ├── charts.py             Streamlit 版图表（同上）
-└── web/                  ★ 静态网页（最终交付物，双语 EN/中文）
-    ├── index.html        页面骨架 + CSS + data-i18n 标记
-    ├── dashboard.js      渲染逻辑 + i18n 引擎 + 150+ 条中英对照词典
-    └── data.json         当前数据快照
+├── docs/                 ★ 静态网页（最终交付物，双语 EN/中文，由 GitHub Pages 托管）
+│   ├── index.html        页面骨架 + CSS + data-i18n 标记
+│   ├── dashboard.js      渲染逻辑 + i18n 引擎 + 234×2 条中英对照词典（已对称）
+│   └── data.json         当前数据快照
+├── tools/snapshot.py     编辑前归档：python tools/snapshot.py "v3.x-标签"
+├── history/              历史快照（v1.0-mvp / v1.5-multivariate / v3.0-bilingual / v3.0-pre-cachebust）
+├── BUILD_LOG.md          每次 build.py 自动追加的数据快照
+└── .github/workflows/    GitHub Actions 每日自动 build
 ```
 
 ---
@@ -46,11 +57,13 @@ pip install -r requirements.txt
 
 # 1. 刷数据（任何一次改了 data_fetcher.py 或 analytics.py 之后都重跑）
 python build.py
-# 输出：web/data.json，并打印关键指标
+# 输出：docs/data.json，并追加一行到 BUILD_LOG.md
 
 # 2. 起本地服务器
-python -m http.server 8765 --directory web
+python -m http.server 8765 --directory docs
 # 浏览器打开 http://localhost:8765
+# ⚠️ 改了 dashboard.js 后浏览器会缓存——按 Ctrl+Shift+R 强制刷新，
+#    或在 index.html 里把 <script src="dashboard.js?v=X.Y.Z"> 的版本号 +1
 ```
 
 `build.py` 之外的所有 .py 文件都是被它 import 的，**不要单独运行**。
@@ -166,6 +179,22 @@ composite = W_CARRY × carry_pct_rank
 2. ~~**加 USD/CNH 离岸数据管道**~~ → v3.0 done (管道就绪，待源上线)
    - `fetch_usdcnh_offshore_spot()`：akshare 多 symbol + Eastmoney K 线
    - 当前免费 API 均无 CNH 历史数据，覆盖率仍为 0%
+
+3. ~~**双语 i18n 引擎**~~ → v3.0 done · v3.0.1 修对称性
+   - EN / ZH 词典各 234 条，对称（`EN ⊕ ZH = ∅`）
+   - `localStorage` 持久化语言偏好
+   - 切换时静态 + 动态（KPI/alerts/charts/narrative/regression）全部重渲染
+
+4. ~~**dashboard.js 缓存失效问题**~~ → v3.0.1 done
+   - `<script src="dashboard.js?v=3.0.1">` 查询字符串
+   - 约定：每次改 `dashboard.js` 必须同步 bump CHANGELOG 版本号 + script 标签的 `?v=`
+
+### 🔴 仍未解决 — P0
+
+5. **CNH 离岸真实数据源**
+   - 管道就绪但所有免费 API 都不给 CNH 历史
+   - 没有 CNH → Layer 03 的"市场预期基准"退化为 onshore 前一日收盘
+   - 候选：付费 API（Wind / Bloomberg / Refinitiv）、TradingView 抓取、用户手动每日上传 CSV
 
 ### 🟠 中优先级 — 模型升级
 

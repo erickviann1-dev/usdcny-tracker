@@ -7,6 +7,94 @@ the previous state under `history/`.
 
 ---
 
+## [v3.0.1] — 2026-05-01 · i18n Symmetry + Cache-Busting + Snapshot Path Fix
+
+### Vision
+Patch release. Three concrete bugs fixed, all observed via a single user
+screenshot showing literal i18n keys (`hero.display`, `html.download`, …)
+rendered on the live page.
+
+### Root cause analysis
+1. **EN dictionary was a strict subset of ZH** — 89 keys lived only in `zh`.
+   In ZH mode `t(key)` worked. In EN mode `applyStaticI18n` fell back to
+   `dataset.i18nOrig` (the HTML-baked English) so it *coincidentally* worked
+   too — but only because the HTML originals exist. Any future edit clearing
+   an HTML original would have surfaced raw key names.
+2. **No cache-busting on `dashboard.js`** — after the v3.0 i18n fix in
+   commit `f515e71`, browsers kept serving the pre-fix JS from cache and
+   showed literal keys even though the deployed file was correct. This is
+   what the user actually saw.
+3. **`tools/snapshot.py` still pointed at `web/`** — directory was renamed
+   to `docs/` in commit `687106d`, leaving snapshots silently incomplete
+   (the public site files were skipped on every snapshot).
+
+### Changed — `docs/dashboard.js`
+- Added 89 EN keys mirroring the ZH dictionary (now both 234 keys, perfectly
+  symmetric — `EN ⊕ ZH = ∅`)
+- Bumped header version comment from `v2.0` → `v3.0.1` (was stale across
+  v2.0 → v3.0 → v3.0.1)
+
+### Changed — `docs/index.html`
+- `<script src="dashboard.js">` → `<script src="dashboard.js?v=3.0.1">` so
+  every future JS edit invalidates browser + CDN caches automatically.
+  **Convention:** every CHANGELOG release that touches `dashboard.js` MUST
+  bump this query string (e.g. `?v=3.1.0`, `?v=3.0.2`). Cursor: enforce.
+- Footer version label `v3.0` → `v3.0.1`
+
+### Changed — `tools/snapshot.py`
+- `SNAPSHOT_FILES` now includes both `docs/*` (current) and `web/*` (legacy
+  fallback for old snapshots). Previously only saved Python files when run
+  after the `web/→docs/` rename.
+
+### Symmetry verification
+```
+EN: 234 keys · ZH: 234 keys
+Only-ZH: ∅ · Only-EN: ∅
+```
+
+### Snapshot
+Pre-edit state saved to `history/v3.0-pre-cachebust/` (full `docs/` set +
+all Python files).
+
+### Files Touched
+- `docs/dashboard.js` — +90 lines (1 version bump + 89 EN keys)
+- `docs/index.html` — 2 lines (script tag query string + footer version)
+- `tools/snapshot.py` — `SNAPSHOT_FILES` list expanded
+- `CHANGELOG.md` — this entry
+- `README.md` — version pointer + status updates
+
+### Remaining work after v3.0.1 (still open)
+🔴 P0 — **CNH offshore data still 0% covered.** Pipeline (`fetch_usdcnh_offshore_spot`)
+is wired but no free source returns CNH history. Without CNH, Layer 03's
+"market anchor" falls back to onshore previous close, which under-estimates
+true defence intensity. Candidates to try next: TradingView scraping, Wind
+free tier, Bloomberg Terminal export (manual CSV), or paid API.
+
+🟠 P1 — **User-content placeholders unfilled** (this is for 魏来 personally,
+not Cursor):
+- `#author-name` / `#author-role` / `#author-bio` in `docs/index.html`
+- `#author-linkedin` / `#author-email` / `#author-cv`
+- `#paper-1` / `#paper-2` / `#paper-3` (sidebar)
+- 3 cards in `<section id="featured">` (footer)
+- Citation author name in `#citation-block`
+- Brand monogram `SD` (2 places in HTML, 1 in JS loader caption)
+
+🟠 P1 — **Replace FRED TWI (~118) with true ICE DXY (~104).** Different basket;
+correlation ~0.95 but readers may misread absolute level.
+
+🟡 P2 — **KPI sparklines.** CSS slot `.kpi-tile-spark` exists, JS not implemented.
+
+🟡 P2 — **Hedged carry with real swap points.** Currently labelled "Unhedged
+Raw Carry" honestly; turning it into true hedged P&L needs paid NDF data.
+
+🟡 P2 — **OLS covariate expansion.** Current R² = 45.7%. Candidates: VIX,
+copper, China-US PMI gap. Watch for multicollinearity (β₁ already inverted).
+
+🟡 P3 — **akshare column selection by name not position** — `bond_zh_us_rate()`
+schema-fragile (CN_2Y = col[0], US_2Y = col[6]).
+
+---
+
 ## [v3.0] — 2026-05-01 · Data Integrity + Bilingual + CNH Pipeline
 
 ### Vision

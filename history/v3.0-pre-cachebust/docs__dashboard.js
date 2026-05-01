@@ -1,6 +1,6 @@
 /* ═══════════════════════════════════════════════════════════════
  *  USD/CNY Macro-Policy Divergence Tracker · Dashboard renderer
- *  Editorial / institutional design · v3.0.1
+ *  Editorial / institutional design · v2.0
  * ═══════════════════════════════════════════════════════════════ */
 
 /* ─────────────────────────────────────────────────────────────
@@ -222,111 +222,6 @@ const I18N = {
 
     "cite.retrieved":   "Retrieved",
     "cite.generated":   "Generated",
-
-    /* ── Static-HTML keys (mirror of zh dict for full symmetry, v3.0.1) ── */
-    "html.loader":      "Loading market data…",
-    "html.download":    "Download",
-    "html.begin":       "Begin →",
-    "html.contents":    "Contents",
-    "html.papers":      "Related Research",
-    "html.lineage":     "Methodology Lineage",
-    "html.zones":       "Pressure Zones",
-
-    "nav.gauge":        "Pressure Gauge",
-    "nav.carry":        "Carry Feasibility",
-    "nav.mispricing":   "Mispricing",
-    "nav.policy":       "Policy Intent",
-    "nav.composite":    "Composite Trend",
-    "nav.builder":      "Build a Chart",
-    "nav.glossary":     "Glossary",
-    "nav.data":         "Data & Export",
-
-    "zone.Low":         "Low",
-    "zone.Moderate":    "Moderate",
-    "zone.Elevated":    "Elevated",
-    "zone.High":        "High",
-    "zone.Extreme":     "Extreme",
-
-    "hero.overline":    "As of",
-    "hero.display":     "Quantifying the battle between <em>carry-trade pressure</em> and <em>PBOC policy intent</em>.",
-    "hero.lead":        "<span class=\"drop-cap\">A</span> three-layer pressure gauge for USD/CNY at the 2-year tenor — from the gross yield differential, through DXY-orthogonalised regression residuals, to the daily fixing's hidden defence posture. One number that tells you whether the line still holds.",
-
-    "score.label":      "Composite Policy Pressure",
-    "bar.Low":          "Low",
-    "bar.Mod":          "Mod",
-    "bar.Elev":         "Elev",
-    "bar.High":         "High",
-    "bar.Extr":         "Extr",
-    "quality.label":    "Coverage",
-
-    "ch01.eyebrow":     "Layer One · Carry Feasibility",
-    "ch01.title":       "Unhedged Raw Carry — 名义敞口套利",
-    "ch01.lead":        "Free APIs do not expose USD/CNY swap points or NDF forward quotes. We therefore track the <strong>nominal 2-year yield differential</strong> — the gross carry-trade incentive <em>before</em> hedging costs. This is the depth of inversion that fund-flow speculation responds to, not a true risk-adjusted P&L estimate.",
-
-    "ch02.eyebrow":     "Layer Two · Mispricing",
-    "ch02.title":       "De-Noising With the Broad Dollar",
-    "ch02.lead":        "A pure spread-vs-spot regression confounds two drivers: Sino-US rate differentials and broad-dollar moves. If the spread widens while DXY rallies, a stable CNY is rational, not intervention. We upgrade to <strong>multivariate OLS</strong>, regressing USD/CNY on <em>both</em> spread and DXY. The residual then isolates China-specific factors.",
-    "ch02.pullquote":   "Only after the broad-dollar noise is filtered out does the residual become a clean reading of risk-premium and policy-intervention dynamics.",
-
-    "ch03.eyebrow":     "Layer Three · Policy Intent",
-    "ch03.title":       "Decoding the Daily Fixing",
-    "ch03.lead":        "Between Beijing 4:30 PM close and 9:15 AM fixing lies a full New York trading session. Overnight DXY moves print mechanical CNY changes that a naive model mistakes for intervention. We strip those out, then read what remains: the <strong>true defence posture</strong> of the central bank.",
-
-    "method":           "Method",
-    "method.def":       "Definition",
-    "method.multivar":  "Multivariate Specification",
-    "method.dxyadj":    "DXY-Adjusted Bias",
-    "find.title":       "Key Findings",
-
-    "synth.eyebrow":    "Synthesis · Composite Trend",
-    "synth.title":      "One Number, Three Forces",
-    "synth.lead":       "A weighted blend of all three layers. Watch sustained crossings into the 75+ region — historically the moments when something gives.",
-
-    "build.eyebrow":    "Explore · Build a Chart",
-    "build.title":      "Roll Your Own View",
-    "build.lead":       "Pick any combination of the underlying series. Rendered live in your browser — no server round-trip.",
-    "build.freq":       "Frequency",
-    "build.series":     "Series",
-    "build.daily":      "Daily",
-    "build.weekly":     "Weekly (mean)",
-    "build.monthly":    "Monthly (mean)",
-
-    "gloss.eyebrow":    "Reference · Variable Glossary",
-    "gloss.title":      "Every Field, Sourced",
-    "gloss.lead":       "Each computed field, its formula, source, and unit. Click to expand.",
-    "gloss.summary":    "Full Variable Glossary",
-    "gloss.count":      "(31 fields)",
-
-    "data.eyebrow":     "Export · Data",
-    "data.title":       "Recent Observations",
-    "data.lead":        "Last 30 trading days · full series available below.",
-    "data.csv":         "↓ Download CSV (full series)",
-    "data.json":        "↓ Download data.json",
-
-    "feat.title":       "Featured Research",
-    "feat.sub":         "Companion papers and adjacent work. Replace these placeholders with your own publications.",
-    "cite.label":       "How to Cite",
-    "footer.gen":       "Generated",
-    "footer.disclaimer":"For research purposes only — not investment advice.",
-
-    "interp.scenario":  "Scenario",
-    "interp.carry":     "Carry",
-    "interp.bias":      "Bias",
-    "interp.impl":      "Implication",
-    "interp.maxT":      "Max Tension",
-    "interp.highUp":    "High ↑",
-    "interp.strongNeg": "Strongly Negative",
-    "interp.maxTd":     "PBOC burning reserves to hold the line — watch for capitulation.",
-    "interp.managed":   "Managed Decline",
-    "interp.zero":      "≈ 0",
-    "interp.managedd":  "PBOC permitting orderly weakness.",
-    "interp.comfort":   "Comfortable",
-    "interp.lowDown":   "Low ↓",
-    "interp.comfortd":  "No policy dilemma.",
-    "interp.strong":    "CNY Strong",
-    "interp.negLow":    "Negative / Low",
-    "interp.pos":       "Positive",
-    "interp.strongd":   "PBOC resisting <em>appreciation</em>.",
   },
 
   zh: {
@@ -628,7 +523,7 @@ const I18N = {
     "hero.lead":        "<span class=\"drop-cap\">一</span>个以 2 年期限为焦点的 USD/CNY 三层压力仪表盘——从毛利差，到 DXY 正交化回归残差，到每日中间价的隐性防御态势。一个数字告诉你：防线还守不守得住。",
 
     "ch01.title":       "名义敞口套利 (Unhedged Raw Carry)",
-    "ch01.lead":        "免费 API 无法获取 USD/CNY 掉期点或 NDF 远期报价。因此本模块仅追踪<strong>名义 2 年期利差</strong>——对冲成本之前的毛套利激励。这是资金流投机所关注的「利差深度」，而非真实风险调整后收益。",
+    "ch01.lead":        "免费 API 无法获取 USD/CNY 掉期点或 NDF 远期报价。因此本模块仅追踪<strong>名义 2 年期利差</strong>——对冲成本之前的毛套利激励。这是资金流投机所关注的"利差深度"，而非真实风险调整后收益。",
     "ch02.title":       "用美元广义指数去噪",
     "ch02.lead":        "纯利差-汇率回归混淆了两个驱动因素：中美利差和美元广义走势。如果利差扩大的同时 DXY 也在上涨，人民币稳定其实是合理的——并非干预。因此升级为<strong>多变量 OLS</strong>，将 USD/CNY 对利差<em>和</em> DXY 同时回归。残差隔离了中国特有因素。",
     "ch02.pullquote":   "只有在过滤掉美元广义噪音之后，残差才成为风险溢价与政策干预动态的干净读数。",

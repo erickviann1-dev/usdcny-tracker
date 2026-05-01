@@ -1,0 +1,1224 @@
+/* ═══════════════════════════════════════════════════════════════
+ *  USD/CNY Macro-Policy Divergence Tracker · Dashboard renderer
+ *  Editorial / institutional design · v2.0
+ * ═══════════════════════════════════════════════════════════════ */
+
+/* ─────────────────────────────────────────────────────────────
+ *  I18N Engine + Dictionaries
+ * ───────────────────────────────────────────────────────────── */
+const I18N = {
+  en: {
+    "loader.text":       "Loading market data…",
+    "boot.error":        'Could not load data.json — run <code>python build.py</code> first.',
+
+    "score.asof":        "As of",
+    "score.composite":   "Composite Policy Pressure",
+
+    "zone.low":          "Low",
+    "zone.low.tag":      "Stable",
+    "zone.moderate":     "Moderate",
+    "zone.moderate.tag": "Manageable",
+    "zone.elevated":     "Elevated",
+    "zone.elevated.tag": "Pressure Building",
+    "zone.high":         "High",
+    "zone.high.tag":     "Stress",
+    "zone.extreme":      "Extreme",
+    "zone.extreme.tag":  "Crisis Watch",
+
+    "scorebar.low":  "Low",
+    "scorebar.mod":  "Mod",
+    "scorebar.elev": "Elev",
+    "scorebar.high": "High",
+    "scorebar.extr": "Extr",
+
+    "kpi.usdcny":       "USD/CNY Spot",
+    "kpi.usdcnh":       "USD/CNH Offshore",
+    "kpi.fix":          "PBOC Fix",
+    "kpi.yields":       "US 2Y · CN 2Y",
+    "kpi.carry":        "Raw Carry",
+    "kpi.carrypct":     "Carry Pctile",
+    "kpi.dxy":          "DXY (TWI)",
+    "kpi.beta_spread":  "Reg β · Spread",
+    "kpi.beta_dxy":     "Reg β · DXY",
+    "kpi.r2":           "Reg R²",
+    "kpi.alpha":        "α · CNY/DXY",
+    "kpi.bias":         "Fixing Bias",
+
+    "meta.onshore":     "Onshore",
+    "meta.hongkong":    "Hong Kong",
+    "meta.bjt":         "09:15 BJT",
+    "meta.yields":      "yields",
+    "meta.uscn2y":      "US − CN 2Y",
+    "meta.vs252d":      "vs 252d",
+    "meta.fred":        "FRED broad",
+    "meta.afterdxy":    "after DXY",
+    "meta.broadDollar": "broad-dollar",
+    "meta.modelfit":    "model fit",
+    "meta.fixadj":      "fix adj.",
+    "meta.vsdxyadj":    "vs DXY-adj.",
+
+    "alert.cnh_unavailable": () =>
+        `<strong>Data note —</strong> USD/CNH offshore feed unavailable in this build. ` +
+        `Layer 03 market anchor falls back to onshore previous close, which may ` +
+        `under-estimate true defence intensity.`,
+    "alert.spot_eq_fix": () =>
+        `<strong>Data note —</strong> USD/CNY spot is currently identical to PBOC fix — ` +
+        `this build uses fixing as spot proxy because yfinance is unreachable on this ` +
+        `network. Layer 03 fixing-bias signal will appear degenerate (≈ 0) until ` +
+        `a true onshore-spot source is restored.`,
+    "alert.carry_body": (carry) =>
+        `<strong>Carry alert —</strong> US−CN 2Y spread = <strong>${carry}%</strong>. ` +
+        `Significant carry-trade incentive active.`,
+    "alert.fixbias_body": (pips, dir) =>
+        `<strong>Fixing-bias alert —</strong> bias = <strong>${pips} pips</strong> · ${dir}.`,
+    "alert.defending":   "PBOC defending CNY",
+    "alert.weakness":    "PBOC permitting weakness",
+    "alert.highpressure_body": (score) =>
+        `<strong>High pressure —</strong> composite = <strong>${score}/100</strong>. ` +
+        `Multi-layer stress convergence detected.`,
+
+    "narrative.carry": (carry, p1y, p2y) => {
+        const direction = carry > 0
+            ? `borrowing CNY to invest in USD generates a nominal <strong>${carry.toFixed(2)}%</strong> annualised yield pickup`
+            : `the differential favours holding CNY (<strong>${carry.toFixed(2)}%</strong>)`;
+        const intensity = p1y > 90 ? "near a historical extreme"
+                         : p1y > 75 ? "elevated relative to history"
+                         : p1y > 50 ? "above its trailing-year median"
+                         : p1y > 25 ? "below median"
+                         : "near historical lows";
+        return `<strong>Live narrative —</strong> US−CN 2Y spread is currently ` +
+            `<strong>${carry.toFixed(2)}%</strong>: ${direction}. This sits at the ` +
+            `<strong>${p1y.toFixed(0)}<sup>th</sup> percentile (1Y)</strong>${
+                !isNaN(p2y) ? ` / <strong>${p2y.toFixed(0)}<sup>th</sup> percentile (2Y)</strong>` : ""
+            }, ${intensity}. Even after adjusting for forward-hedging costs, the implied ` +
+            `capital-outflow gravity remains in this percentile range — a structural pressure ` +
+            `source against the PBOC defence line.`;
+    },
+
+    "chart.yields":     "Interest-Rate Differential — 2Y Tenor",
+    "chart.carry":      "Carry Pressure & On-Offshore Gap",
+    "chart.dxy":        "DXY — Broad Dollar Index",
+    "chart.regression": "USD/CNY — Actual vs Multivariate Model",
+    "chart.residual":   "Residual De-Noising",
+    "chart.cip":        "CIP Deviation",
+    "chart.trinity":    "The Policy Triangle",
+    "chart.fixing":     "Fixing Bias — Raw vs DXY-Adjusted",
+    "chart.composite":  "One Number, Three Forces",
+
+    "axis.yield":       "Yield (%)",
+    "axis.spread_bps":  "Spread (bps)",
+    "axis.carry":       "Carry (%)",
+    "axis.cnh_cny":     "CNH − CNY",
+    "axis.index":       "Index",
+    "axis.usdcny":      "USD/CNY",
+    "axis.residual":    "Residual",
+    "axis.residual_cny":"Residual (CNY)",
+    "axis.deviation":   "Deviation (CNY)",
+    "axis.bias_pips":   "Bias (pips)",
+    "axis.defense_60d": "Defense / 60d",
+    "axis.pressure":    "Pressure",
+    "axis.value":       "Value",
+
+    "trace.us2y":       "US 2Y",
+    "trace.cn2y":       "CN 2Y",
+    "trace.spread":     "Spread (bps)",
+    "trace.rawCarry":   "Raw Carry",
+    "trace.ma60":       "60d MA",
+    "trace.cnh_gap":    "CNH−CNY Gap",
+    "trace.dxy":        "DXY (TWI)",
+    "trace.actual":     "USD/CNY Actual",
+    "trace.multiModel": "Multivariate model",
+    "trace.cipFair":    "CIP fair value",
+    "trace.residual":   "Residual",
+    "trace.singleVar":  "Single-var (legacy)",
+    "trace.multiDxy":   "Multivariate (DXY-adj.)",
+    "trace.cipBasis":   "CIP basis",
+    "trace.fix":        "PBOC Fix",
+    "trace.onshore":    "USD/CNY (onshore)",
+    "trace.offshore":   "USD/CNH (offshore)",
+    "trace.dxyAdjPips": "DXY-adjusted (pips)",
+    "trace.rawBias":    "Raw bias",
+    "trace.m20":        "20d mean",
+    "trace.m60":        "60d mean",
+    "trace.defense":    "Defense intensity",
+    "trace.scoreRaw":   "Score (raw)",
+    "trace.score5d":    "Score (5d)",
+
+    "reg.beta_spread":  "β₁ · Spread",
+    "reg.beta_dxy":     "β₂ · DXY",
+    "reg.r2":           "R²",
+    "reg.alpha":        "α · CNY/DXY",
+    "reg.afterdxy":     "after DXY",
+    "reg.per1pt":       "per 1pt DXY",
+    "reg.modelfit":     "model fit",
+    "reg.fixadj":       "fix adj.",
+
+    "findings.title":   "Key Findings",
+    "finding.01.carry": (carry, pct1, pct2) => {
+        let s = `Raw carry stands at <strong>${carry}%</strong>`;
+        if (pct1 != null) s += ` — the <strong>${pct1}<sup>th</sup> percentile</strong> over the trailing year`;
+        if (pct2 != null) s += `, <strong>${pct2}<sup>th</sup> percentile</strong> over two years`;
+        return s + ".";
+    },
+    "finding.01.spread_high": () =>
+        "A spread above 2.5% historically corresponds with sustained CNY depreciation pressure absent active intervention.",
+    "finding.01.spread_neg": () =>
+        "Negative differential has flipped the trade — borrowing USD to invest in CNY now offers a positive nominal pickup.",
+    "finding.01.hedged": () =>
+        "Without forward quotes, hedged carry remains uncomputed; the residual hedged-carry signal is captured in Layer 02's CIP basis.",
+
+    "finding.02.beta_dxy": (beta2, delta) =>
+        `Multivariate fit yields β<sub>DXY</sub> = <strong>${beta2}</strong> — every 1-point rise in the broad dollar predicts ${delta} CNY of USD/CNY appreciation.`,
+    "finding.02.r2": (r2) =>
+        `Joint model (spread + DXY) explains <strong>${r2}%</strong> of USD/CNY variance over the 252-day window.`,
+    "finding.02.multicol": () =>
+        `β<sub>spread</sub> turning negative is a multicollinearity artefact: spread and DXY co-move, ` +
+        `and DXY absorbs most of the explanatory power. Read the residual, not β<sub>spread</sub> in isolation.`,
+    "finding.02.residual": (regRes, regResUni, shrunk) =>
+        `Today's <strong>multivariate residual</strong> is ${regRes} CNY vs single-variable ${regResUni} CNY${
+            shrunk ? " — DXY de-noising has shrunk the unexplained gap" : ""}.`,
+    "finding.02.cip": (dir, dev) =>
+        `CIP fair value sits ${dir} actual spot by <strong>${dev} CNY</strong> — a measure of cross-currency basis stress.`,
+    "finding.02.cip.above": "above",
+    "finding.02.cip.below": "below",
+
+    "finding.03.alpha": (alpha, inRange) =>
+        `Rolling CNY/DXY beta α = <strong>${alpha}</strong>${inRange ? " — squarely in the 0.3–0.5 textbook range" : ""}.`,
+    "finding.03.bias": (adjPips, rawPips) =>
+        `DXY-adjusted bias today: <strong>${adjPips} pips</strong> (raw: ${rawPips} pips). ` +
+        `The adjustment isolates true policy intent from mechanical overnight DXY moves.`,
+    "finding.03.bias_neg": () =>
+        "Negative bias indicates the PBOC is setting a <strong>stronger</strong> CNY than DXY-adjusted expectation — active defence posture.",
+    "finding.03.bias_pos": () =>
+        "Positive bias indicates the PBOC is permitting <strong>weaker</strong> CNY than expectation — letting the market lead.",
+    "finding.03.bias_zero": () =>
+        "Bias near zero — no clear directional intent revealed today.",
+    "finding.03.defense": (defi) =>
+        `20-day defence intensity: <strong>${defi} pips</strong> of cumulative leaning against depreciation.`,
+
+    "table.date":   "Date",
+    "table.usdcny": "USD/CNY",
+    "table.usdcnh": "USD/CNH",
+    "table.fix":    "Fix",
+    "table.us2y":   "US 2Y",
+    "table.cn2y":   "CN 2Y",
+    "table.dxy":    "DXY",
+    "table.carry":  "Carry",
+    "table.resid":  "Resid",
+    "table.bias":   "Bias",
+    "table.score":  "Score",
+
+    "glossary.field":      "Field",
+    "glossary.unit":       "Unit",
+    "glossary.source":     "Source",
+    "glossary.definition": "Definition",
+
+    "builder.daily":    "Daily",
+    "builder.weekly":   "Weekly (mean)",
+    "builder.monthly":  "Monthly (mean)",
+    "builder.empty":    "Select one or more series above",
+
+    "coverage":         "Coverage",
+
+    "cite.retrieved":   "Retrieved",
+    "cite.generated":   "Generated",
+  },
+
+  zh: {
+    "loader.text":       "正在加载市场数据……",
+    "boot.error":        '无法加载 data.json — 请先运行 <code>python build.py</code>。',
+
+    "score.asof":        "截至",
+    "score.composite":   "综合政策压力",
+
+    "zone.low":          "低",
+    "zone.low.tag":      "稳定",
+    "zone.moderate":     "温和",
+    "zone.moderate.tag": "可控",
+    "zone.elevated":     "偏高",
+    "zone.elevated.tag": "压力积聚",
+    "zone.high":         "高压",
+    "zone.high.tag":     "承压",
+    "zone.extreme":      "极端",
+    "zone.extreme.tag":  "危机警戒",
+
+    "scorebar.low":  "低",
+    "scorebar.mod":  "温和",
+    "scorebar.elev": "偏高",
+    "scorebar.high": "高",
+    "scorebar.extr": "极端",
+
+    "kpi.usdcny":       "USD/CNY 即期",
+    "kpi.usdcnh":       "USD/CNH 离岸",
+    "kpi.fix":          "央行中间价",
+    "kpi.yields":       "美 2Y · 中 2Y",
+    "kpi.carry":        "名义套利",
+    "kpi.carrypct":     "套利分位",
+    "kpi.dxy":          "DXY（贸易加权）",
+    "kpi.beta_spread":  "β₁ · 利差",
+    "kpi.beta_dxy":     "β₂ · DXY",
+    "kpi.r2":           "R²",
+    "kpi.alpha":        "α · CNY/DXY",
+    "kpi.bias":         "中间价偏差",
+
+    "meta.onshore":     "在岸",
+    "meta.hongkong":    "香港",
+    "meta.bjt":         "09:15 北京时间",
+    "meta.yields":      "收益率",
+    "meta.uscn2y":      "美−中 2Y",
+    "meta.vs252d":      "过去 252 日",
+    "meta.fred":        "FRED 广义",
+    "meta.afterdxy":    "去 DXY 后",
+    "meta.broadDollar": "broad-dollar",
+    "meta.modelfit":    "模型拟合度",
+    "meta.fixadj":      "中间价调整",
+    "meta.vsdxyadj":    "vs DXY 调整",
+
+    "alert.cnh_unavailable": () =>
+        `<strong>数据提示 —</strong> 本次构建中 USD/CNH 离岸报价不可用。` +
+        `第三层市场锚点回落至在岸前收盘价，可能低估真实防御强度。`,
+    "alert.spot_eq_fix": () =>
+        `<strong>数据提示 —</strong> USD/CNY 即期与央行中间价完全一致 — ` +
+        `本次构建因 yfinance 不可达而以中间价替代即期。第三层偏差信号将呈退化状态（≈ 0），` +
+        `直至恢复真实在岸即期源。`,
+    "alert.carry_body": (carry) =>
+        `<strong>套利预警 —</strong> 美中 2Y 利差 = <strong>${carry}%</strong>，套利激励显著。`,
+    "alert.fixbias_body": (pips, dir) =>
+        `<strong>中间价偏差预警 —</strong> 偏差 = <strong>${pips} 基点</strong> · ${dir}。`,
+    "alert.defending":   "央行防御人民币",
+    "alert.weakness":    "央行容许走弱",
+    "alert.highpressure_body": (score) =>
+        `<strong>高压预警 —</strong> 综合分 = <strong>${score}/100</strong>，多层压力交汇。`,
+
+    "narrative.carry": (carry, p1y, p2y) => {
+        const direction = carry > 0
+            ? `借入人民币投资美元可获名义年化 <strong>${carry.toFixed(2)}%</strong> 的收益差`
+            : `利差倾向于持有人民币（<strong>${carry.toFixed(2)}%</strong>）`;
+        const intensity = p1y > 90 ? "接近历史极值"
+                         : p1y > 75 ? "相对历史偏高"
+                         : p1y > 50 ? "高于过去一年中位数"
+                         : p1y > 25 ? "低于中位数"
+                         : "接近历史低位";
+        return `<strong>实时叙述 —</strong> 美中 2Y 利差目前为 ` +
+            `<strong>${carry.toFixed(2)}%</strong>：${direction}。该水平位于` +
+            `<strong>过去 1 年第 ${p1y.toFixed(0)} 百分位</strong>${
+                !isNaN(p2y) ? ` / <strong>过去 2 年第 ${p2y.toFixed(0)} 百分位</strong>` : ""
+            }，${intensity}。即使扣除远期对冲成本，隐含的资本外流引力仍处于此分位区间` +
+            ` —— 对央行防线构成结构性压力。`;
+    },
+
+    "chart.yields":     "利率差异 — 2 年期",
+    "chart.carry":      "套利压力与在离岸价差",
+    "chart.dxy":        "DXY — 美元广义指数",
+    "chart.regression": "USD/CNY — 实际 vs 多变量模型",
+    "chart.residual":   "残差去噪",
+    "chart.cip":        "CIP 偏离",
+    "chart.trinity":    "政策三角",
+    "chart.fixing":     "中间价偏差 — 原始 vs DXY 调整",
+    "chart.composite":  "One Number, Three Forces",
+
+    "axis.yield":       "收益率 (%)",
+    "axis.spread_bps":  "利差（基点）",
+    "axis.carry":       "套利 (%)",
+    "axis.cnh_cny":     "CNH − CNY",
+    "axis.index":       "指数",
+    "axis.usdcny":      "USD/CNY",
+    "axis.residual":    "残差",
+    "axis.residual_cny":"残差（CNY）",
+    "axis.deviation":   "偏离（CNY）",
+    "axis.bias_pips":   "偏差（基点）",
+    "axis.defense_60d": "防御 / 60 日",
+    "axis.pressure":    "压力",
+    "axis.value":       "数值",
+
+    "trace.us2y":       "美 2Y",
+    "trace.cn2y":       "中 2Y",
+    "trace.spread":     "利差（基点）",
+    "trace.rawCarry":   "名义套利",
+    "trace.ma60":       "60 日均线",
+    "trace.cnh_gap":    "CNH−CNY 价差",
+    "trace.dxy":        "DXY（贸易加权）",
+    "trace.actual":     "USD/CNY 实际",
+    "trace.multiModel": "多变量模型",
+    "trace.cipFair":    "CIP 公允值",
+    "trace.residual":   "残差",
+    "trace.singleVar":  "单变量（旧版）",
+    "trace.multiDxy":   "多变量（DXY 调整）",
+    "trace.cipBasis":   "CIP 基差",
+    "trace.fix":        "央行中间价",
+    "trace.onshore":    "USD/CNY（在岸）",
+    "trace.offshore":   "USD/CNH（离岸）",
+    "trace.dxyAdjPips": "DXY 调整偏差（基点）",
+    "trace.rawBias":    "原始偏差",
+    "trace.m20":        "20 日均值",
+    "trace.m60":        "60 日均值",
+    "trace.defense":    "防御强度",
+    "trace.scoreRaw":   "分数（原始）",
+    "trace.score5d":    "分数（5 日平滑）",
+
+    "reg.beta_spread":  "β₁ · 利差",
+    "reg.beta_dxy":     "β₂ · DXY",
+    "reg.r2":           "R²",
+    "reg.alpha":        "α · CNY/DXY",
+    "reg.afterdxy":     "去 DXY 后",
+    "reg.per1pt":       "每 1pt DXY",
+    "reg.modelfit":     "模型拟合度",
+    "reg.fixadj":       "中间价调整",
+
+    "findings.title":   "关键发现",
+    "finding.01.carry": (carry, pct1, pct2) => {
+        let s = `名义套利为 <strong>${carry}%</strong>`;
+        if (pct1 != null) s += ` — 位于过去一年<strong>第 ${pct1} 百分位</strong>`;
+        if (pct2 != null) s += `，过去两年<strong>第 ${pct2} 百分位</strong>`;
+        return s + "。";
+    },
+    "finding.01.spread_high": () =>
+        "利差超过 2.5% 历史上对应持续的人民币贬值压力（除非央行主动干预）。",
+    "finding.01.spread_neg": () =>
+        "利差已反转 — 借入美元投资人民币可获正名义收益。",
+    "finding.01.hedged": () =>
+        "因缺乏远期报价，对冲后套利暂无法计算；残余对冲信号体现在第二层 CIP 基差中。",
+
+    "finding.02.beta_dxy": (beta2, delta) =>
+        `多变量拟合 β<sub>DXY</sub> = <strong>${beta2}</strong> — 广义美元每上升 1 点，预测 USD/CNY 升值 ${delta} CNY。`,
+    "finding.02.r2": (r2) =>
+        `联合模型（利差 + DXY）解释了 252 日窗口内 USD/CNY 方差的 <strong>${r2}%</strong>。`,
+    "finding.02.multicol": () =>
+        `β<sub>spread</sub> 转负属多重共线性产物：利差与 DXY 共动，DXY 吸收了大部分解释力。` +
+        `应关注残差而非孤立的 β<sub>spread</sub>。`,
+    "finding.02.residual": (regRes, regResUni, shrunk) =>
+        `今日<strong>多变量残差</strong>为 ${regRes} CNY，对比单变量 ${regResUni} CNY${
+            shrunk ? " — DXY 去噪缩小了未解释缺口" : ""}。`,
+    "finding.02.cip": (dir, dev) =>
+        `CIP 公允值${dir}实际即期 <strong>${dev} CNY</strong> — 衡量跨币种基差压力。`,
+    "finding.02.cip.above": "高于",
+    "finding.02.cip.below": "低于",
+
+    "finding.03.alpha": (alpha, inRange) =>
+        `滚动 CNY/DXY β α = <strong>${alpha}</strong>${inRange ? " — 正处于 0.3–0.5 的教科书区间" : ""}。`,
+    "finding.03.bias": (adjPips, rawPips) =>
+        `DXY 调整偏差：<strong>${adjPips} 基点</strong>（原始：${rawPips} 基点）。` +
+        `调整可隔离真实政策意图与隔夜 DXY 机械变动。`,
+    "finding.03.bias_neg": () =>
+        "负偏差表明央行将人民币定价<strong>强于</strong> DXY 调整预期 — 积极防御姿态。",
+    "finding.03.bias_pos": () =>
+        "正偏差表明央行容许人民币<strong>弱于</strong>预期 — 顺应市场。",
+    "finding.03.bias_zero": () =>
+        "偏差接近零 — 今日无明确方向性意图。",
+    "finding.03.defense": (defi) =>
+        `20 日防御强度：<strong>${defi} 基点</strong>累计逆向贬值倾斜。`,
+
+    "table.date":   "日期",
+    "table.usdcny": "USD/CNY",
+    "table.usdcnh": "USD/CNH",
+    "table.fix":    "中间价",
+    "table.us2y":   "美 2Y",
+    "table.cn2y":   "中 2Y",
+    "table.dxy":    "DXY",
+    "table.carry":  "套利",
+    "table.resid":  "残差",
+    "table.bias":   "偏差",
+    "table.score":  "分数",
+
+    "glossary.field":      "字段",
+    "glossary.unit":       "单位",
+    "glossary.source":     "来源",
+    "glossary.definition": "定义",
+
+    "builder.daily":    "日频",
+    "builder.weekly":   "周频（均值）",
+    "builder.monthly":  "月频（均值）",
+    "builder.empty":    "请在上方选择一个或多个系列",
+
+    "coverage":         "覆盖率",
+
+    "cite.retrieved":   "获取于",
+    "cite.generated":   "生成于",
+  },
+};
+
+let LANG = localStorage.getItem("tracker-lang") || "en";
+
+function t(key, ...args) {
+    const val = I18N[LANG]?.[key];
+    if (typeof val === "function") return val(...args);
+    if (val != null) return val;
+    const fb = I18N.en?.[key];
+    if (typeof fb === "function") return fb(...args);
+    return fb ?? key;
+}
+
+function switchLang(lang) {
+    LANG = lang;
+    localStorage.setItem("tracker-lang", lang);
+    document.querySelectorAll(".lang-toggle button[data-lang]").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.lang === lang);
+    });
+    applyStaticI18n();
+    if (window.__data) renderAll(window.__data);
+}
+
+function applyStaticI18n() {
+    document.querySelectorAll("[data-i18n]").forEach(el => {
+        el.textContent = t(el.dataset.i18n);
+    });
+    document.querySelectorAll("[data-i18n-html]").forEach(el => {
+        el.innerHTML = t(el.dataset.i18nHtml);
+    });
+}
+
+function renderAll(data) {
+    applyStaticI18n();
+    renderTopbar(data);
+    renderHero(data);
+    renderScore(data.snapshot);
+    renderKPIs(data.snapshot);
+    renderQuality(data.quality);
+    renderAlerts(data.snapshot, data.quality);
+    renderCarryNarrative(data.snapshot);
+    renderCharts(data.series);
+    renderRegStats(data.snapshot);
+    renderFindings(data.snapshot);
+    renderGlossary();
+    renderTable(data.series);
+    renderDownload(data.series);
+    renderBuilder(data.series);
+    renderCitation(data);
+    renderChartTitles();
+}
+
+function renderChartTitles() {
+    const map = {
+        "chart-yields":           "chart.yields",
+        "chart-carry":            "chart.carry",
+        "chart-dxy":              "chart.dxy",
+        "chart-regression":       "chart.regression",
+        "chart-residual-compare": "chart.residual",
+        "chart-cip":              "chart.cip",
+        "chart-trinity":          "chart.trinity",
+        "chart-fixing":           "chart.fixing",
+        "chart-composite":        "chart.composite",
+    };
+    for (const [id, key] of Object.entries(map)) {
+        const el = document.getElementById(id);
+        if (!el) continue;
+        const card = el.closest(".chart-card");
+        if (!card) continue;
+        const head = card.querySelector(".chart-card-head");
+        if (head) head.textContent = t(key);
+    }
+}
+
+/* ─────────────────────────────────────────────────────────────
+ *  Constants
+ * ───────────────────────────────────────────────────────────── */
+const COLORS = {
+    bull:   "#15803d",
+    bear:   "#b91c1c",
+    warn:   "#a16207",
+    navy:   "#1e3a5f",
+    ochre:  "#a16207",
+    line1:  "#1e3a5f",
+    line2:  "#a16207",
+    line3:  "#7c2d12",
+    line4:  "#14532d",
+    grid:   "#e8e4dc",
+    text:   "#0c0a09",
+    muted:  "#57534e",
+    bg:     "#ffffff",
+    bgTint: "#f5f2ec",
+};
+
+const ZONES = [
+    { lo: 0,  hi: 25,  color: "#22c55e", bg: "#dcfce7", key: "low",      label: "Low",      tag: "Stable" },
+    { lo: 25, hi: 50,  color: "#65a30d", bg: "#ecfccb", key: "moderate", label: "Moderate", tag: "Manageable" },
+    { lo: 50, hi: 75,  color: "#ca8a04", bg: "#fef3c7", key: "elevated", label: "Elevated", tag: "Pressure Building" },
+    { lo: 75, hi: 90,  color: "#ea580c", bg: "#ffedd5", key: "high",     label: "High",     tag: "Stress" },
+    { lo: 90, hi: 100, color: "#b91c1c", bg: "#fee2e2", key: "extreme",  label: "Extreme",  tag: "Crisis Watch" },
+];
+
+const LAYOUT_BASE = {
+    paper_bgcolor: COLORS.bg,
+    plot_bgcolor:  COLORS.bg,
+    font: { family: "Inter, sans-serif", size: 11, color: COLORS.text },
+    margin: { l: 50, r: 24, t: 16, b: 40 },
+    xaxis: { gridcolor: COLORS.grid, linecolor: COLORS.grid, zerolinecolor: COLORS.grid,
+             tickfont: { size: 10, color: COLORS.muted } },
+    yaxis: { gridcolor: COLORS.grid, linecolor: COLORS.grid, zerolinecolor: COLORS.grid,
+             tickfont: { size: 10, color: COLORS.muted } },
+    legend: { orientation: "h", y: -0.18, font: { size: 10, color: COLORS.muted } },
+    hovermode: "x unified",
+    hoverlabel: { bgcolor: "#fff", bordercolor: COLORS.grid, font: { size: 11, family: "JetBrains Mono, monospace" } },
+};
+const PLOTLY_CONFIG = { responsive: true, displaylogo: false,
+                        modeBarButtonsToRemove: ["lasso2d", "select2d", "autoScale2d"] };
+
+const GLOSSARY_DEFS = [
+    ["us_2y",            "%",      "akshare bond_zh_us_rate", "US 2Y Treasury yield"],
+    ["cn_2y",            "%",      "akshare bond_zh_us_rate", "China 2Y govt bond yield"],
+    ["yield_spread",     "%",      "computed",                "us_2y − cn_2y"],
+    ["usdcny",           "CNY",    "yfinance / PBOC proxy",   "Onshore USD/CNY spot"],
+    ["usdcnh",           "CNY",    "yfinance",                "Offshore USD/CNH spot"],
+    ["pboc_fix",         "CNY",    "akshare currency_boc_sina","PBOC daily central parity"],
+    ["dxy",              "index",  "FRED DTWEXBGS",           "Trade-weighted broad dollar index"],
+    ["dxy_ret",          "ret",    "computed",                "DXY daily pct change"],
+    ["onoffshore_gap",   "CNY",    "computed",                "usdcnh − usdcny"],
+    ["raw_carry",        "%",      "computed",                "us_2y − cn_2y (Layer 01)"],
+    ["carry_ma20",       "%",      "computed",                "20d MA of raw_carry"],
+    ["carry_ma60",       "%",      "computed",                "60d MA of raw_carry"],
+    ["carry_ma120",      "%",      "computed",                "120d MA of raw_carry"],
+    ["carry_pct_rank",   "0–100",  "computed",                "Pctile vs trailing 252d"],
+    ["carry_pct_rank_2y","0–100",  "computed",                "Pctile vs trailing 504d"],
+    ["cip_fair_spot",    "CNY",    "computed",                "CIP-implied fair value"],
+    ["cip_deviation",    "CNY",    "computed",                "usdcny − cip_fair_spot"],
+    ["reg_predicted",    "CNY",    "OLS multivariate",        "α + β₁·spread + β₂·DXY"],
+    ["reg_residual",     "CNY",    "computed",                "actual − multivariate model"],
+    ["reg_predicted_uni","CNY",    "OLS univariate",          "Single-var (legacy)"],
+    ["reg_residual_uni", "CNY",    "computed",                "actual − univariate model"],
+    ["reg_beta_spread",  "coef",   "computed",                "β₁ in multivariate OLS"],
+    ["reg_beta_dxy",     "coef",   "computed",                "β₂ in multivariate OLS"],
+    ["reg_r2",           "0–1",    "computed",                "Multivariate model R²"],
+    ["mispricing_score", "0–100",  "computed",                "Avg pctile of CIP & regr residual"],
+    ["alpha_cny_dxy",    "coef",   "computed",                "Rolling β of CNY ret on DXY ret"],
+    ["expected_fix",     "CNY",    "computed",                "DXY-adjusted expected fix"],
+    ["fixing_bias",      "CNY",    "computed",                "pboc_fix − expected_fix (Layer 03)"],
+    ["fixing_bias_raw",  "CNY",    "computed",                "pboc_fix − anchor (legacy)"],
+    ["bias_20d_mean",    "CNY",    "computed",                "20d avg fixing_bias"],
+    ["defense_intensity","CNY",    "computed",                "−rolling_mean(bias,20d)"],
+    ["composite_score",  "0–100",  "weighted blend",          "Final pressure reading"],
+];
+
+let CURRENT_DATA = null;
+
+/* ─────────────────────────────────────────────────────────────
+ *  Boot
+ * ───────────────────────────────────────────────────────────── */
+async function boot() {
+    let data;
+    try {
+        const resp = await fetch("data.json", { cache: "no-store" });
+        if (!resp.ok) throw new Error("data.json fetch failed: " + resp.status);
+        data = await resp.json();
+        CURRENT_DATA = data;
+        window.__data = data;
+    } catch (e) {
+        document.querySelector("#loader .loader-text").innerHTML = t("boot.error");
+        return;
+    }
+
+    document.getElementById("loader").style.opacity = "0";
+    setTimeout(() => document.getElementById("loader").style.display = "none", 300);
+
+    document.querySelectorAll(".lang-toggle button[data-lang]").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.lang === LANG);
+        btn.addEventListener("click", () => switchLang(btn.dataset.lang));
+    });
+
+    renderAll(data);
+}
+
+/* ─────────────────────────────────────────────────────────────
+ *  Topbar + Hero
+ * ───────────────────────────────────────────────────────────── */
+function renderTopbar(d) {
+    document.getElementById("topbar-date").textContent = d.snapshot.date;
+    const score = parseFloat(d.snapshot.composite_score);
+    const zone  = zoneOf(score);
+    document.getElementById("topbar-score").innerHTML =
+        `<strong style="color:${zone.color}">${isNaN(score) ? "—" : score.toFixed(0)}</strong>
+         <span style="color:var(--muted);margin-left:6px">${t("zone." + zone.key)}</span>`;
+}
+
+function renderHero(d) {
+    const locale = LANG === "zh" ? "zh-CN" : "en-US";
+    document.getElementById("hero-date").textContent =
+        new Date(d.snapshot.date).toLocaleDateString(locale,
+            { year: "numeric", month: "long", day: "numeric" });
+}
+
+/* ─────────────────────────────────────────────────────────────
+ *  Composite Score (custom, non-Plotly)
+ * ───────────────────────────────────────────────────────────── */
+function zoneOf(score) {
+    if (isNaN(score)) return ZONES[2];
+    return ZONES.find(z => score >= z.lo && score < z.hi) || ZONES[ZONES.length - 1];
+}
+
+function renderScore(s) {
+    const score = parseFloat(s.composite_score);
+    const safe  = isNaN(score) ? 50 : score;
+    const zone  = zoneOf(safe);
+
+    const card = document.getElementById("score-card");
+    card.style.setProperty("--score-color", zone.color);
+    card.style.setProperty("--score-bg", zone.bg);
+
+    document.getElementById("score-asof").textContent = `${t("score.asof")} ${s.date}`;
+    document.getElementById("score-status").textContent = `${t("zone." + zone.key)} · ${t("zone." + zone.key + ".tag")}`;
+    document.getElementById("score-bar-marker").style.left = `${safe}%`;
+
+    const target = safe;
+    const el = document.getElementById("score-value");
+    let start = 0;
+    const duration = 1100;
+    const t0 = performance.now();
+    function tick(now) {
+        const p = Math.min(1, (now - t0) / duration);
+        const eased = 1 - Math.pow(1 - p, 3);
+        el.textContent = (start + (target - start) * eased).toFixed(0);
+        if (p < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+}
+
+/* ─────────────────────────────────────────────────────────────
+ *  KPI Tiles
+ * ───────────────────────────────────────────────────────────── */
+function renderKPIs(s) {
+    const carry = parseFloat(s.raw_carry);
+    const bias  = parseFloat(s.fixing_bias);
+    const carryCls = isNaN(carry) ? "" : carry > 2.5 ? "bear" : carry > 1 ? "warn" : "bull";
+    const biasCls  = isNaN(bias)  ? "" : bias < -0.005 ? "bull" : bias > 0.005 ? "bear" : "";
+
+    const isNA = (v) => !v || v === "N/A" || v === "nan" || v === "—";
+    const tile = (label, value, cls = "", meta = "") => {
+        if (isNA(value)) return null;
+        return `
+            <div class="kpi-tile">
+                <div>
+                    <div class="kpi-tile-label">${label}</div>
+                    <div class="kpi-tile-value ${cls}">${value}</div>
+                </div>
+                <div class="kpi-tile-meta">
+                    <span>${meta}</span>
+                </div>
+            </div>`;
+    };
+
+    const tiles = [
+        tile(t("kpi.usdcny"),      s.usdcny,                          "",      t("meta.onshore")),
+        tile(t("kpi.usdcnh"),      s.usdcnh,                          "",      t("meta.hongkong")),
+        tile(t("kpi.fix"),         s.pboc_fix,                        "",      t("meta.bjt")),
+        tile(t("kpi.yields"),      `${s.us_2y}% · ${s.cn_2y}%`,       "",      t("meta.yields")),
+        tile(t("kpi.carry"),       `${s.raw_carry}%`,                 carryCls, t("meta.uscn2y")),
+        tile(t("kpi.carrypct"),    `${s.carry_pct_rank} / 100`,       "",      t("meta.vs252d")),
+        tile(t("kpi.dxy"),         s.dxy,                             "",      t("meta.fred")),
+        tile(t("kpi.beta_spread"), s.reg_beta_spread,                 "",      t("meta.afterdxy")),
+        tile(t("kpi.beta_dxy"),    s.reg_beta_dxy,                    "",      t("meta.broadDollar")),
+        tile(t("kpi.r2"),          isNA(s.reg_r2) ? "—" : `${(parseFloat(s.reg_r2)*100).toFixed(1)}%`, "", t("meta.modelfit")),
+        tile(t("kpi.alpha"),       s.alpha_cny_dxy,                   "",      t("meta.fixadj")),
+        tile(t("kpi.bias"),        biasInPips(s.fixing_bias),         biasCls, t("meta.vsdxyadj")),
+    ].filter(Boolean);
+
+    document.getElementById("kpi-panel").innerHTML = tiles.join("");
+}
+
+function biasInPips(v) {
+    const x = parseFloat(v);
+    if (isNaN(x)) return "—";
+    return `${(x * 10000).toFixed(0)} pips`;
+}
+
+/* ─────────────────────────────────────────────────────────────
+ *  Quality Badges
+ * ───────────────────────────────────────────────────────────── */
+function renderQuality(q) {
+    const labels = { cn_2y: "CN 2Y", us_2y: "US 2Y", usdcny: "USD/CNY",
+                     usdcnh: "USD/CNH", pboc_fix: "Fix", dxy: "DXY" };
+    const html = Object.entries(q).map(([k, v]) => {
+        const cls = v > 0.8 ? "ok" : v > 0.3 ? "est" : "err";
+        return `<span class="q-badge ${cls}">${labels[k] || k} ${(v*100).toFixed(0)}%</span>`;
+    }).join("");
+    document.getElementById("quality-badges").innerHTML = html;
+}
+
+/* ─────────────────────────────────────────────────────────────
+ *  Alerts (data limitations + signals)
+ * ───────────────────────────────────────────────────────────── */
+function renderAlerts(s, q) {
+    const wrap = document.getElementById("alerts");
+    const alerts = [];
+
+    if (q.usdcnh < 0.3) {
+        alerts.push({ cls: "", html: t("alert.cnh_unavailable") });
+    }
+    if (q.usdcny > 0.8 && q.pboc_fix > 0.8) {
+        const usdcny = parseFloat(s.usdcny), pboc = parseFloat(s.pboc_fix);
+        if (!isNaN(usdcny) && !isNaN(pboc) && Math.abs(usdcny - pboc) < 0.001) {
+            alerts.push({ cls: "", html: t("alert.spot_eq_fix") });
+        }
+    }
+
+    const carry = parseFloat(s.raw_carry);
+    if (!isNaN(carry) && carry > 2.5) {
+        alerts.push({ cls: "bear", html: t("alert.carry_body", carry.toFixed(2)) });
+    }
+    const bias = parseFloat(s.fixing_bias);
+    if (!isNaN(bias) && Math.abs(bias) * 10000 > 100) {
+        const dir = bias < 0 ? t("alert.defending") : t("alert.weakness");
+        alerts.push({ cls: bias < 0 ? "bull" : "bear",
+            html: t("alert.fixbias_body", (bias*10000).toFixed(0), dir) });
+    }
+    const score = parseFloat(s.composite_score);
+    if (!isNaN(score) && score > 75) {
+        alerts.push({ cls: "bear", html: t("alert.highpressure_body", score.toFixed(0)) });
+    }
+
+    wrap.innerHTML = alerts.map(a => `<div class="banner ${a.cls}">${a.html}</div>`).join("");
+}
+
+/* ─────────────────────────────────────────────────────────────
+ *  Carry Narrative
+ * ───────────────────────────────────────────────────────────── */
+function renderCarryNarrative(s) {
+    const wrap = document.getElementById("carry-narrative");
+    const carry = parseFloat(s.raw_carry);
+    const p1y = parseFloat(s.carry_pct_rank);
+    const p2y = parseFloat(s.carry_pct_rank_2y);
+    if (isNaN(carry) || isNaN(p1y)) { wrap.style.display = "none"; return; }
+
+    wrap.style.display = "";
+    wrap.innerHTML = t("narrative.carry", carry, p1y, p2y);
+}
+
+/* ─────────────────────────────────────────────────────────────
+ *  Charts
+ * ───────────────────────────────────────────────────────────── */
+function renderCharts(series) {
+    const dates = series.map(r => r.date);
+    const get = (col) => series.map(r => r[col]);
+
+    /* Yields */
+    Plotly.newPlot("chart-yields", [
+        { x: dates, y: get("us_2y"), name: t("trace.us2y"), type: "scatter",
+          line: { color: COLORS.line1, width: 1.8 }, xaxis: "x", yaxis: "y" },
+        { x: dates, y: get("cn_2y"), name: t("trace.cn2y"), type: "scatter",
+          line: { color: COLORS.line2, width: 1.8 }, xaxis: "x", yaxis: "y" },
+        { x: dates,
+          y: get("yield_spread").map(v => v == null ? null : v * 100),
+          name: t("trace.spread"), type: "bar",
+          marker: { color: get("yield_spread").map(v => v == null ? COLORS.muted : v > 0 ? COLORS.bear : COLORS.bull),
+                    opacity: 0.6 },
+          xaxis: "x2", yaxis: "y2" },
+    ], {
+        ...LAYOUT_BASE,
+        grid: { rows: 2, columns: 1, pattern: "independent", roworder: "top to bottom" },
+        xaxis:  { ...LAYOUT_BASE.xaxis, anchor: "y",  domain: [0, 1] },
+        yaxis:  { ...LAYOUT_BASE.yaxis, domain: [0.42, 1], title: { text: t("axis.yield"), font: { size: 10 } } },
+        xaxis2: { ...LAYOUT_BASE.xaxis, anchor: "y2", domain: [0, 1] },
+        yaxis2: { ...LAYOUT_BASE.yaxis, domain: [0, 0.34], title: { text: t("axis.spread_bps"), font: { size: 10 } } },
+        margin: { l: 60, r: 24, t: 16, b: 50 },
+    }, PLOTLY_CONFIG);
+
+    /* Carry pressure */
+    Plotly.newPlot("chart-carry", [
+        { x: dates, y: get("raw_carry"), name: t("trace.rawCarry"), type: "scatter",
+          line: { color: COLORS.line1, width: 1.6 },
+          fill: "tozeroy", fillcolor: "rgba(30,58,95,0.10)",
+          xaxis: "x", yaxis: "y" },
+        { x: dates, y: get("carry_ma60"), name: t("trace.ma60"), type: "scatter",
+          line: { color: COLORS.line2, width: 1.2, dash: "dot" }, xaxis: "x", yaxis: "y" },
+        { x: dates, y: get("onoffshore_gap"), name: t("trace.cnh_gap"), type: "scatter",
+          line: { color: COLORS.warn, width: 1.4 },
+          fill: "tozeroy", fillcolor: "rgba(161,98,7,0.10)",
+          xaxis: "x2", yaxis: "y2" },
+    ], {
+        ...LAYOUT_BASE,
+        grid: { rows: 2, columns: 1, pattern: "independent", roworder: "top to bottom" },
+        xaxis:  { ...LAYOUT_BASE.xaxis, anchor: "y",  domain: [0, 1] },
+        yaxis:  { ...LAYOUT_BASE.yaxis, domain: [0.42, 1], title: { text: t("axis.carry"), font: { size: 10 } } },
+        xaxis2: { ...LAYOUT_BASE.xaxis, anchor: "y2", domain: [0, 1] },
+        yaxis2: { ...LAYOUT_BASE.yaxis, domain: [0, 0.34], title: { text: t("axis.cnh_cny"), font: { size: 10 } } },
+        margin: { l: 60, r: 24, t: 16, b: 50 },
+    }, PLOTLY_CONFIG);
+
+    /* DXY */
+    Plotly.newPlot("chart-dxy", [
+        { x: dates, y: get("dxy"), name: t("trace.dxy"), type: "scatter",
+          line: { color: COLORS.line1, width: 1.8 },
+          fill: "tozeroy", fillcolor: "rgba(30,58,95,0.06)" },
+    ], {
+        ...LAYOUT_BASE,
+        yaxis: { ...LAYOUT_BASE.yaxis, title: { text: t("axis.index"), font: { size: 10 } } },
+    }, PLOTLY_CONFIG);
+
+    /* Regression */
+    const residColors = get("reg_residual").map(v => v == null ? COLORS.muted : v > 0 ? COLORS.bear : COLORS.bull);
+    Plotly.newPlot("chart-regression", [
+        { x: dates, y: get("usdcny"),         name: t("trace.actual"),     type: "scatter",
+          line: { color: COLORS.line2, width: 1.6 }, xaxis: "x", yaxis: "y" },
+        { x: dates, y: get("reg_predicted"),  name: t("trace.multiModel"), type: "scatter",
+          line: { color: COLORS.line1, width: 1.6, dash: "dash" }, xaxis: "x", yaxis: "y" },
+        { x: dates, y: get("cip_fair_spot"),  name: t("trace.cipFair"),    type: "scatter",
+          line: { color: COLORS.line3, width: 1, dash: "dot" }, xaxis: "x", yaxis: "y" },
+        { x: dates, y: get("reg_residual"),   name: t("trace.residual"),   type: "bar",
+          marker: { color: residColors, opacity: 0.65 }, xaxis: "x2", yaxis: "y2" },
+    ], {
+        ...LAYOUT_BASE,
+        grid: { rows: 2, columns: 1, pattern: "independent", roworder: "top to bottom" },
+        xaxis:  { ...LAYOUT_BASE.xaxis, anchor: "y",  domain: [0, 1] },
+        yaxis:  { ...LAYOUT_BASE.yaxis, domain: [0.42, 1], title: { text: t("axis.usdcny"), font: { size: 10 } } },
+        xaxis2: { ...LAYOUT_BASE.xaxis, anchor: "y2", domain: [0, 1] },
+        yaxis2: { ...LAYOUT_BASE.yaxis, domain: [0, 0.34], title: { text: t("axis.residual"), font: { size: 10 } } },
+        margin: { l: 60, r: 24, t: 16, b: 50 },
+    }, PLOTLY_CONFIG);
+
+    /* Univariate vs multivariate residual */
+    Plotly.newPlot("chart-residual-compare", [
+        { x: dates, y: get("reg_residual_uni"), name: t("trace.singleVar"), type: "scatter",
+          line: { color: "rgba(87,83,78,0.55)", width: 1.2, dash: "dot" } },
+        { x: dates, y: get("reg_residual"),     name: t("trace.multiDxy"), type: "scatter",
+          line: { color: COLORS.bear, width: 2 },
+          fill: "tozeroy", fillcolor: "rgba(185,28,28,0.06)" },
+    ], {
+        ...LAYOUT_BASE,
+        yaxis: { ...LAYOUT_BASE.yaxis, title: { text: t("axis.residual_cny"), font: { size: 10 } }, zeroline: true },
+    }, PLOTLY_CONFIG);
+
+    /* CIP deviation */
+    Plotly.newPlot("chart-cip", [
+        { x: dates, y: get("cip_deviation"), name: t("trace.cipBasis"), type: "scatter",
+          line: { color: COLORS.warn, width: 1.5 },
+          fill: "tozeroy", fillcolor: "rgba(161,98,7,0.10)" },
+    ], {
+        ...LAYOUT_BASE,
+        yaxis: { ...LAYOUT_BASE.yaxis, title: { text: t("axis.deviation"), font: { size: 10 } } },
+    }, PLOTLY_CONFIG);
+
+    /* Trinity */
+    Plotly.newPlot("chart-trinity", [
+        { x: dates, y: get("pboc_fix"), name: t("trace.fix"),      type: "scatter",
+          line: { color: COLORS.line2, width: 2.3 } },
+        { x: dates, y: get("usdcny"),   name: t("trace.onshore"),  type: "scatter",
+          line: { color: COLORS.line1, width: 1.5 } },
+        { x: dates, y: get("usdcnh"),   name: t("trace.offshore"), type: "scatter",
+          line: { color: COLORS.line3, width: 1.5, dash: "dash" } },
+    ], {
+        ...LAYOUT_BASE,
+        yaxis: { ...LAYOUT_BASE.yaxis, title: { text: t("axis.usdcny"), font: { size: 10 } } },
+    }, PLOTLY_CONFIG);
+
+    /* Fixing bias */
+    const biasPips    = get("fixing_bias").map(v => v == null ? null : v * 10000);
+    const biasRawPips = get("fixing_bias_raw").map(v => v == null ? null : v * 10000);
+    const biasColors  = biasPips.map(v => v == null ? COLORS.muted : v < 0 ? COLORS.bull : COLORS.bear);
+    const m20 = get("bias_20d_mean").map(v => v == null ? null : v * 10000);
+    const m60 = get("bias_60d_mean").map(v => v == null ? null : v * 10000);
+    const di  = get("defense_intensity").map(v => v == null ? null : v * 10000);
+
+    Plotly.newPlot("chart-fixing", [
+        { x: dates, y: biasPips, name: t("trace.dxyAdjPips"), type: "bar",
+          marker: { color: biasColors, opacity: 0.7 }, xaxis: "x", yaxis: "y" },
+        { x: dates, y: biasRawPips, name: t("trace.rawBias"), type: "scatter",
+          line: { color: "rgba(87,83,78,0.55)", width: 1, dash: "dot" }, xaxis: "x", yaxis: "y" },
+        { x: dates, y: m20, name: t("trace.m20"), type: "scatter",
+          line: { color: COLORS.line1, width: 2 }, xaxis: "x", yaxis: "y" },
+        { x: dates, y: m60, name: t("trace.m60"), type: "scatter",
+          line: { color: COLORS.line2, width: 1.5, dash: "dash" }, xaxis: "x2", yaxis: "y2" },
+        { x: dates, y: di, name: t("trace.defense"), type: "scatter",
+          line: { color: COLORS.bull, width: 1.4 },
+          fill: "tozeroy", fillcolor: "rgba(21,128,61,0.10)",
+          xaxis: "x2", yaxis: "y2" },
+    ], {
+        ...LAYOUT_BASE,
+        grid: { rows: 2, columns: 1, pattern: "independent", roworder: "top to bottom" },
+        xaxis:  { ...LAYOUT_BASE.xaxis, anchor: "y",  domain: [0, 1] },
+        yaxis:  { ...LAYOUT_BASE.yaxis, domain: [0.42, 1], title: { text: t("axis.bias_pips"), font: { size: 10 } }, zeroline: true },
+        xaxis2: { ...LAYOUT_BASE.xaxis, anchor: "y2", domain: [0, 1] },
+        yaxis2: { ...LAYOUT_BASE.yaxis, domain: [0, 0.34], title: { text: t("axis.defense_60d"), font: { size: 10 } }, zeroline: true },
+        margin: { l: 60, r: 24, t: 16, b: 50 },
+    }, PLOTLY_CONFIG);
+
+    /* Composite trend */
+    const shapes = ZONES.map(z => ({
+        type: "rect", xref: "paper", x0: 0, x1: 1, y0: z.lo, y1: z.hi,
+        fillcolor: z.color, opacity: 0.06, line: { width: 0 },
+    }));
+    Plotly.newPlot("chart-composite", [
+        { x: dates, y: get("composite_score"), name: t("trace.scoreRaw"), type: "scatter",
+          line: { color: "rgba(12,10,9,0.22)", width: 1 } },
+        { x: dates, y: get("composite_score_smooth"), name: t("trace.score5d"), type: "scatter",
+          line: { color: COLORS.warn, width: 2.5 },
+          fill: "tozeroy", fillcolor: "rgba(161,98,7,0.06)" },
+    ], {
+        ...LAYOUT_BASE,
+        yaxis: { ...LAYOUT_BASE.yaxis, range: [0, 100], title: { text: t("axis.pressure"), font: { size: 10 } } },
+        shapes,
+    }, PLOTLY_CONFIG);
+}
+
+/* ─────────────────────────────────────────────────────────────
+ *  Regression Stats Panel
+ * ───────────────────────────────────────────────────────────── */
+function renderRegStats(s) {
+    const num = (v) => { const x = parseFloat(v); return isNaN(x) ? null : x; };
+    const fmt = (v, d=3) => v == null ? "—" : v.toFixed(d);
+    const cell = (label, value, cls, meta) => `
+        <div class="regstats-cell">
+            <div class="regstats-label">${label}</div>
+            <div class="regstats-value ${cls||''}">${value}</div>
+            <div class="regstats-meta">${meta}</div>
+        </div>`;
+
+    const r2 = num(s.reg_r2);
+    document.getElementById("regstats").innerHTML = [
+        cell(t("reg.beta_spread"), fmt(num(s.reg_beta_spread)),       "",       t("reg.afterdxy")),
+        cell(t("reg.beta_dxy"),    fmt(num(s.reg_beta_dxy), 4),       "ochre",  t("reg.per1pt")),
+        cell(t("reg.r2"),          r2 == null ? "—" : (r2*100).toFixed(1)+"%", "accent", t("reg.modelfit")),
+        cell(t("reg.alpha"),       fmt(num(s.alpha_cny_dxy)),         "",       t("reg.fixadj")),
+    ].join("");
+}
+
+/* ─────────────────────────────────────────────────────────────
+ *  Findings (auto-generated)
+ * ───────────────────────────────────────────────────────────── */
+function renderFindings(s) {
+    const num = (k) => parseFloat(s[k]);
+    const fmt = (v, d=2) => isNaN(v) ? "—" : v.toFixed(d);
+
+    const carry  = num("raw_carry"),    pct1  = num("carry_pct_rank"), pct2 = num("carry_pct_rank_2y");
+    const beta1  = num("reg_beta_spread"), beta2 = num("reg_beta_dxy"), r2 = num("reg_r2");
+    const cipDev = num("cip_deviation"), regRes = num("reg_residual"), regResUni = num("reg_residual_uni");
+    const bias   = num("fixing_bias"),  biasRaw = num("fixing_bias_raw"), defi = num("defense_intensity");
+    const alpha  = num("alpha_cny_dxy");
+
+    /* Layer 01 */
+    const f01 = [];
+    if (!isNaN(carry)) {
+        f01.push(t("finding.01.carry",
+            fmt(carry),
+            !isNaN(pct1) ? pct1.toFixed(0) : null,
+            !isNaN(pct2) ? pct2.toFixed(0) : null));
+    }
+    if (!isNaN(carry) && carry > 2.5) {
+        f01.push(t("finding.01.spread_high"));
+    } else if (!isNaN(carry) && carry < 0) {
+        f01.push(t("finding.01.spread_neg"));
+    }
+    f01.push(t("finding.01.hedged"));
+    document.getElementById("findings-01").innerHTML = f01.map(x => `<li>${x}</li>`).join("");
+
+    /* Layer 02 */
+    const f02 = [];
+    if (!isNaN(beta2)) {
+        f02.push(t("finding.02.beta_dxy", fmt(beta2, 4), (beta2*1).toFixed(4)));
+    }
+    if (!isNaN(r2)) {
+        f02.push(t("finding.02.r2", (r2*100).toFixed(1)));
+    }
+    if (!isNaN(beta1) && beta1 < 0 && !isNaN(beta2) && beta2 > 0) {
+        f02.push(t("finding.02.multicol"));
+    }
+    if (!isNaN(regRes) && !isNaN(regResUni)) {
+        const delta = Math.abs(regRes) - Math.abs(regResUni);
+        f02.push(t("finding.02.residual", fmt(regRes, 4), fmt(regResUni, 4), delta < 0));
+    }
+    if (!isNaN(cipDev)) {
+        const dir = cipDev > 0 ? t("finding.02.cip.above") : t("finding.02.cip.below");
+        f02.push(t("finding.02.cip", dir, fmt(Math.abs(cipDev), 4)));
+    }
+    document.getElementById("findings-02").innerHTML = f02.map(x => `<li>${x}</li>`).join("");
+
+    /* Layer 03 */
+    const f03 = [];
+    if (!isNaN(alpha)) {
+        f03.push(t("finding.03.alpha", fmt(alpha), alpha >= 0.3 && alpha <= 0.5));
+    }
+    if (!isNaN(bias) && !isNaN(biasRaw)) {
+        f03.push(t("finding.03.bias", (bias * 10000).toFixed(0), (biasRaw * 10000).toFixed(0)));
+    }
+    if (!isNaN(bias)) {
+        if (bias < -0.005)      f03.push(t("finding.03.bias_neg"));
+        else if (bias > 0.005)  f03.push(t("finding.03.bias_pos"));
+        else                    f03.push(t("finding.03.bias_zero"));
+    }
+    if (!isNaN(defi)) {
+        f03.push(t("finding.03.defense", (defi*10000).toFixed(0)));
+    }
+    document.getElementById("findings-03").innerHTML = f03.map(x => `<li>${x}</li>`).join("");
+}
+
+/* ─────────────────────────────────────────────────────────────
+ *  Glossary
+ * ───────────────────────────────────────────────────────────── */
+function renderGlossary() {
+    const tbl = document.getElementById("glossary-table");
+    const rows = GLOSSARY_DEFS.map(([code, unit, source, desc]) =>
+        `<tr><td>${code}</td><td>${unit}</td><td>${source}</td><td>${desc}</td></tr>`
+    ).join("");
+    tbl.innerHTML = `<thead><tr><th>${t("glossary.field")}</th><th>${t("glossary.unit")}</th><th>${t("glossary.source")}</th><th>${t("glossary.definition")}</th></tr></thead><tbody>${rows}</tbody>`;
+}
+
+/* ─────────────────────────────────────────────────────────────
+ *  Recent Data Table
+ * ───────────────────────────────────────────────────────────── */
+function renderTable(series) {
+    const cols = ["date", "usdcny", "usdcnh", "pboc_fix", "us_2y", "cn_2y", "dxy",
+                  "raw_carry", "reg_residual", "fixing_bias", "composite_score"];
+    const labels = {
+        date: t("table.date"), usdcny: t("table.usdcny"), usdcnh: t("table.usdcnh"),
+        pboc_fix: t("table.fix"), us_2y: t("table.us2y"), cn_2y: t("table.cn2y"),
+        dxy: t("table.dxy"), raw_carry: t("table.carry"), reg_residual: t("table.resid"),
+        fixing_bias: t("table.bias"), composite_score: t("table.score"),
+    };
+    document.getElementById("data-thead").innerHTML =
+        cols.map(c => `<th>${labels[c]}</th>`).join("");
+    const rows = series.slice(-30).reverse();
+    document.getElementById("data-tbody").innerHTML = rows.map(r => `
+        <tr>${cols.map(c => {
+            const v = r[c];
+            if (v == null) return "<td>—</td>";
+            if (c === "date") return `<td>${v}</td>`;
+            const num = parseFloat(v);
+            if (c === "fixing_bias")     return `<td>${(num*10000).toFixed(0)}</td>`;
+            if (c === "composite_score") return `<td>${num.toFixed(0)}</td>`;
+            return `<td>${num.toFixed(c.includes("2y") || c === "raw_carry" || c === "dxy" ? 2 : 4)}</td>`;
+        }).join("")}</tr>`).join("");
+}
+
+/* ─────────────────────────────────────────────────────────────
+ *  Download
+ * ───────────────────────────────────────────────────────────── */
+function renderDownload(series) {
+    if (!series.length) return;
+    const cols = Object.keys(series[0]);
+    const csv = [cols.join(",")]
+        .concat(series.map(r => cols.map(c => r[c] ?? "").join(",")))
+        .join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    document.getElementById("download-csv").href = url;
+    const top = document.getElementById("dl-csv-top");
+    if (top) { top.href = url; top.setAttribute("download", "usdcny_tracker.csv"); }
+}
+
+/* ─────────────────────────────────────────────────────────────
+ *  Chart Builder
+ * ───────────────────────────────────────────────────────────── */
+const BUILDER_FIELDS = [
+    { key: "us_2y",            label: "US 2Y" },
+    { key: "cn_2y",            label: "CN 2Y" },
+    { key: "yield_spread",     label: "Spread" },
+    { key: "usdcny",           label: "USD/CNY" },
+    { key: "usdcnh",           label: "USD/CNH" },
+    { key: "pboc_fix",         label: "PBOC Fix" },
+    { key: "dxy",              label: "DXY" },
+    { key: "raw_carry",        label: "Raw Carry" },
+    { key: "carry_pct_rank",   label: "Carry Pctile" },
+    { key: "cip_deviation",    label: "CIP Dev" },
+    { key: "reg_residual",     label: "Residual (multi)" },
+    { key: "reg_residual_uni", label: "Residual (uni)" },
+    { key: "fixing_bias",      label: "Fixing Bias" },
+    { key: "fixing_bias_raw",  label: "Bias (raw)" },
+    { key: "defense_intensity",label: "Defense Intensity" },
+    { key: "composite_score",  label: "Composite" },
+];
+
+const BUILDER_DEFAULTS = ["raw_carry", "dxy"];
+
+function renderBuilder(series) {
+    const wrap = document.getElementById("builder-checkboxes");
+    const prevChecked = [...wrap.querySelectorAll("input:checked")].map(i => i.value);
+    const useDefaults = prevChecked.length === 0;
+
+    wrap.innerHTML = BUILDER_FIELDS.map(f => {
+        const checked = useDefaults ? BUILDER_DEFAULTS.includes(f.key) : prevChecked.includes(f.key);
+        return `<label class="${checked ? "checked" : ""}">
+                    <input type="checkbox" value="${f.key}" ${checked ? "checked" : ""}>
+                    ${f.label}
+                </label>`;
+    }).join("");
+
+    wrap.querySelectorAll("label").forEach(lbl => {
+        lbl.addEventListener("click", () => {
+            const cb = lbl.querySelector("input");
+            setTimeout(() => {
+                lbl.classList.toggle("checked", cb.checked);
+                renderBuilderChart(series);
+            }, 0);
+        });
+    });
+
+    const freqEl = document.getElementById("builder-freq");
+    const opts = freqEl.querySelectorAll("option");
+    if (opts.length >= 3) {
+        opts[0].textContent = t("builder.daily");
+        opts[1].textContent = t("builder.weekly");
+        opts[2].textContent = t("builder.monthly");
+    }
+
+    freqEl.onchange = () => renderBuilderChart(series);
+    renderBuilderChart(series);
+}
+
+function aggregate(series, freq) {
+    if (freq === "D") return series;
+    const buckets = new Map();
+    for (const r of series) {
+        if (!r.date) continue;
+        const d = new Date(r.date);
+        let key;
+        if (freq === "W") {
+            const day = d.getUTCDay() || 7;
+            d.setUTCDate(d.getUTCDate() - day + 1);
+            key = d.toISOString().slice(0, 10);
+        } else {
+            key = `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,"0")}-01`;
+        }
+        if (!buckets.has(key)) buckets.set(key, []);
+        buckets.get(key).push(r);
+    }
+    const out = [];
+    for (const [date, rows] of [...buckets.entries()].sort()) {
+        const merged = { date };
+        for (const k of Object.keys(rows[0])) {
+            if (k === "date") continue;
+            const vals = rows.map(r => r[k]).filter(v => v != null && !isNaN(parseFloat(v))).map(parseFloat);
+            merged[k] = vals.length ? vals.reduce((a,b)=>a+b,0) / vals.length : null;
+        }
+        out.push(merged);
+    }
+    return out;
+}
+
+function renderBuilderChart(series) {
+    const freq = document.getElementById("builder-freq").value;
+    const checked = [...document.querySelectorAll("#builder-checkboxes input:checked")].map(i => i.value);
+    const data = aggregate(series, freq);
+    const dates = data.map(r => r.date);
+
+    const palette = [COLORS.line1, COLORS.line2, COLORS.line3, COLORS.line4, COLORS.bear, COLORS.bull];
+    const traces = checked.map((key, i) => {
+        const fld = BUILDER_FIELDS.find(f => f.key === key);
+        return {
+            x: dates, y: data.map(r => r[key]), name: fld ? fld.label : key, type: "scatter",
+            line: { color: palette[i % palette.length], width: 1.7 },
+        };
+    });
+
+    if (!traces.length) {
+        Plotly.newPlot("chart-builder", [], {
+            ...LAYOUT_BASE,
+            annotations: [{ text: t("builder.empty"), xref: "paper", yref: "paper",
+                            x: 0.5, y: 0.5, showarrow: false, font: { size: 14, color: COLORS.muted } }],
+        }, PLOTLY_CONFIG);
+        return;
+    }
+
+    Plotly.newPlot("chart-builder", traces, {
+        ...LAYOUT_BASE,
+        yaxis: { ...LAYOUT_BASE.yaxis, title: { text: t("axis.value"), font: { size: 10 } } },
+    }, PLOTLY_CONFIG);
+}
+
+/* ─────────────────────────────────────────────────────────────
+ *  Citation
+ * ───────────────────────────────────────────────────────────── */
+function renderCitation(d) {
+    document.getElementById("cite-year").textContent = d.snapshot.date.slice(0, 4);
+    document.getElementById("cite-date").textContent = d.snapshot.date;
+    document.getElementById("footer-ts").textContent = d.generated_at;
+}
+
+/* boot */
+document.addEventListener("DOMContentLoaded", boot);

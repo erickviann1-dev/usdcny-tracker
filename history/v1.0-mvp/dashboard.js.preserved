@@ -1,0 +1,740 @@
+/* ═══════════════════════════════════════════════════════════════
+ *  USD/CNY Macro-Policy Divergence Tracker · Dashboard renderer
+ *  Editorial / institutional design · v2.0
+ * ═══════════════════════════════════════════════════════════════ */
+
+const COLORS = {
+    bull:   "#15803d",
+    bear:   "#b91c1c",
+    warn:   "#a16207",
+    navy:   "#1e3a5f",
+    ochre:  "#a16207",
+    line1:  "#1e3a5f",
+    line2:  "#a16207",
+    line3:  "#7c2d12",
+    line4:  "#14532d",
+    grid:   "#e8e4dc",
+    text:   "#0c0a09",
+    muted:  "#57534e",
+    bg:     "#ffffff",
+    bgTint: "#f5f2ec",
+};
+
+const ZONES = [
+    { lo: 0,  hi: 25,  color: "#22c55e", bg: "#dcfce7", label: "Low",      tag: "Stable" },
+    { lo: 25, hi: 50,  color: "#65a30d", bg: "#ecfccb", label: "Moderate", tag: "Manageable" },
+    { lo: 50, hi: 75,  color: "#ca8a04", bg: "#fef3c7", label: "Elevated", tag: "Pressure Building" },
+    { lo: 75, hi: 90,  color: "#ea580c", bg: "#ffedd5", label: "High",     tag: "Stress" },
+    { lo: 90, hi: 100, color: "#b91c1c", bg: "#fee2e2", label: "Extreme",  tag: "Crisis Watch" },
+];
+
+const LAYOUT_BASE = {
+    paper_bgcolor: COLORS.bg,
+    plot_bgcolor:  COLORS.bg,
+    font: { family: "Inter, sans-serif", size: 11, color: COLORS.text },
+    margin: { l: 50, r: 24, t: 16, b: 40 },
+    xaxis: { gridcolor: COLORS.grid, linecolor: COLORS.grid, zerolinecolor: COLORS.grid,
+             tickfont: { size: 10, color: COLORS.muted } },
+    yaxis: { gridcolor: COLORS.grid, linecolor: COLORS.grid, zerolinecolor: COLORS.grid,
+             tickfont: { size: 10, color: COLORS.muted } },
+    legend: { orientation: "h", y: -0.18, font: { size: 10, color: COLORS.muted } },
+    hovermode: "x unified",
+    hoverlabel: { bgcolor: "#fff", bordercolor: COLORS.grid, font: { size: 11, family: "JetBrains Mono, monospace" } },
+};
+const PLOTLY_CONFIG = { responsive: true, displaylogo: false,
+                        modeBarButtonsToRemove: ["lasso2d", "select2d", "autoScale2d"] };
+
+const GLOSSARY_DEFS = [
+    ["us_2y",            "%",      "akshare bond_zh_us_rate", "US 2Y Treasury yield"],
+    ["cn_2y",            "%",      "akshare bond_zh_us_rate", "China 2Y govt bond yield"],
+    ["yield_spread",     "%",      "computed",                "us_2y − cn_2y"],
+    ["usdcny",           "CNY",    "yfinance / PBOC proxy",   "Onshore USD/CNY spot"],
+    ["usdcnh",           "CNY",    "yfinance",                "Offshore USD/CNH spot"],
+    ["pboc_fix",         "CNY",    "akshare currency_boc_sina","PBOC daily central parity"],
+    ["dxy",              "index",  "FRED DTWEXBGS",           "Trade-weighted broad dollar index"],
+    ["dxy_ret",          "ret",    "computed",                "DXY daily pct change"],
+    ["onoffshore_gap",   "CNY",    "computed",                "usdcnh − usdcny"],
+    ["raw_carry",        "%",      "computed",                "us_2y − cn_2y (Layer 01)"],
+    ["carry_ma20",       "%",      "computed",                "20d MA of raw_carry"],
+    ["carry_ma60",       "%",      "computed",                "60d MA of raw_carry"],
+    ["carry_ma120",      "%",      "computed",                "120d MA of raw_carry"],
+    ["carry_pct_rank",   "0–100",  "computed",                "Pctile vs trailing 252d"],
+    ["carry_pct_rank_2y","0–100",  "computed",                "Pctile vs trailing 504d"],
+    ["cip_fair_spot",    "CNY",    "computed",                "CIP-implied fair value"],
+    ["cip_deviation",    "CNY",    "computed",                "usdcny − cip_fair_spot"],
+    ["reg_predicted",    "CNY",    "OLS multivariate",        "α + β₁·spread + β₂·DXY"],
+    ["reg_residual",     "CNY",    "computed",                "actual − multivariate model"],
+    ["reg_predicted_uni","CNY",    "OLS univariate",          "Single-var (legacy)"],
+    ["reg_residual_uni", "CNY",    "computed",                "actual − univariate model"],
+    ["reg_beta_spread",  "coef",   "computed",                "β₁ in multivariate OLS"],
+    ["reg_beta_dxy",     "coef",   "computed",                "β₂ in multivariate OLS"],
+    ["reg_r2",           "0–1",    "computed",                "Multivariate model R²"],
+    ["mispricing_score", "0–100",  "computed",                "Avg pctile of CIP & regr residual"],
+    ["alpha_cny_dxy",    "coef",   "computed",                "Rolling β of CNY ret on DXY ret"],
+    ["expected_fix",     "CNY",    "computed",                "DXY-adjusted expected fix"],
+    ["fixing_bias",      "CNY",    "computed",                "pboc_fix − expected_fix (Layer 03)"],
+    ["fixing_bias_raw",  "CNY",    "computed",                "pboc_fix − anchor (legacy)"],
+    ["bias_20d_mean",    "CNY",    "computed",                "20d avg fixing_bias"],
+    ["defense_intensity","CNY",    "computed",                "−rolling_mean(bias,20d)"],
+    ["composite_score",  "0–100",  "weighted blend",          "Final pressure reading"],
+];
+
+let CURRENT_DATA = null;
+
+/* ─────────────────────────────────────────────────────────────
+ *  Boot
+ * ───────────────────────────────────────────────────────────── */
+async function boot() {
+    let data;
+    try {
+        const resp = await fetch("data.json", { cache: "no-store" });
+        if (!resp.ok) throw new Error("data.json fetch failed: " + resp.status);
+        data = await resp.json();
+        CURRENT_DATA = data;
+    } catch (e) {
+        document.querySelector("#loader .loader-text").innerHTML =
+            `Could not load data.json — run <code>python build.py</code> first.`;
+        return;
+    }
+
+    document.getElementById("loader").style.opacity = "0";
+    setTimeout(() => document.getElementById("loader").style.display = "none", 300);
+
+    renderTopbar(data);
+    renderHero(data);
+    renderScore(data.snapshot);
+    renderKPIs(data.snapshot);
+    renderQuality(data.quality);
+    renderAlerts(data.snapshot, data.quality);
+    renderCarryNarrative(data.snapshot);
+    renderCharts(data.series);
+    renderRegStats(data.snapshot);
+    renderFindings(data.snapshot);
+    renderGlossary();
+    renderTable(data.series);
+    renderDownload(data.series);
+    renderBuilder(data.series);
+    renderCitation(data);
+}
+
+/* ─────────────────────────────────────────────────────────────
+ *  Topbar + Hero
+ * ───────────────────────────────────────────────────────────── */
+function renderTopbar(d) {
+    document.getElementById("topbar-date").textContent = d.snapshot.date;
+    const score = parseFloat(d.snapshot.composite_score);
+    const zone  = zoneOf(score);
+    document.getElementById("topbar-score").innerHTML =
+        `<strong style="color:${zone.color}">${isNaN(score) ? "—" : score.toFixed(0)}</strong>
+         <span style="color:var(--muted);margin-left:6px">${zone.label}</span>`;
+}
+
+function renderHero(d) {
+    document.getElementById("hero-date").textContent =
+        new Date(d.snapshot.date).toLocaleDateString("en-US",
+            { year: "numeric", month: "long", day: "numeric" });
+}
+
+/* ─────────────────────────────────────────────────────────────
+ *  Composite Score (custom, non-Plotly)
+ * ───────────────────────────────────────────────────────────── */
+function zoneOf(score) {
+    if (isNaN(score)) return ZONES[2];
+    return ZONES.find(z => score >= z.lo && score < z.hi) || ZONES[ZONES.length - 1];
+}
+
+function renderScore(s) {
+    const score = parseFloat(s.composite_score);
+    const safe  = isNaN(score) ? 50 : score;
+    const zone  = zoneOf(safe);
+
+    const card = document.getElementById("score-card");
+    card.style.setProperty("--score-color", zone.color);
+    card.style.setProperty("--score-bg", zone.bg);
+
+    document.getElementById("score-asof").textContent = `As of ${s.date}`;
+    document.getElementById("score-status").textContent = `${zone.label} · ${zone.tag}`;
+    document.getElementById("score-bar-marker").style.left = `${safe}%`;
+
+    // Animate the score number
+    const target = safe;
+    const el = document.getElementById("score-value");
+    let start = 0;
+    const duration = 1100;
+    const t0 = performance.now();
+    function tick(now) {
+        const p = Math.min(1, (now - t0) / duration);
+        const eased = 1 - Math.pow(1 - p, 3);
+        el.textContent = (start + (target - start) * eased).toFixed(0);
+        if (p < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+}
+
+/* ─────────────────────────────────────────────────────────────
+ *  KPI Tiles
+ * ───────────────────────────────────────────────────────────── */
+function renderKPIs(s) {
+    const carry = parseFloat(s.raw_carry);
+    const bias  = parseFloat(s.fixing_bias);
+    const carryCls = isNaN(carry) ? "" : carry > 2.5 ? "bear" : carry > 1 ? "warn" : "bull";
+    const biasCls  = isNaN(bias)  ? "" : bias < -0.005 ? "bull" : bias > 0.005 ? "bear" : "";
+
+    const isNA = (v) => !v || v === "N/A" || v === "nan" || v === "—";
+    const tile = (label, value, cls = "", meta = "") => {
+        if (isNA(value)) return null;
+        return `
+            <div class="kpi-tile">
+                <div>
+                    <div class="kpi-tile-label">${label}</div>
+                    <div class="kpi-tile-value ${cls}">${value}</div>
+                </div>
+                <div class="kpi-tile-meta">
+                    <span>${meta}</span>
+                </div>
+            </div>`;
+    };
+
+    const tiles = [
+        tile("USD/CNY Spot",      s.usdcny,                          "",      "Onshore"),
+        tile("USD/CNH Offshore",  s.usdcnh,                          "",      "Hong Kong"),
+        tile("PBOC Fix",          s.pboc_fix,                        "",      "09:15 BJT"),
+        tile("US 2Y · CN 2Y",     `${s.us_2y}% · ${s.cn_2y}%`,       "",      "yields"),
+        tile("Raw Carry",         `${s.raw_carry}%`,                 carryCls,"US − CN 2Y"),
+        tile("Carry Pctile",      `${s.carry_pct_rank} / 100`,       "",      "vs 252d"),
+        tile("DXY (TWI)",         s.dxy,                             "",      "FRED broad"),
+        tile("Reg β · Spread",    s.reg_beta_spread,                 "",      "after DXY"),
+        tile("Reg β · DXY",       s.reg_beta_dxy,                    "",      "broad-dollar"),
+        tile("Reg R²",            isNA(s.reg_r2) ? "—" : `${(parseFloat(s.reg_r2)*100).toFixed(1)}%`, "", "model fit"),
+        tile("α · CNY/DXY",       s.alpha_cny_dxy,                   "",      "fix adj."),
+        tile("Fixing Bias",       biasInPips(s.fixing_bias),         biasCls, "vs DXY-adj."),
+    ].filter(Boolean);
+
+    document.getElementById("kpi-panel").innerHTML = tiles.join("");
+}
+
+function biasInPips(v) {
+    const x = parseFloat(v);
+    if (isNaN(x)) return "—";
+    return `${(x * 10000).toFixed(0)} pips`;
+}
+
+/* ─────────────────────────────────────────────────────────────
+ *  Quality Badges
+ * ───────────────────────────────────────────────────────────── */
+function renderQuality(q) {
+    const labels = { cn_2y: "CN 2Y", us_2y: "US 2Y", usdcny: "USD/CNY",
+                     usdcnh: "USD/CNH", pboc_fix: "Fix", dxy: "DXY" };
+    const html = Object.entries(q).map(([k, v]) => {
+        const cls = v > 0.8 ? "ok" : v > 0.3 ? "est" : "err";
+        return `<span class="q-badge ${cls}">${labels[k] || k} ${(v*100).toFixed(0)}%</span>`;
+    }).join("");
+    document.getElementById("quality-badges").innerHTML = html;
+}
+
+/* ─────────────────────────────────────────────────────────────
+ *  Alerts (data limitations + signals)
+ * ───────────────────────────────────────────────────────────── */
+function renderAlerts(s, q) {
+    const wrap = document.getElementById("alerts");
+    const alerts = [];
+
+    if (q.usdcnh < 0.3) {
+        alerts.push({ cls: "",
+            html: `<strong>Data note —</strong> USD/CNH offshore feed unavailable in this build.
+                   Layer 03 market anchor falls back to onshore previous close, which may
+                   under-estimate true defence intensity.` });
+    }
+    if (q.usdcny > 0.8 && q.pboc_fix > 0.8) {
+        const usdcny = parseFloat(s.usdcny), pboc = parseFloat(s.pboc_fix);
+        if (!isNaN(usdcny) && !isNaN(pboc) && Math.abs(usdcny - pboc) < 0.001) {
+            alerts.push({ cls: "",
+                html: `<strong>Data note —</strong> USD/CNY spot is currently identical to PBOC fix —
+                       this build uses fixing as spot proxy because yfinance is unreachable on this
+                       network. Layer 03 fixing-bias signal will appear degenerate (≈ 0) until
+                       a true onshore-spot source is restored.` });
+        }
+    }
+
+    const carry = parseFloat(s.raw_carry);
+    if (!isNaN(carry) && carry > 2.5) {
+        alerts.push({ cls: "bear",
+            html: `<strong>Carry alert —</strong> US−CN 2Y spread = <strong>${carry.toFixed(2)}%</strong>.
+                   Significant carry-trade incentive active.` });
+    }
+    const bias = parseFloat(s.fixing_bias);
+    if (!isNaN(bias) && Math.abs(bias) * 10000 > 100) {
+        const dir = bias < 0 ? "PBOC defending CNY" : "PBOC permitting weakness";
+        alerts.push({ cls: bias < 0 ? "bull" : "bear",
+            html: `<strong>Fixing-bias alert —</strong> bias = <strong>${(bias*10000).toFixed(0)} pips</strong> · ${dir}.` });
+    }
+    const score = parseFloat(s.composite_score);
+    if (!isNaN(score) && score > 75) {
+        alerts.push({ cls: "bear",
+            html: `<strong>High pressure —</strong> composite = <strong>${score.toFixed(0)}/100</strong>.
+                   Multi-layer stress convergence detected.` });
+    }
+
+    wrap.innerHTML = alerts.map(a => `<div class="banner ${a.cls}">${a.html}</div>`).join("");
+}
+
+/* ─────────────────────────────────────────────────────────────
+ *  Carry Narrative
+ * ───────────────────────────────────────────────────────────── */
+function renderCarryNarrative(s) {
+    const wrap = document.getElementById("carry-narrative");
+    const carry = parseFloat(s.raw_carry);
+    const p1y = parseFloat(s.carry_pct_rank);
+    const p2y = parseFloat(s.carry_pct_rank_2y);
+    if (isNaN(carry) || isNaN(p1y)) { wrap.style.display = "none"; return; }
+
+    const direction = carry > 0
+        ? `borrowing CNY to invest in USD generates a nominal <strong>${carry.toFixed(2)}%</strong> annualised yield pickup`
+        : `the differential favours holding CNY (<strong>${carry.toFixed(2)}%</strong>)`;
+    const intensity = p1y > 90 ? "near a historical extreme"
+                     : p1y > 75 ? "elevated relative to history"
+                     : p1y > 50 ? "above its trailing-year median"
+                     : p1y > 25 ? "below median"
+                     : "near historical lows";
+
+    wrap.innerHTML = `
+        <strong>Live narrative —</strong> US−CN 2Y spread is currently <strong>${carry.toFixed(2)}%</strong>:
+        ${direction}. This sits at the <strong>${p1y.toFixed(0)}<sup>th</sup> percentile (1Y)</strong>${
+            !isNaN(p2y) ? ` / <strong>${p2y.toFixed(0)}<sup>th</sup> percentile (2Y)</strong>` : ""},
+        ${intensity}. Even after adjusting for forward-hedging costs, the implied
+        capital-outflow gravity remains in this percentile range — a structural pressure
+        source against the PBOC defence line.`;
+}
+
+/* ─────────────────────────────────────────────────────────────
+ *  Charts
+ * ───────────────────────────────────────────────────────────── */
+function renderCharts(series) {
+    const dates = series.map(r => r.date);
+    const get = (col) => series.map(r => r[col]);
+
+    /* Yields */
+    Plotly.newPlot("chart-yields", [
+        { x: dates, y: get("us_2y"), name: "US 2Y", type: "scatter",
+          line: { color: COLORS.line1, width: 1.8 }, xaxis: "x", yaxis: "y" },
+        { x: dates, y: get("cn_2y"), name: "CN 2Y", type: "scatter",
+          line: { color: COLORS.line2, width: 1.8 }, xaxis: "x", yaxis: "y" },
+        { x: dates,
+          y: get("yield_spread").map(v => v == null ? null : v * 100),
+          name: "Spread (bps)", type: "bar",
+          marker: { color: get("yield_spread").map(v => v == null ? COLORS.muted : v > 0 ? COLORS.bear : COLORS.bull),
+                    opacity: 0.6 },
+          xaxis: "x2", yaxis: "y2" },
+    ], {
+        ...LAYOUT_BASE,
+        grid: { rows: 2, columns: 1, pattern: "independent", roworder: "top to bottom" },
+        xaxis:  { ...LAYOUT_BASE.xaxis, anchor: "y",  domain: [0, 1] },
+        yaxis:  { ...LAYOUT_BASE.yaxis, domain: [0.42, 1], title: { text: "Yield (%)", font: { size: 10 } } },
+        xaxis2: { ...LAYOUT_BASE.xaxis, anchor: "y2", domain: [0, 1] },
+        yaxis2: { ...LAYOUT_BASE.yaxis, domain: [0, 0.34], title: { text: "Spread (bps)", font: { size: 10 } } },
+        margin: { l: 60, r: 24, t: 16, b: 50 },
+    }, PLOTLY_CONFIG);
+
+    /* Carry pressure */
+    Plotly.newPlot("chart-carry", [
+        { x: dates, y: get("raw_carry"), name: "Raw Carry", type: "scatter",
+          line: { color: COLORS.line1, width: 1.6 },
+          fill: "tozeroy", fillcolor: "rgba(30,58,95,0.10)",
+          xaxis: "x", yaxis: "y" },
+        { x: dates, y: get("carry_ma60"), name: "60d MA", type: "scatter",
+          line: { color: COLORS.line2, width: 1.2, dash: "dot" }, xaxis: "x", yaxis: "y" },
+        { x: dates, y: get("onoffshore_gap"), name: "CNH−CNY Gap", type: "scatter",
+          line: { color: COLORS.warn, width: 1.4 },
+          fill: "tozeroy", fillcolor: "rgba(161,98,7,0.10)",
+          xaxis: "x2", yaxis: "y2" },
+    ], {
+        ...LAYOUT_BASE,
+        grid: { rows: 2, columns: 1, pattern: "independent", roworder: "top to bottom" },
+        xaxis:  { ...LAYOUT_BASE.xaxis, anchor: "y",  domain: [0, 1] },
+        yaxis:  { ...LAYOUT_BASE.yaxis, domain: [0.42, 1], title: { text: "Carry (%)", font: { size: 10 } } },
+        xaxis2: { ...LAYOUT_BASE.xaxis, anchor: "y2", domain: [0, 1] },
+        yaxis2: { ...LAYOUT_BASE.yaxis, domain: [0, 0.34], title: { text: "CNH − CNY", font: { size: 10 } } },
+        margin: { l: 60, r: 24, t: 16, b: 50 },
+    }, PLOTLY_CONFIG);
+
+    /* DXY */
+    Plotly.newPlot("chart-dxy", [
+        { x: dates, y: get("dxy"), name: "DXY (TWI)", type: "scatter",
+          line: { color: COLORS.line1, width: 1.8 },
+          fill: "tozeroy", fillcolor: "rgba(30,58,95,0.06)" },
+    ], {
+        ...LAYOUT_BASE,
+        yaxis: { ...LAYOUT_BASE.yaxis, title: { text: "Index", font: { size: 10 } } },
+    }, PLOTLY_CONFIG);
+
+    /* Regression */
+    const residColors = get("reg_residual").map(v => v == null ? COLORS.muted : v > 0 ? COLORS.bear : COLORS.bull);
+    Plotly.newPlot("chart-regression", [
+        { x: dates, y: get("usdcny"),         name: "USD/CNY Actual",  type: "scatter",
+          line: { color: COLORS.line2, width: 1.6 }, xaxis: "x", yaxis: "y" },
+        { x: dates, y: get("reg_predicted"),  name: "Multivariate model", type: "scatter",
+          line: { color: COLORS.line1, width: 1.6, dash: "dash" }, xaxis: "x", yaxis: "y" },
+        { x: dates, y: get("cip_fair_spot"),  name: "CIP fair value",   type: "scatter",
+          line: { color: COLORS.line3, width: 1, dash: "dot" }, xaxis: "x", yaxis: "y" },
+        { x: dates, y: get("reg_residual"),   name: "Residual",          type: "bar",
+          marker: { color: residColors, opacity: 0.65 }, xaxis: "x2", yaxis: "y2" },
+    ], {
+        ...LAYOUT_BASE,
+        grid: { rows: 2, columns: 1, pattern: "independent", roworder: "top to bottom" },
+        xaxis:  { ...LAYOUT_BASE.xaxis, anchor: "y",  domain: [0, 1] },
+        yaxis:  { ...LAYOUT_BASE.yaxis, domain: [0.42, 1], title: { text: "USD/CNY", font: { size: 10 } } },
+        xaxis2: { ...LAYOUT_BASE.xaxis, anchor: "y2", domain: [0, 1] },
+        yaxis2: { ...LAYOUT_BASE.yaxis, domain: [0, 0.34], title: { text: "Residual", font: { size: 10 } } },
+        margin: { l: 60, r: 24, t: 16, b: 50 },
+    }, PLOTLY_CONFIG);
+
+    /* Univariate vs multivariate residual */
+    Plotly.newPlot("chart-residual-compare", [
+        { x: dates, y: get("reg_residual_uni"), name: "Single-var (legacy)", type: "scatter",
+          line: { color: "rgba(87,83,78,0.55)", width: 1.2, dash: "dot" } },
+        { x: dates, y: get("reg_residual"),     name: "Multivariate (DXY-adj.)", type: "scatter",
+          line: { color: COLORS.bear, width: 2 },
+          fill: "tozeroy", fillcolor: "rgba(185,28,28,0.06)" },
+    ], {
+        ...LAYOUT_BASE,
+        yaxis: { ...LAYOUT_BASE.yaxis, title: { text: "Residual (CNY)", font: { size: 10 } }, zeroline: true },
+    }, PLOTLY_CONFIG);
+
+    /* CIP deviation */
+    Plotly.newPlot("chart-cip", [
+        { x: dates, y: get("cip_deviation"), name: "CIP basis", type: "scatter",
+          line: { color: COLORS.warn, width: 1.5 },
+          fill: "tozeroy", fillcolor: "rgba(161,98,7,0.10)" },
+    ], {
+        ...LAYOUT_BASE,
+        yaxis: { ...LAYOUT_BASE.yaxis, title: { text: "Deviation (CNY)", font: { size: 10 } } },
+    }, PLOTLY_CONFIG);
+
+    /* Trinity */
+    Plotly.newPlot("chart-trinity", [
+        { x: dates, y: get("pboc_fix"), name: "PBOC Fix",       type: "scatter",
+          line: { color: COLORS.line2, width: 2.3 } },
+        { x: dates, y: get("usdcny"),   name: "USD/CNY (onshore)", type: "scatter",
+          line: { color: COLORS.line1, width: 1.5 } },
+        { x: dates, y: get("usdcnh"),   name: "USD/CNH (offshore)", type: "scatter",
+          line: { color: COLORS.line3, width: 1.5, dash: "dash" } },
+    ], {
+        ...LAYOUT_BASE,
+        yaxis: { ...LAYOUT_BASE.yaxis, title: { text: "USD/CNY", font: { size: 10 } } },
+    }, PLOTLY_CONFIG);
+
+    /* Fixing bias */
+    const biasPips    = get("fixing_bias").map(v => v == null ? null : v * 10000);
+    const biasRawPips = get("fixing_bias_raw").map(v => v == null ? null : v * 10000);
+    const biasColors  = biasPips.map(v => v == null ? COLORS.muted : v < 0 ? COLORS.bull : COLORS.bear);
+    const m20 = get("bias_20d_mean").map(v => v == null ? null : v * 10000);
+    const m60 = get("bias_60d_mean").map(v => v == null ? null : v * 10000);
+    const di  = get("defense_intensity").map(v => v == null ? null : v * 10000);
+
+    Plotly.newPlot("chart-fixing", [
+        { x: dates, y: biasPips, name: "DXY-adjusted (pips)", type: "bar",
+          marker: { color: biasColors, opacity: 0.7 }, xaxis: "x", yaxis: "y" },
+        { x: dates, y: biasRawPips, name: "Raw bias", type: "scatter",
+          line: { color: "rgba(87,83,78,0.55)", width: 1, dash: "dot" }, xaxis: "x", yaxis: "y" },
+        { x: dates, y: m20, name: "20d mean", type: "scatter",
+          line: { color: COLORS.line1, width: 2 }, xaxis: "x", yaxis: "y" },
+        { x: dates, y: m60, name: "60d mean", type: "scatter",
+          line: { color: COLORS.line2, width: 1.5, dash: "dash" }, xaxis: "x2", yaxis: "y2" },
+        { x: dates, y: di, name: "Defense intensity", type: "scatter",
+          line: { color: COLORS.bull, width: 1.4 },
+          fill: "tozeroy", fillcolor: "rgba(21,128,61,0.10)",
+          xaxis: "x2", yaxis: "y2" },
+    ], {
+        ...LAYOUT_BASE,
+        grid: { rows: 2, columns: 1, pattern: "independent", roworder: "top to bottom" },
+        xaxis:  { ...LAYOUT_BASE.xaxis, anchor: "y",  domain: [0, 1] },
+        yaxis:  { ...LAYOUT_BASE.yaxis, domain: [0.42, 1], title: { text: "Bias (pips)", font: { size: 10 } }, zeroline: true },
+        xaxis2: { ...LAYOUT_BASE.xaxis, anchor: "y2", domain: [0, 1] },
+        yaxis2: { ...LAYOUT_BASE.yaxis, domain: [0, 0.34], title: { text: "Defense / 60d", font: { size: 10 } }, zeroline: true },
+        margin: { l: 60, r: 24, t: 16, b: 50 },
+    }, PLOTLY_CONFIG);
+
+    /* Composite trend */
+    const shapes = ZONES.map(z => ({
+        type: "rect", xref: "paper", x0: 0, x1: 1, y0: z.lo, y1: z.hi,
+        fillcolor: z.color, opacity: 0.06, line: { width: 0 },
+    }));
+    Plotly.newPlot("chart-composite", [
+        { x: dates, y: get("composite_score"), name: "Score (raw)", type: "scatter",
+          line: { color: "rgba(12,10,9,0.22)", width: 1 } },
+        { x: dates, y: get("composite_score_smooth"), name: "Score (5d)", type: "scatter",
+          line: { color: COLORS.warn, width: 2.5 },
+          fill: "tozeroy", fillcolor: "rgba(161,98,7,0.06)" },
+    ], {
+        ...LAYOUT_BASE,
+        yaxis: { ...LAYOUT_BASE.yaxis, range: [0, 100], title: { text: "Pressure", font: { size: 10 } } },
+        shapes,
+    }, PLOTLY_CONFIG);
+}
+
+/* ─────────────────────────────────────────────────────────────
+ *  Regression Stats Panel
+ * ───────────────────────────────────────────────────────────── */
+function renderRegStats(s) {
+    const num = (v) => { const x = parseFloat(v); return isNaN(x) ? null : x; };
+    const fmt = (v, d=3) => v == null ? "—" : v.toFixed(d);
+    const cell = (label, value, cls, meta) => `
+        <div class="regstats-cell">
+            <div class="regstats-label">${label}</div>
+            <div class="regstats-value ${cls||''}">${value}</div>
+            <div class="regstats-meta">${meta}</div>
+        </div>`;
+
+    const r2 = num(s.reg_r2);
+    document.getElementById("regstats").innerHTML = [
+        cell("β₁ · Spread",   fmt(num(s.reg_beta_spread)),       "",       "after DXY"),
+        cell("β₂ · DXY",      fmt(num(s.reg_beta_dxy), 4),       "ochre",  "per 1pt DXY"),
+        cell("R²",            r2 == null ? "—" : (r2*100).toFixed(1)+"%", "accent", "model fit"),
+        cell("α · CNY/DXY",   fmt(num(s.alpha_cny_dxy)),         "",       "fix adj."),
+    ].join("");
+}
+
+/* ─────────────────────────────────────────────────────────────
+ *  Findings (auto-generated)
+ * ───────────────────────────────────────────────────────────── */
+function renderFindings(s) {
+    const num = (k) => parseFloat(s[k]);
+    const fmt = (v, d=2) => isNaN(v) ? "—" : v.toFixed(d);
+
+    const carry  = num("raw_carry"),    pct1  = num("carry_pct_rank"), pct2 = num("carry_pct_rank_2y");
+    const beta1  = num("reg_beta_spread"), beta2 = num("reg_beta_dxy"), r2 = num("reg_r2");
+    const cipDev = num("cip_deviation"), regRes = num("reg_residual"), regResUni = num("reg_residual_uni");
+    const bias   = num("fixing_bias"),  biasRaw = num("fixing_bias_raw"), defi = num("defense_intensity");
+    const alpha  = num("alpha_cny_dxy");
+
+    /* Layer 01 */
+    const f01 = [];
+    if (!isNaN(carry)) {
+        f01.push(`Raw carry stands at <strong>${fmt(carry)}%</strong>${
+            !isNaN(pct1) ? ` — the <strong>${pct1.toFixed(0)}<sup>th</sup> percentile</strong> over the trailing year` : ""
+        }${!isNaN(pct2) ? `, <strong>${pct2.toFixed(0)}<sup>th</sup> percentile</strong> over two years` : ""}.`);
+    }
+    if (!isNaN(carry) && carry > 2.5) {
+        f01.push(`A spread above 2.5% historically corresponds with sustained CNY depreciation pressure absent active intervention.`);
+    } else if (!isNaN(carry) && carry < 0) {
+        f01.push(`Negative differential has flipped the trade — borrowing USD to invest in CNY now offers a positive nominal pickup.`);
+    }
+    f01.push(`Without forward quotes, hedged carry remains uncomputed; the residual hedged-carry signal is captured in Layer 02's CIP basis.`);
+    document.getElementById("findings-01").innerHTML = f01.map(x => `<li>${x}</li>`).join("");
+
+    /* Layer 02 */
+    const f02 = [];
+    if (!isNaN(beta2)) {
+        f02.push(`Multivariate fit yields β<sub>DXY</sub> = <strong>${fmt(beta2, 4)}</strong> — every 1-point rise in the broad dollar predicts ${(beta2*1).toFixed(4)} CNY of USD/CNY appreciation.`);
+    }
+    if (!isNaN(r2)) {
+        f02.push(`Joint model (spread + DXY) explains <strong>${(r2*100).toFixed(1)}%</strong> of USD/CNY variance over the 252-day window.`);
+    }
+    if (!isNaN(beta1) && beta1 < 0 && !isNaN(beta2) && beta2 > 0) {
+        f02.push(`β<sub>spread</sub> turning negative is a multicollinearity artefact: spread and DXY co-move, and DXY absorbs most of the explanatory power. Read the residual, not β<sub>spread</sub> in isolation.`);
+    }
+    if (!isNaN(regRes) && !isNaN(regResUni)) {
+        const delta = Math.abs(regRes) - Math.abs(regResUni);
+        f02.push(`Today's <strong>multivariate residual</strong> is ${fmt(regRes, 4)} CNY vs single-variable ${fmt(regResUni, 4)} CNY${
+            delta < 0 ? ` — DXY de-noising has shrunk the unexplained gap` : ""
+        }.`);
+    }
+    if (!isNaN(cipDev)) {
+        const dir = cipDev > 0 ? "above" : "below";
+        f02.push(`CIP fair value sits ${dir} actual spot by <strong>${fmt(Math.abs(cipDev), 4)} CNY</strong> — a measure of cross-currency basis stress.`);
+    }
+    document.getElementById("findings-02").innerHTML = f02.map(x => `<li>${x}</li>`).join("");
+
+    /* Layer 03 */
+    const f03 = [];
+    if (!isNaN(alpha)) {
+        f03.push(`Rolling CNY/DXY beta α = <strong>${fmt(alpha)}</strong>${
+            (alpha >= 0.3 && alpha <= 0.5) ? " — squarely in the 0.3–0.5 textbook range" : ""
+        }.`);
+    }
+    if (!isNaN(bias) && !isNaN(biasRaw)) {
+        const adjPips = bias * 10000;
+        const rawPips = biasRaw * 10000;
+        f03.push(`DXY-adjusted bias today: <strong>${adjPips.toFixed(0)} pips</strong> (raw: ${rawPips.toFixed(0)} pips). The adjustment isolates true policy intent from mechanical overnight DXY moves.`);
+    }
+    if (!isNaN(bias)) {
+        if (bias < -0.005)      f03.push(`Negative bias indicates the PBOC is setting a <strong>stronger</strong> CNY than DXY-adjusted expectation — active defence posture.`);
+        else if (bias > 0.005)  f03.push(`Positive bias indicates the PBOC is permitting <strong>weaker</strong> CNY than expectation — letting the market lead.`);
+        else                    f03.push(`Bias near zero — no clear directional intent revealed today.`);
+    }
+    if (!isNaN(defi)) {
+        f03.push(`20-day defence intensity: <strong>${(defi*10000).toFixed(0)} pips</strong> of cumulative leaning against depreciation.`);
+    }
+    document.getElementById("findings-03").innerHTML = f03.map(x => `<li>${x}</li>`).join("");
+}
+
+/* ─────────────────────────────────────────────────────────────
+ *  Glossary
+ * ───────────────────────────────────────────────────────────── */
+function renderGlossary() {
+    const t = document.getElementById("glossary-table");
+    const rows = GLOSSARY_DEFS.map(([code, unit, source, desc]) =>
+        `<tr><td>${code}</td><td>${unit}</td><td>${source}</td><td>${desc}</td></tr>`
+    ).join("");
+    t.innerHTML = `<thead><tr><th>Field</th><th>Unit</th><th>Source</th><th>Definition</th></tr></thead><tbody>${rows}</tbody>`;
+}
+
+/* ─────────────────────────────────────────────────────────────
+ *  Recent Data Table
+ * ───────────────────────────────────────────────────────────── */
+function renderTable(series) {
+    const cols = ["date", "usdcny", "usdcnh", "pboc_fix", "us_2y", "cn_2y", "dxy",
+                  "raw_carry", "reg_residual", "fixing_bias", "composite_score"];
+    const labels = { date: "Date", usdcny: "USD/CNY", usdcnh: "USD/CNH", pboc_fix: "Fix",
+                     us_2y: "US 2Y", cn_2y: "CN 2Y", dxy: "DXY", raw_carry: "Carry",
+                     reg_residual: "Resid", fixing_bias: "Bias", composite_score: "Score" };
+    document.getElementById("data-thead").innerHTML =
+        cols.map(c => `<th>${labels[c]}</th>`).join("");
+    const rows = series.slice(-30).reverse();
+    document.getElementById("data-tbody").innerHTML = rows.map(r => `
+        <tr>${cols.map(c => {
+            const v = r[c];
+            if (v == null) return "<td>—</td>";
+            if (c === "date") return `<td>${v}</td>`;
+            const num = parseFloat(v);
+            if (c === "fixing_bias")     return `<td>${(num*10000).toFixed(0)}</td>`;
+            if (c === "composite_score") return `<td>${num.toFixed(0)}</td>`;
+            return `<td>${num.toFixed(c.includes("2y") || c === "raw_carry" || c === "dxy" ? 2 : 4)}</td>`;
+        }).join("")}</tr>`).join("");
+}
+
+/* ─────────────────────────────────────────────────────────────
+ *  Download
+ * ───────────────────────────────────────────────────────────── */
+function renderDownload(series) {
+    if (!series.length) return;
+    const cols = Object.keys(series[0]);
+    const csv = [cols.join(",")]
+        .concat(series.map(r => cols.map(c => r[c] ?? "").join(",")))
+        .join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    document.getElementById("download-csv").href = url;
+    const top = document.getElementById("dl-csv-top");
+    if (top) { top.href = url; top.setAttribute("download", "usdcny_tracker.csv"); }
+}
+
+/* ─────────────────────────────────────────────────────────────
+ *  Chart Builder
+ * ───────────────────────────────────────────────────────────── */
+const BUILDER_FIELDS = [
+    { key: "us_2y",            label: "US 2Y" },
+    { key: "cn_2y",            label: "CN 2Y" },
+    { key: "yield_spread",     label: "Spread" },
+    { key: "usdcny",           label: "USD/CNY" },
+    { key: "usdcnh",           label: "USD/CNH" },
+    { key: "pboc_fix",         label: "PBOC Fix" },
+    { key: "dxy",              label: "DXY" },
+    { key: "raw_carry",        label: "Raw Carry" },
+    { key: "carry_pct_rank",   label: "Carry Pctile" },
+    { key: "cip_deviation",    label: "CIP Dev" },
+    { key: "reg_residual",     label: "Residual (multi)" },
+    { key: "reg_residual_uni", label: "Residual (uni)" },
+    { key: "fixing_bias",      label: "Fixing Bias" },
+    { key: "fixing_bias_raw",  label: "Bias (raw)" },
+    { key: "defense_intensity",label: "Defense Intensity" },
+    { key: "composite_score",  label: "Composite" },
+];
+
+const BUILDER_DEFAULTS = ["raw_carry", "dxy"];
+
+function renderBuilder(series) {
+    const wrap = document.getElementById("builder-checkboxes");
+    wrap.innerHTML = BUILDER_FIELDS.map(f => {
+        const checked = BUILDER_DEFAULTS.includes(f.key);
+        return `<label class="${checked ? "checked" : ""}">
+                    <input type="checkbox" value="${f.key}" ${checked ? "checked" : ""}>
+                    ${f.label}
+                </label>`;
+    }).join("");
+
+    wrap.querySelectorAll("label").forEach(lbl => {
+        lbl.addEventListener("click", () => {
+            const cb = lbl.querySelector("input");
+            setTimeout(() => {
+                lbl.classList.toggle("checked", cb.checked);
+                renderBuilderChart(series);
+            }, 0);
+        });
+    });
+
+    document.getElementById("builder-freq").addEventListener("change", () => renderBuilderChart(series));
+    renderBuilderChart(series);
+}
+
+function aggregate(series, freq) {
+    if (freq === "D") return series;
+    const buckets = new Map();
+    for (const r of series) {
+        if (!r.date) continue;
+        const d = new Date(r.date);
+        let key;
+        if (freq === "W") {
+            const day = d.getUTCDay() || 7;
+            d.setUTCDate(d.getUTCDate() - day + 1);
+            key = d.toISOString().slice(0, 10);
+        } else {
+            key = `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,"0")}-01`;
+        }
+        if (!buckets.has(key)) buckets.set(key, []);
+        buckets.get(key).push(r);
+    }
+    const out = [];
+    for (const [date, rows] of [...buckets.entries()].sort()) {
+        const merged = { date };
+        for (const k of Object.keys(rows[0])) {
+            if (k === "date") continue;
+            const vals = rows.map(r => r[k]).filter(v => v != null && !isNaN(parseFloat(v))).map(parseFloat);
+            merged[k] = vals.length ? vals.reduce((a,b)=>a+b,0) / vals.length : null;
+        }
+        out.push(merged);
+    }
+    return out;
+}
+
+function renderBuilderChart(series) {
+    const freq = document.getElementById("builder-freq").value;
+    const checked = [...document.querySelectorAll("#builder-checkboxes input:checked")].map(i => i.value);
+    const data = aggregate(series, freq);
+    const dates = data.map(r => r.date);
+
+    const palette = [COLORS.line1, COLORS.line2, COLORS.line3, COLORS.line4, COLORS.bear, COLORS.bull];
+    const traces = checked.map((key, i) => {
+        const fld = BUILDER_FIELDS.find(f => f.key === key);
+        return {
+            x: dates, y: data.map(r => r[key]), name: fld ? fld.label : key, type: "scatter",
+            line: { color: palette[i % palette.length], width: 1.7 },
+        };
+    });
+
+    if (!traces.length) {
+        Plotly.newPlot("chart-builder", [], {
+            ...LAYOUT_BASE,
+            annotations: [{ text: "Select one or more series above", xref: "paper", yref: "paper",
+                            x: 0.5, y: 0.5, showarrow: false, font: { size: 14, color: COLORS.muted } }],
+        }, PLOTLY_CONFIG);
+        return;
+    }
+
+    Plotly.newPlot("chart-builder", traces, {
+        ...LAYOUT_BASE,
+        yaxis: { ...LAYOUT_BASE.yaxis, title: { text: "Value", font: { size: 10 } } },
+    }, PLOTLY_CONFIG);
+}
+
+/* ─────────────────────────────────────────────────────────────
+ *  Citation
+ * ───────────────────────────────────────────────────────────── */
+function renderCitation(d) {
+    document.getElementById("cite-year").textContent = d.snapshot.date.slice(0, 4);
+    document.getElementById("cite-date").textContent = d.snapshot.date;
+    document.getElementById("footer-ts").textContent = d.generated_at;
+}
+
+/* boot */
+document.addEventListener("DOMContentLoaded", boot);

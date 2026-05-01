@@ -256,6 +256,18 @@ a:hover { color: var(--ochre); }
     font-weight: 600;
     letter-spacing: -0.02em;
     margin-bottom: 14px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+.author-avatar.photo {
+    background: var(--hairline);
+    padding: 0;
+}
+.author-avatar.photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
 }
 .author-name {
     font-size: 16px;
@@ -1304,7 +1316,7 @@ footer.site strong { color: var(--ink); font-weight: 500; }
             <div class="brand-mark">SD</div>
             <div class="brand-text">
                 USD/CNY Macro-Policy Tracker
-                <small id="topbar-version">2Y FOCUS · v3.2.4</small>
+                <small id="topbar-version">2Y FOCUS · v3.2.5</small>
             </div>
         </a>
         <div class="topbar-spacer"></div>
@@ -1330,20 +1342,20 @@ footer.site strong { color: var(--ink); font-weight: 500; }
     <!-- ── SIDEBAR ── -->
     <aside class="sidebar">
 
-        <!-- Author card (PLACEHOLDER — fill in your name/bio) -->
+        <!-- Author card -->
         <div class="author-card">
-            <div class="author-avatar" id="author-initials">SD</div>
-            <div class="author-name" id="author-name">[Your Name]<span class="placeholder-tag">Edit</span></div>
-            <div class="author-role" id="author-role">[Affiliation · Role]</div>
-            <div class="author-bio" id="author-bio">
-                [Replace this paragraph with your self-introduction. e.g. background,
-                research interests, connection to FX / macro-policy work, why you built
-                this tracker. ~3-4 lines is ideal.]
+            <div class="author-avatar photo" id="author-avatar">
+                <img src="images/erick-wei.png" alt="Erick Wei" width="128" height="128" loading="lazy" decoding="async">
+            </div>
+            <div class="author-name" id="author-name">Erick Wei</div>
+            <div class="author-role" id="author-role" data-i18n="html.author.role">Independent researcher · FX &amp; macro</div>
+            <div class="author-bio" id="author-bio" data-i18n="html.author.bio">
+                Open research tooling on USDCNY carry, CIP-implied hedging, and PBOC fixing signals.
             </div>
             <div class="author-links">
-                <a class="author-link" href="#" id="author-linkedin">LinkedIn</a>
-                <a class="author-link" href="#" id="author-email">Email</a>
-                <a class="author-link" href="#" id="author-cv">CV</a>
+                <a class="author-link" href="#" id="author-linkedin" rel="noopener">LinkedIn</a>
+                <a class="author-link" href="mailto:erickviann1@gmail.com" id="author-email">Email</a>
+                <a class="author-link" href="#" id="author-cv" rel="noopener">CV</a>
             </div>
         </div>
 
@@ -1837,7 +1849,7 @@ Defense Intensity = − rolling_mean(bias, 20d) × 10000  [pips]
         <footer class="site">
             <div class="row">
                 <div>
-                    <strong>USD/CNY Macro-Policy Divergence Tracker</strong> · v3.2.4 · 2Y Focus<br>
+                    <strong>USD/CNY Macro-Policy Divergence Tracker</strong> · v3.2.5 · 2Y Focus<br>
                     <span data-i18n="footer.gen">Generated</span> <span id="footer-ts">—</span> · <span data-i18n="footer.disclaimer">For research purposes only — not investment advice.</span>
                 </div>
                 <div style="text-align:right">
@@ -1850,6 +1862,6 @@ Defense Intensity = − rolling_mean(bias, 20d) × 10000  [pips]
     </main>
 </div>
 
-<script src="dashboard.js?v=3.2.4"></script>
+<script src="dashboard.js?v=3.2.5"></script>
 </body>
 </html>

@@ -1,10 +1,10 @@
 /* ═══════════════════════════════════════════════════════════════
  *  USD/CNY Macro-Policy Divergence Tracker · Dashboard renderer
- *  Editorial / institutional design · v3.2.4
+ *  Editorial / institutional design · v3.2.5
  * ═══════════════════════════════════════════════════════════════ */
 
 /** Single source for top bar + cache-bust alignment (footer & script tag in index.html). */
-const TRACKER_VERSION = "3.2.4";
+const TRACKER_VERSION = "3.2.5";
 
 /* ─────────────────────────────────────────────────────────────
  *  I18N Engine + Dictionaries
@@ -255,6 +255,8 @@ const I18N = {
     "html.papers":      "Related Research",
     "html.lineage":     "Methodology Lineage",
     "html.zones":       "Pressure Zones",
+    "html.author.role": "Independent researcher · FX & macro",
+    "html.author.bio":  "Open research tooling on USDCNY carry, CIP-implied hedging, and PBOC fixing signals.",
 
     "nav.gauge":        "Pressure Gauge",
     "nav.carry":        "Carry Feasibility",
@@ -596,6 +598,8 @@ const I18N = {
     "html.papers":      "相关研究",
     "html.lineage":     "方法论渊源",
     "html.zones":       "压力区间",
+    "html.author.role": "独立研究者 · 外汇与宏观",
+    "html.author.bio":  "开源研究工具：USD/CNY 套利、CIP 隐含对冲与中间价政策信号。",
 
     "nav.gauge":        "压力仪表盘",
     "nav.carry":        "套利可行性",

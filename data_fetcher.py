@@ -11,7 +11,13 @@ import numpy as np
 import yfinance as yf
 import streamlit as st
 from datetime import datetime, timedelta
+from pathlib import Path
 from config import START_DATE, END_DATE
+
+
+# Incremental store of CFETS USD/CNY 1Y all-in forward (全价) from fx_c_swap_cm.
+# Each successful build appends/updates the latest fixing so history grows over time.
+CFETS_FWD_CACHE = Path(__file__).resolve().parent / "cache" / "cfets_usdcny_1y_fwd.csv"
 
 
 # ─────────────────────────────────────────────────────────────
@@ -596,6 +602,65 @@ def fetch_shibor_1y() -> pd.Series:
     return s.dropna()
 
 
+def load_cfets_usdcny_1y_fwd_cache() -> pd.Series:
+    """Load cached 1Y outright forward (CNY per USD) indexed by calendar date."""
+    if not CFETS_FWD_CACHE.exists():
+        return pd.Series(dtype=float, name="usdcny_fwd_1y")
+    df = pd.read_csv(CFETS_FWD_CACHE, parse_dates=["date"])
+    if df.empty or "fwd_1y" not in df.columns:
+        return pd.Series(dtype=float, name="usdcny_fwd_1y")
+    s = pd.to_numeric(df["fwd_1y"], errors="coerce")
+    s.index = pd.to_datetime(df["date"], errors="coerce").dt.normalize()
+    return s.dropna().sort_index().loc[lambda x: x.index.notna()].astype(float)
+
+
+def update_cfets_usdcny_1y_fwd_cache() -> None:
+    """
+    Fetch today's USD/CNY 1Y all-in forward from CFETS C-Swap curve (akshare fx_c_swap_cm)
+    and merge into CSV cache (one row per calendar date).
+    Silent no-op on failure (network/SSL) — analytics will fall back to CIP proxy.
+    """
+    try:
+        import akshare as ak
+        raw = ak.fx_c_swap_cm()
+        if raw is None or raw.empty:
+            return
+        tenor_col = raw["期限品种"].astype(str).str.upper().str.strip()
+        sub = raw.loc[tenor_col == "1Y"]
+        if sub.empty:
+            return
+        row = sub.iloc[0]
+        fwd = float(pd.to_numeric(row["全价汇率"], errors="coerce"))
+        if not np.isfinite(fwd) or fwd <= 0:
+            return
+        pts_raw = row["掉期点(Pips)"] if "掉期点(Pips)" in row.index else np.nan
+        pts = float(pd.to_numeric(pts_raw, errors="coerce"))
+        if not np.isfinite(pts):
+            pts = np.nan
+        dt = pd.to_datetime(row["日期时间"], errors="coerce")
+        if pd.isna(dt):
+            return
+        d = dt.normalize()
+    except Exception:
+        return
+
+    CFETS_FWD_CACHE.parent.mkdir(parents=True, exist_ok=True)
+    if CFETS_FWD_CACHE.exists() and CFETS_FWD_CACHE.stat().st_size > 0:
+        try:
+            prev = pd.read_csv(CFETS_FWD_CACHE, parse_dates=["date"])
+        except Exception:
+            prev = pd.DataFrame(columns=["date", "fwd_1y", "swap_pts"])
+    else:
+        prev = pd.DataFrame(columns=["date", "fwd_1y", "swap_pts"])
+
+    new_row = pd.DataFrame([{"date": d, "fwd_1y": fwd, "swap_pts": pts}])
+    merged = pd.concat([prev, new_row], ignore_index=True)
+    merged["date"] = pd.to_datetime(merged["date"], errors="coerce").dt.normalize()
+    merged = merged.dropna(subset=["date"]).drop_duplicates(subset=["date"], keep="last")
+    merged = merged.sort_values("date")
+    merged.to_csv(CFETS_FWD_CACHE, index=False)
+
+
 def fetch_us_1y() -> pd.Series:
     """
     US 1Y Treasury yield (% annualised) via FRED CSV (no auth).
@@ -633,6 +698,7 @@ def get_master_data() -> tuple[pd.DataFrame, dict]:
         usdcnh      — offshore USD/CNH spot
         pboc_fix    — PBOC daily fixing
         onoffshore_gap — usdcnh - usdcny (CNH premium/discount)
+        usdcny_fwd_1y — USD/CNY 1Y all-in forward from CFETS cache (after first cache date)
     """
     bonds    = fetch_bond_yields()
     fx       = fetch_fx_spot()
@@ -640,6 +706,9 @@ def get_master_data() -> tuple[pd.DataFrame, dict]:
     dxy      = fetch_dxy()
     shibor1y = fetch_shibor_1y()      # v3.1: money-market CN funding cost
     us1y     = fetch_us_1y()          # v3.1: money-market US funding cost
+
+    update_cfets_usdcny_1y_fwd_cache()
+    fwd_1y_hist = load_cfets_usdcny_1y_fwd_cache()
 
     # If yfinance gave us nothing, try akshare for FX
     if fx.empty or "usdcny" not in fx.columns or fx["usdcny"].notna().sum() < 30:
@@ -699,6 +768,12 @@ def get_master_data() -> tuple[pd.DataFrame, dict]:
     if "usdcnh" in df and "usdcny" in df:
         df["onoffshore_gap"] = df["usdcnh"] - df["usdcny"]
 
+    if not fwd_1y_hist.empty:
+        first_obs = fwd_1y_hist.index.min()
+        ser = fwd_1y_hist.reindex(idx).ffill()
+        ser = ser.where(ser.index >= first_obs, np.nan)
+        df["usdcny_fwd_1y"] = ser
+
     df = df.dropna(how="all").ffill(limit=5)
 
     quality = {
@@ -710,6 +785,7 @@ def get_master_data() -> tuple[pd.DataFrame, dict]:
         "dxy":       df["dxy"].notna().mean()       if "dxy"       in df else 0,
         "shibor_1y": df["shibor_1y"].notna().mean() if "shibor_1y" in df else 0,
         "us_1y":     df["us_1y"].notna().mean()     if "us_1y"     in df else 0,
+        "usdcny_fwd_1y": df["usdcny_fwd_1y"].notna().mean() if "usdcny_fwd_1y" in df else 0,
     }
 
     return df, quality

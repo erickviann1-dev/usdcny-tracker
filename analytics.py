@@ -206,27 +206,46 @@ def calc_mispricing(df: pd.DataFrame) -> pd.DataFrame:
         out["cip_deviation"], out["reg_residual"]
     )
 
-    # ── v3.1 · Hedged-Carry Proxy ──────────────────────────────
-    # Without paid swap-point feeds we can't get true Hedged Carry directly.
-    # But CIP deviation IS the residual after the implied forward cost,
-    # so we can derive an analytically-correct proxy:
+    # ── Hedged carry / return — market 1Y forward when available ─────────
+    # Primary (when usdcny_fwd_1y + 1Y rates exist): exact 1Y covered return (% of notional):
+    #   hedged_return = 100 × [ (1 + r_US) × (F/S) − (1 + r_CN) ]
+    #   ≡ US asset yield + FX forward premium (100×(F/S−1)) − CN funding in tiny spreads
+    # Fallback (no market forward): legacy 2Y CIP proxy
+    #   hedged_carry_proxy = raw_carry − cip_dev_pct
     #
-    #   raw_carry            = US_2Y − CN_2Y                     (% per year)
-    #   cip_deviation        = spot − cip_fair_spot              (CNY units)
-    #   cip_dev_pct          = cip_deviation / spot × 100        (%)
-    #   hedged_carry_proxy   = raw_carry − cip_dev_pct           (% per year)
-    #
-    # Interpretation:
-    #   • If CIP holds perfectly → hedged_carry_proxy ≈ 0 (no free lunch)
-    #   • Positive proxy → real arbitrage opportunity exists after hedging
-    #     (rare; signals dislocated USD funding or capital-control friction)
-    #   • Negative proxy → hedging more than wipes out the carry (PBOC
-    #     defence + capital outflow pressure baked into forward points)
+    # Forward curve: CFETS USD/CNY 1Y all-in (see data_fetcher cache), forward-filled.
     if "raw_carry" in out.columns and "cip_deviation" in out.columns and "usdcny" in out.columns:
-        out["cip_dev_pct"]        = (out["cip_deviation"] / out["usdcny"]) * 100
-        out["hedged_carry_proxy"] = out["raw_carry"] - out["cip_dev_pct"]
+        out["cip_dev_pct"] = (out["cip_deviation"] / out["usdcny"]) * 100
+        out["forward_premium_pct"] = np.nan
+        out["hedged_carry_proxy"] = np.nan
+        out["hedged_carry_method"] = ""
 
-        # 252-day percentile rank — how rare is today's hedged opportunity?
+        S = pd.to_numeric(out["usdcny"], errors="coerce")
+        if "usdcny_fwd_1y" in out.columns:
+            F = pd.to_numeric(out["usdcny_fwd_1y"], errors="coerce")
+        else:
+            F = pd.Series(np.nan, index=out.index)
+        rus = pd.to_numeric(out["us_1y"], errors="coerce") / 100.0 if "us_1y" in out.columns else pd.Series(np.nan, index=out.index)
+        rcn = pd.to_numeric(out["shibor_1y"], errors="coerce") / 100.0 if "shibor_1y" in out.columns else pd.Series(np.nan, index=out.index)
+
+        mkt = (
+            F.notna() & S.notna() & rus.notna() & rcn.notna()
+            & (F > 0) & (S > 0) & (F / S <= 1.15) & (F / S >= 0.85)
+        )
+        out.loc[mkt, "forward_premium_pct"] = 100.0 * (F[mkt] / S[mkt] - 1.0)
+        out.loc[mkt, "hedged_carry_proxy"] = 100.0 * (
+            (1.0 + rus[mkt]) * (F[mkt] / S[mkt]) - (1.0 + rcn[mkt])
+        )
+        out.loc[mkt, "hedged_carry_method"] = "market_1y"
+
+        cip_fb = (
+            (~mkt) & out["raw_carry"].notna() & out["cip_dev_pct"].notna()
+        )
+        out.loc[cip_fb, "hedged_carry_proxy"] = (
+            out.loc[cip_fb, "raw_carry"] - out.loc[cip_fb, "cip_dev_pct"]
+        )
+        out.loc[cip_fb, "hedged_carry_method"] = "cip_proxy_2y"
+
         out["hedged_carry_pct_rank"] = (
             out["hedged_carry_proxy"]
             .rolling(252, min_periods=60)
@@ -452,8 +471,15 @@ def latest_snapshot(df: pd.DataFrame) -> dict:
         "shibor_1y":            g("shibor_1y"),
         "us_1y":                g("us_1y"),
         "mm_spread":            g("mm_spread"),
+        "usdcny_fwd_1y":        g("usdcny_fwd_1y"),
         "hedged_carry_proxy":   g("hedged_carry_proxy"),
         "hedged_carry_pct_rank":g("hedged_carry_pct_rank", ".0f"),
+        "hedged_carry_method":  (
+            ""
+            if "hedged_carry_method" not in last.index
+            or last.get("hedged_carry_method") in ("", None)
+            else str(last.get("hedged_carry_method"))
+        ),
         "cip_deviation":     g("cip_deviation"),
         "reg_residual":      g("reg_residual"),
         "reg_residual_uni":  g("reg_residual_uni"),

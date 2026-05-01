@@ -29,7 +29,7 @@ import pandas as pd
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).parent))
-from data_fetcher import get_master_data
+from data_fetcher import get_master_data, update_cfets_usdcny_1y_fwd_cache
 from analytics   import run_full_analysis, latest_snapshot
 from tools.build_notebook import build_replication_notebook
 from config import W_CARRY, W_MISPR, W_FIXING, COMPOSITE_HIGH_THRESHOLD
@@ -48,6 +48,7 @@ def df_to_records(df: pd.DataFrame, cols=None) -> list[dict]:
 
 def main():
     print("→ Fetching market data (may take 30-60s)...")
+    update_cfets_usdcny_1y_fwd_cache()
     master_df, quality = get_master_data()
 
     if master_df.empty:
@@ -70,7 +71,8 @@ def main():
             "carry_pct_rank", "carry_pct_rank_2y",
             # v3.1 — money-market funding rates + hedged-carry proxy
             "shibor_1y", "us_1y", "mm_spread", "mm_carry",
-            "cip_dev_pct", "hedged_carry_proxy", "hedged_carry_pct_rank",
+            "cip_dev_pct", "usdcny_fwd_1y", "forward_premium_pct",
+            "hedged_carry_proxy", "hedged_carry_pct_rank", "hedged_carry_method",
             "cip_fair_spot", "cip_deviation",
             "reg_predicted", "reg_residual", "reg_predicted_uni", "reg_residual_uni",
             "reg_beta_spread", "reg_beta_dxy", "reg_r2", "reg_residual_z",
@@ -129,7 +131,8 @@ def write_excel(df, snap, series_records):
         "raw_carry", "carry_ma20", "carry_ma60", "carry_ma120",
         "carry_pct_rank", "carry_pct_rank_2y",
         "shibor_1y", "us_1y", "mm_spread", "mm_carry",
-        "cip_dev_pct", "hedged_carry_proxy", "hedged_carry_pct_rank",
+        "cip_dev_pct", "usdcny_fwd_1y", "forward_premium_pct",
+        "hedged_carry_proxy", "hedged_carry_pct_rank", "hedged_carry_method",
         "cip_fair_spot", "cip_deviation",
         "reg_predicted", "reg_residual", "reg_predicted_uni", "reg_residual_uni",
         "reg_beta_spread", "reg_beta_dxy", "reg_r2", "reg_residual_z",
@@ -172,6 +175,9 @@ def write_excel(df, snap, series_records):
     ws3.append(["Composite", "Composite Score",
                 f"{W_CARRY:.0%}·carry_pct_rank + {W_MISPR:.0%}·mispricing_score + {W_FIXING:.0%}·policy_score",
                 f"Weighted blend 0–100; «High» band begins at {COMPOSITE_HIGH_THRESHOLD}"])
+    ws3.append(["Layer 1b", "Hedged return (market 1Y)",
+                "100×[(1+UST1Y)×(F₁ᵧ/S)−(1+Shibor1Y)] if CFETS F₁ᵧ cached; else raw_carry−cip_dev%",
+                "F₁ᵧ = CFETS USD/CNY 1Y all-in forward; cache grows daily. Fallback = 2Y CIP proxy"])
     ws3.append(["Layer 2+", "Residual z-score",
                 "(reg_residual − rolling mean) / rolling σ over 252d",
                 "In-sample standardisation of multivariate ε; charted in diagnostics panel"])

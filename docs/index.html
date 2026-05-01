@@ -1316,7 +1316,7 @@ footer.site strong { color: var(--ink); font-weight: 500; }
             <div class="brand-mark">SD</div>
             <div class="brand-text">
                 USD/CNY Macro-Policy Tracker
-                <small id="topbar-version">2Y FOCUS · v3.2.6</small>
+                <small id="topbar-version">2Y FOCUS · v3.2.7</small>
             </div>
         </a>
         <div class="topbar-spacer"></div>
@@ -1502,8 +1502,9 @@ footer.site strong { color: var(--ink); font-weight: 500; }
                 <h3 data-i18n="method.carry">Carry Decomposition</h3>
                 <div class="formula">
 Raw Carry            = US_2Y − CN_2Y                           <em>(gross incentive)</em>
-CIP Basis (swap cost)= (USD/CNY_actual − CIP_fair) / spot × 100  <em>(% hedging cost)</em>
-Hedged Carry Proxy   = Raw Carry − CIP Basis                   <em>(net after forward hedge)</em>
+Hedged return        = 100 × [ (1 + UST_1Y/100)×(F₁ᵧ/S) − (1 + Shibor_1Y/100) ]   <em>when CFETS 1Y outright F₁ᵧ is available</em>
+                      ≈ UST_1Y + [100×(F₁ᵧ/S − 1)] − Shibor_1Y   <em>(same object, decomposed)</em>
+Fallback (no F₁ᵧ)    = Raw Carry − CIP_Basis%                   <em>2Y CIP-implied proxy</em>
 MM Spread (1Y)       = UST_1Y − Shibor_1Y                      <em>(funding-rate analog)</em>
                 </div>
                 <p data-i18n-html="ch01.method.note">
@@ -1963,7 +1964,7 @@ Defense Intensity = − rolling_mean(bias, 20d) × 10000  [pips]
         <footer class="site">
             <div class="row">
                 <div>
-                    <strong>USD/CNY Macro-Policy Divergence Tracker</strong> · v3.2.6 · 2Y Focus<br>
+                    <strong>USD/CNY Macro-Policy Divergence Tracker</strong> · v3.2.7 · 2Y Focus<br>
                     <span data-i18n="footer.gen">Generated</span> <span id="footer-ts">—</span> · <span data-i18n="footer.disclaimer">For research purposes only — not investment advice.</span>
                 </div>
                 <div style="text-align:right">
@@ -1976,6 +1977,6 @@ Defense Intensity = − rolling_mean(bias, 20d) × 10000  [pips]
     </main>
 </div>
 
-<script src="dashboard.js?v=3.2.6"></script>
+<script src="dashboard.js?v=3.2.7"></script>
 </body>
 </html>

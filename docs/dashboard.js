@@ -1,10 +1,10 @@
 /* ═══════════════════════════════════════════════════════════════
  *  USD/CNY Macro-Policy Divergence Tracker · Dashboard renderer
- *  Editorial / institutional design · v3.2.6
+ *  Editorial / institutional design · v3.2.7
  * ═══════════════════════════════════════════════════════════════ */
 
 /** Single source for top bar + cache-bust alignment (footer & script tag in index.html). */
-const TRACKER_VERSION = "3.2.6";
+const TRACKER_VERSION = "3.2.7";
 
 /* ─────────────────────────────────────────────────────────────
  *  I18N Engine + Dictionaries
@@ -40,7 +40,7 @@ const I18N = {
     "kpi.yields":       "US 2Y · CN 2Y",
     "kpi.carry":        "Raw Carry",
     "kpi.carrypct":     "Carry Pctile",
-    "kpi.hedged":       "Hedged Carry (CIP-implied)",
+    "kpi.hedged":       "Hedged return (covered)",
     "kpi.mm":           "MM Spread (1Y)",
     "kpi.shibor":       "Shibor 1Y",
     "kpi.us1y":         "UST 1Y",
@@ -63,7 +63,9 @@ const I18N = {
     "meta.modelfit":    "model fit",
     "meta.fixadj":      "fix adj.",
     "meta.vsdxyadj":    "vs DXY-adj.",
-    "meta.cipResid":    "raw − CIP basis",
+    "meta.cipResid":    "2Y CIP proxy",
+    "meta.hedgedMarket1y": "CFETS 1Y F + UST1Y − Shibor1Y",
+    "meta.hedgedCip2y":    "raw carry − CIP basis (2Y)",
     "meta.mm1y":        "UST1Y − Shibor1Y",
     "meta.cn1y":        "CN money market",
     "meta.us1y":        "US money market",
@@ -116,7 +118,7 @@ const I18N = {
     "chart.fixing":     "Fixing Bias — Raw vs DXY-Adjusted",
     "chart.composite":  "One Number, Three Forces",
     "chart.hedgedCarry":    "Carry Decomposition — Raw vs Hedged",
-    "chart.hedgedCarrySub": "Hedged carry = raw carry minus CIP basis (forward-hedge cost proxy)",
+    "chart.hedgedCarrySub": "Market 1Y: 100×[(1+UST1Y)×F/S−(1+Shibor1Y)]; else raw carry − CIP basis",
     "chart.mmFunding":      "Money-Market Funding Layer — 1Y Tenor",
     "chart.mmFundingSub":   "Short-end funding rate differential (modern Libor-Shibor analog)",
     "chart.regBetas":       "Rolling OLS — β₁ & β₂",
@@ -126,7 +128,7 @@ const I18N = {
 
     "roadmap.label":        "Roadmap",
     "roadmap.swap.title":   "Real swap points, forwards & NDF",
-    "roadmap.swap.body":    "This build uses a <strong>CIP-implied hedged-carry proxy</strong> because public APIs do not expose onshore swap strips. The next upgrade is to layer in <strong>USD/CNY forward points</strong>, <strong>CNH forwards</strong>, <strong>NDF</strong> pricing, and <strong>multi-tenor</strong> (1M–2Y) hedged carry — onshore vs offshore — so Layer 1 reflects tradable economics, not only theoretical pressure.",
+    "roadmap.swap.body":    "CFETS 1Y all-in forward is now merged when available (daily cache). Further upgrades: longer history import, CNH forwards, NDF, and multi-tenor curves so Layer 1 tracks tradable economics end-to-end.",
     "roadmap.reg.title":    "Model stability & alternatives",
     "roadmap.reg.body":     "Rolling coefficients and R² are a first diagnostic. Further work: richer controls, <strong>pseudo out-of-sample</strong> forecasts, and benchmarks vs <strong>ridge / VAR</strong> — published when the specification survives stability tests.",
     "roadmap.policy.title": "Policy toolkit monitor",
@@ -192,7 +194,7 @@ const I18N = {
     "trace.cn2y":       "CN 2Y",
     "trace.spread":     "Spread (bps)",
     "trace.rawCarry":   "Raw Carry",
-    "trace.hedgedCarry":"Hedged Carry (CIP-implied)",
+    "trace.hedgedCarry":"Hedged return",
     "trace.ust1y":      "UST 1Y",
     "trace.shibor1y":   "Shibor 1Y",
     "trace.mmSpread":   "MM Spread (bps)",
@@ -242,7 +244,7 @@ const I18N = {
     "finding.01.spread_neg": () =>
         "Negative differential has flipped the trade — borrowing USD to invest in CNY now offers a positive nominal pickup.",
     "finding.01.hedged": () =>
-        "Without forward quotes, hedged carry remains uncomputed; the residual hedged-carry signal is captured in Layer 02's CIP basis.",
+        "Hedged line uses CFETS 1Y all-in forward when cached (see cache/cfets_usdcny_1y_fwd.csv); otherwise the 2Y CIP proxy.",
 
     "finding.02.beta_dxy": (beta2, delta) =>
         `Multivariate fit yields β<sub>DXY</sub> = <strong>${beta2}</strong> — every 1-point rise in the broad dollar predicts ${delta} CNY of USD/CNY appreciation.`,
@@ -344,7 +346,7 @@ const I18N = {
     "ch01.eyebrow":     "Layer One · Carry Monitor",
     "ch01.title":       "Carry Monitor — From Gross Spread to Hedged P&L",
     "ch01.lead":        'The "water pressure" of carry-trade capital: how much can you earn borrowing CNY and lending USD? We track both the <strong>raw 2Y yield differential</strong> and a <strong>CIP-implied hedged carry proxy</strong> that strips out forward-point costs. When hedged carry is positive and rising, speculative outflow pressure is structurally building — regardless of what the spot rate does today.',
-    "ch01.method.note": "Free APIs do not expose real swap-point quotes. We derive the hedging cost from Covered Interest Parity: the CIP basis measures how far the actual spot deviates from what arbitrage-free forwards imply. A <strong>positive</strong> hedged carry proxy means real arbitrage profit exists after hedging — historically rare and a sign of USD funding stress or capital-control friction.",
+    "ch01.method.note": "When CFETS USD/CNY 1Y all-in forward is cached (<code>cache/cfets_usdcny_1y_fwd.csv</code>), hedged return uses market <strong>F</strong> with UST 1Y and Shibor 1Y — a market-quote proxy, not pure theory. History fills forward-only from the first cached date onward (earlier dates fall back to the 2Y CIP proxy). A <strong>positive</strong> reading still flags rare pressure/dislocation.",
 
     "ch02.eyebrow":     "Layer Two · Mispricing",
     "ch02.title":       "De-Noising With the Broad Dollar",
@@ -445,7 +447,7 @@ const I18N = {
     "kpi.yields":       "美 2Y · 中 2Y",
     "kpi.carry":        "名义套利",
     "kpi.carrypct":     "套利分位",
-    "kpi.hedged":       "对冲后利差（CIP 推算）",
+    "kpi.hedged":       "对冲收益（套息后）",
     "kpi.mm":           "1Y 货币市场利差",
     "kpi.shibor":       "Shibor 1Y",
     "kpi.us1y":         "美 1Y 国债",
@@ -468,7 +470,9 @@ const I18N = {
     "meta.modelfit":    "模型拟合度",
     "meta.fixadj":      "中间价调整",
     "meta.vsdxyadj":    "vs DXY 调整",
-    "meta.cipResid":    "毛利差 − CIP 基差",
+    "meta.cipResid":    "2Y CIP 代理",
+    "meta.hedgedMarket1y": "CFETS 1年期 F + 美 1Y − Shibor1Y",
+    "meta.hedgedCip2y":    "名义利差 − CIP 基差（2Y）",
     "meta.mm1y":        "UST1Y − Shibor1Y",
     "meta.cn1y":        "CN 货币市场",
     "meta.us1y":        "US 货币市场",
@@ -516,7 +520,7 @@ const I18N = {
     "chart.fixing":     "中间价偏差 — 原始 vs DXY 调整",
     "chart.composite":  "一个数字，三重力量",
     "chart.hedgedCarry":    "套利分解 — 名义 vs 对冲后",
-    "chart.hedgedCarrySub": "对冲后套利 = 名义套利 − CIP 基差（远期对冲成本代理）",
+    "chart.hedgedCarrySub": "市场 1Y：100×[(1+美1Y)×F/S−(1+Shibor1Y)]；否则 名义套利 − CIP 基差",
     "chart.mmFunding":      "货币市场资金层 — 1 年期",
     "chart.mmFundingSub":   "短端资金利率差异（现代版 Libor-Shibor 利差）",
     "chart.regBetas":       "滚动 OLS — β₁ 与 β₂",
@@ -526,7 +530,7 @@ const I18N = {
 
     "roadmap.label":        "路线图",
     "roadmap.swap.title":   "真实掉期点、远期与 NDF",
-    "roadmap.swap.body":    "当前版本因公开数据限制，使用 <strong>CIP 隐含对冲后套利代理</strong>。下一步拟接入 <strong>USD/CNY 远期点</strong>、<strong>CNH 远期</strong>、<strong>NDF</strong> 及 <strong>多期限（1M–2Y）</strong> 对冲收益，区分在岸与离岸，使第一层更贴近可交易的经济学含义。",
+    "roadmap.swap.body":    "已接入 CFETS 1Y 全价远期（按日追加缓存）。后续可导入更长历史、CNH 远期、NDF 与多期限曲线，使第一层完整贴近可交易逻辑。",
     "roadmap.reg.title":    "模型稳定性与替代设定",
     "roadmap.reg.body":     "滚动系数与 R² 是第一步诊断。后续可扩展控制变量、<strong>伪样本外</strong>预测，并与 <strong>岭回归 / VAR</strong> 等对照——仅在设定通过稳定性检验后对外固化。",
     "roadmap.policy.title": "政策工具箱监控",
@@ -587,7 +591,7 @@ const I18N = {
     "trace.cn2y":       "中 2Y",
     "trace.spread":     "利差（基点）",
     "trace.rawCarry":   "名义套利",
-    "trace.hedgedCarry":"对冲后套利（CIP 推算）",
+    "trace.hedgedCarry":"对冲收益",
     "trace.ust1y":      "美国 1Y 国债",
     "trace.shibor1y":   "Shibor 1Y",
     "trace.mmSpread":   "MM 利差（基点）",
@@ -637,7 +641,7 @@ const I18N = {
     "finding.01.spread_neg": () =>
         "利差已反转 — 借入美元投资人民币可获正名义收益。",
     "finding.01.hedged": () =>
-        "因缺乏远期报价，对冲后套利暂无法计算；残余对冲信号体现在第二层 CIP 基差中。",
+        "对冲序列优先使用 CFETS 美元兑人民币 1 年期全价远期（见 cache/cfets_usdcny_1y_fwd.csv 累积）；否则退回 2Y CIP 代理。",
 
     "finding.02.beta_dxy": (beta2, delta) =>
         `多变量拟合 β<sub>DXY</sub> = <strong>${beta2}</strong> — 广义美元每上升 1 点，预测 USD/CNY 升值 ${delta} CNY。`,
@@ -792,7 +796,7 @@ const I18N = {
 
     "ch01.title":       "套利监控 — 从毛利差到对冲后 P&L",
     "ch01.lead":        "套利资本的「水压」：借人民币、投美元，能赚多少？我们同时追踪<strong>名义 2 年期利差</strong>和<strong>CIP 隐含对冲后套利代理</strong>（扣除远期对冲成本）。当对冲后套利为正且趋势上行时，投机性资本外流压力正在结构性积聚——无论今天即期汇率怎么走。",
-    "ch01.method.note": "免费 API 无法获取真实掉期点报价。我们通过抛补利率平价（CIP）反推对冲成本：CIP 基差衡量的是实际即期汇率偏离无套利远期隐含值的程度。对冲后套利代理为<strong>正值</strong>意味着扣除对冲成本后仍存在真实套利利润——历史上很少出现，通常预示美元融资压力或资本管制摩擦。",
+    "ch01.method.note": "当 CFETS 美元兑人民币 <strong>1 年期全价远期</strong>已写入缓存（<code>cache/cfets_usdcny_1y_fwd.csv</code>）时，对冲收益使用市场 <strong>F</strong> 配合美 1Y 国债与 Shibor1Y，属于市场报价代理而非纯理论。自首次入缓存日期起向前填充远期；更早样本仍用 2Y CIP 代理。<strong>正值</strong>仍提示少见的压力/错配。",
     "ch02.title":       "用美元广义指数去噪",
     "ch02.lead":        "纯利差-汇率回归混淆了两个驱动因素：中美利差和美元广义走势。如果利差扩大的同时 DXY 也在上涨，人民币稳定其实是合理的——并非干预。因此升级为<strong>多变量 OLS</strong>，将 USD/CNY 对利差<em>和</em> DXY 同时回归。残差隔离了中国特有因素。",
     "ch02.pullquote":   "只有在过滤掉美元广义噪音之后，残差才成为风险溢价与政策干预动态的干净读数。",
@@ -984,7 +988,10 @@ const GLOSSARY_DEFS = [
     ["shibor_1y",        "%",      "akshare rate_interbank",  "Shibor 1Y interbank rate",        "rate_interbank|https://github.com/akfamily/akshare/wiki"],
     ["us_1y",            "%",      "FRED DGS1",              "US 1Y Treasury yield",            "DGS1|https://fred.stlouisfed.org/series/DGS1"],
     ["mm_spread",        "%",      "computed",                "us_1y − shibor_1y",               ""],
-    ["hedged_carry_proxy","%",     "computed",                "raw_carry − cip_dev_pct",         ""],
+    ["hedged_carry_proxy","%",     "computed",                "1Y covered return or 2Y CIP proxy", ""],
+    ["usdcny_fwd_1y",    "CNY/USD","CFETS→cache",             "USD/CNY 1Y all-in forward, daily append", ""],
+    ["forward_premium_pct","%",    "computed",                "100×(F/S−1) when market F present",    ""],
+    ["hedged_carry_method","",    "computed",                "market_1y | cip_proxy_2y",          ""],
     ["cip_dev_pct",      "%",      "computed",                "cip_deviation / spot × 100",      ""],
     ["policy_score",     "0–100",  "computed",                "Fixing-bias percentile",          ""],
 ];
@@ -1108,9 +1115,14 @@ function renderKPIs(s) {
         tile(t("kpi.yields"),      `${s.us_2y}% · ${s.cn_2y}%`,       "",      t("meta.yields")),
         tile(t("kpi.carry"),       `${s.raw_carry}%`,                 carryCls, t("meta.uscn2y")),
         tile(t("kpi.carrypct"),    `${s.carry_pct_rank} / 100`,       "",      t("meta.vs252d")),
+    const hedgedMeta = s.hedged_carry_method === "market_1y"
+        ? t("meta.hedgedMarket1y")
+        : s.hedged_carry_method === "cip_proxy_2y"
+        ? t("meta.hedgedCip2y")
+        : t("meta.cipResid");
         tile(t("kpi.hedged"),      isNA(s.hedged_carry_proxy) ? "—" : `${s.hedged_carry_proxy}%`,
                                                                        hedgedCls(s.hedged_carry_proxy),
-                                                                                t("meta.cipResid")),
+                                                                                hedgedMeta),
         tile(t("kpi.mm"),          isNA(s.mm_spread) ? "—" : `${s.mm_spread}%`, "", t("meta.mm1y")),
         tile(t("kpi.shibor"),      isNA(s.shibor_1y) ? "—" : `${s.shibor_1y}%`, "", t("meta.cn1y")),
         tile(t("kpi.us1y"),        isNA(s.us_1y)     ? "—" : `${s.us_1y}%`,     "", t("meta.us1y"),    "DGS1"),
@@ -1631,6 +1643,9 @@ const BUILDER_FIELDS = [
     { key: "fixing_bias",      label: "Fixing Bias" },
     { key: "fixing_bias_raw",  label: "Bias (raw)" },
     { key: "defense_intensity",label: "Defense Intensity" },
+    { key: "hedged_carry_proxy", label: "Hedged return %" },
+    { key: "usdcny_fwd_1y",    label: "USD/CNY F 1Y" },
+    { key: "forward_premium_pct", label: "Fwd prem %" },
     { key: "composite_score",  label: "Composite" },
 ];
 

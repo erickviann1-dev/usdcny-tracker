@@ -1,7 +1,10 @@
 /* ═══════════════════════════════════════════════════════════════
  *  USD/CNY Macro-Policy Divergence Tracker · Dashboard renderer
- *  Editorial / institutional design · v3.2.3
+ *  Editorial / institutional design · v3.2.4
  * ═══════════════════════════════════════════════════════════════ */
+
+/** Single source for top bar + cache-bust alignment (footer & script tag in index.html). */
+const TRACKER_VERSION = "3.2.4";
 
 /* ─────────────────────────────────────────────────────────────
  *  I18N Engine + Dictionaries
@@ -886,6 +889,8 @@ async function boot() {
  * ───────────────────────────────────────────────────────────── */
 function renderTopbar(d) {
     document.getElementById("topbar-date").textContent = d.snapshot.date;
+    const verEl = document.getElementById("topbar-version");
+    if (verEl) verEl.textContent = `2Y FOCUS · v${TRACKER_VERSION}`;
     const score = parseFloat(d.snapshot.composite_score);
     const zone  = zoneOf(score);
     document.getElementById("topbar-score").innerHTML =

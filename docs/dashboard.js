@@ -1,6 +1,6 @@
 /* ═══════════════════════════════════════════════════════════════
  *  USD/CNY Macro-Policy Divergence Tracker · Dashboard renderer
- *  Editorial / institutional design · v3.2.2
+ *  Editorial / institutional design · v3.2.3
  * ═══════════════════════════════════════════════════════════════ */
 
 /* ─────────────────────────────────────────────────────────────

@@ -4,6 +4,78 @@
 
 ---
 
+## 2026-05-01 14:54:11
+- **Data date:** 2026-05-01
+- **Rows:** 523 · **Payload:** 772 KB
+- **Composite Score:** 58/100
+- **USD/CNY:** 6.84 · **Raw Carry:** 2.62% · **Fixing Bias:** -100 pips
+- **Coverage:** cn_2y ✅99% · us_2y ✅100% · usdcny ✅100% · usdcnh ❌0% · pboc_fix ✅100% · dxy ✅100% · shibor_1y ✅100% · us_1y ✅100%
+---
+
+## 2026-05-01 14:39:01
+- **Data date:** 2026-05-01
+- **Rows:** 520 · **Payload:** 767 KB
+- **Composite Score:** 44/100
+- **USD/CNY:** 6.86 · **Raw Carry:** 2.62% · **Fixing Bias:** -400 pips
+- **Coverage:** cn_2y ✅100% · us_2y ✅100% · usdcny ✅100% · usdcnh ❌0% · pboc_fix ✅100% · dxy ✅100% · shibor_1y ✅100% · us_1y ✅100%
+---
+
+## 2026-05-01 14:12:12
+- **Data date:** 2026-05-01
+- **Rows:** 523 · **Payload:** 772 KB
+- **Composite Score:** 58/100
+- **USD/CNY:** 6.84 · **Raw Carry:** 2.62% · **Fixing Bias:** -100 pips
+- **Coverage:** cn_2y ✅99% · us_2y ✅100% · usdcny ✅100% · usdcnh ❌0% · pboc_fix ✅100% · dxy ✅100% · shibor_1y ✅100% · us_1y ✅100%
+---
+
+## 2026-05-01 14:07:08
+- **Data date:** 2026-05-01
+- **Rows:** 523 · **Payload:** 772 KB
+- **Composite Score:** 58/100
+- **USD/CNY:** 6.84 · **Raw Carry:** 2.62% · **Fixing Bias:** -100 pips
+- **Coverage:** cn_2y ✅99% · us_2y ✅100% · usdcny ✅100% · usdcnh ❌0% · pboc_fix ✅100% · dxy ✅100% · shibor_1y ✅100% · us_1y ✅100%
+---
+
+## 2026-05-01 13:42:01
+- **Data date:** 2026-05-01
+- **Rows:** 523 · **Payload:** 772 KB
+- **Composite Score:** 58/100
+- **USD/CNY:** 6.84 · **Raw Carry:** 2.62% · **Fixing Bias:** -100 pips
+- **Coverage:** cn_2y ✅99% · us_2y ✅100% · usdcny ✅100% · usdcnh ❌0% · pboc_fix ✅100% · dxy ✅100% · shibor_1y ✅100% · us_1y ✅100%
+---
+
+## 2026-05-01 13:38:55
+- **Data date:** 2026-05-01
+- **Rows:** 523 · **Payload:** 772 KB
+- **Composite Score:** 58/100
+- **USD/CNY:** 6.84 · **Raw Carry:** 2.62% · **Fixing Bias:** -100 pips
+- **Coverage:** cn_2y ✅99% · us_2y ✅100% · usdcny ✅100% · usdcnh ❌0% · pboc_fix ✅100% · dxy ✅100% · shibor_1y ✅100% · us_1y ✅100%
+---
+
+## 2026-05-01 13:35:20
+- **Data date:** 2026-05-01
+- **Rows:** 523 · **Payload:** 725 KB
+- **Composite Score:** 58/100
+- **USD/CNY:** 6.84 · **Raw Carry:** 2.62% · **Fixing Bias:** -100 pips
+- **Coverage:** cn_2y ✅99% · us_2y ✅100% · usdcny ✅100% · usdcnh ❌0% · pboc_fix ✅100% · dxy ✅100% · shibor_1y ❌0% · us_1y ✅100%
+---
+
+## 2026-05-01 13:32:41
+- **Data date:** 2026-05-01
+- **Rows:** 523 · **Payload:** 725 KB
+- **Composite Score:** 58/100
+- **USD/CNY:** 6.84 · **Raw Carry:** 2.62% · **Fixing Bias:** -100 pips
+- **Coverage:** cn_2y ✅99% · us_2y ✅100% · usdcny ✅100% · usdcnh ❌0% · pboc_fix ✅100% · dxy ✅100% · shibor_1y ❌0% · us_1y ✅100%
+---
+
+## 2026-05-01 13:30:36
+- **Data date:** 2026-05-01
+- **Rows:** 523 · **Payload:** 725 KB
+- **Composite Score:** 58/100
+- **USD/CNY:** 6.84 · **Raw Carry:** 2.62% · **Fixing Bias:** -100 pips
+- **Coverage:** cn_2y ✅99% · us_2y ✅100% · usdcny ✅100% · usdcnh ❌0% · pboc_fix ✅100% · dxy ✅100% · shibor_1y ❌0% · us_1y ✅100%
+---
+
 ## 2026-05-01 12:39:32
 - **Data date:** 2026-05-01
 - **Rows:** 523 · **Payload:** 652 KB

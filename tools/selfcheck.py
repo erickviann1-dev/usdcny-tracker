@@ -25,7 +25,7 @@ def check(ok, msg, level="FAIL"):
 
 # ═══════════════════════════════════════════════════════════
 print("=" * 60)
-print("  USD/CNY Tracker v3.2 — Self-Check Report")
+print("  USD/CNY Tracker v3.3 — Self-Check Report")
 print("=" * 60)
 
 # 1. File existence + size
@@ -117,9 +117,12 @@ sv = script_ver.group(1) if script_ver else "?"
 fv = footer_ver.group(1) if footer_ver else "?"
 jv = js_header.group(1) if js_header else "?"
 
-check(sv == "3.2", f"<script> tag version: {sv}")
-check(fv == "3.2", f"Footer version: {fv}")
-check(jv == "3.2", f"JS header version: {jv}")
+tv_match = re.search(r'const TRACKER_VERSION = "([\d.]+)"', js)
+tracker_ver = tv_match.group(1) if tv_match else "?"
+
+check(sv == tracker_ver, f"<script> tag version: {sv} (expect {tracker_ver})")
+check(fv == tracker_ver, f"Footer version: {fv} (expect {tracker_ver})")
+check(jv == tracker_ver, f"JS header version: {jv} (expect {tracker_ver})")
 check(sv == fv == jv, f"All three match: {sv} = {fv} = {jv}")
 
 # 7. GLOSSARY_DEFS check

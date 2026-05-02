@@ -11,6 +11,41 @@ the previous state under `history/`.
 
 ---
 
+## [v3.3.0] — 2026-05-01 · Market-Quoted Hedged Carry
+
+### Why this is a **minor** (not patch)
+
+Layer 1’s hedged line is no longer a **pure CIP residual proxy**. When a **market 1Y outright forward** is available, the headline hedged reading is a **covered 1Y return** built from **CFETS-quoted F** and money-market rates (**UST 1Y**, **Shibor 1Y**). That changes the economic interpretation from “theoretical basis stripping” to something much closer to **tradable economics** — warranting **v3.3.0** rather than another v3.2.x patch.
+
+### Why swap out the old CIP proxy for market F/S
+
+- **Old pipeline** (`hedged_carry_proxy = raw_carry − cip_dev_pct`, 2Y-flavoured): could print a large **positive** number (e.g. **+8.04%**) even when **money-market carry** was only ~**+2.25%** (UST1Y − Shibor1Y). In frictionless arbitrage terms that mix reads like a **“free lunch”** — the 2Y nominal spread minus a CIP-implied % is **not** the same object as a **1Y hedged bank deposit loop**.
+- **New pipeline** (when `usdcny_fwd_1y` is present):  
+  \(\text{Hedged return (\%)} = 100 \times \big[(1+r_{USD})\frac{F}{S} - (1+r_{CNY})\big]\)  
+  i.e. the **1Y covered interest** expression equivalent to **\(\frac{F}{S}(1+r_{USD}) - (1+r_{CNY})\)** in % of notional. On a recent build this lands near **−0.29%** — i.e. **CNY forward premium / hedging cost eats the nominal MM wedge**, which is far more plausible than +8% **ex-post hedged** upside.
+
+### Data & plumbing
+
+- **New source**: CFETS **USD/CNY 1Y all-in forward** via `akshare.fx_c_swap_cm()` (row **1Y**, column **全价汇率**).
+- **Cache**: `cache/cfets_usdcny_1y_fwd.csv` (`CFETS_FWD_CACHE` in `data_fetcher.py`) — **append/upsert by calendar date**; `build.py` calls `update_cfets_usdcny_1y_fwd_cache()` before `get_master_data()`.
+- **Merge rule**: forward series is **forward-filled** only from the **first cached date onward** (no retroactive painting of today’s F over ancient history). Earlier dates **fall back** to the legacy **2Y CIP proxy** (`cip_proxy_2y`).
+- **Snapshot fields**: `usdcny_fwd_1y`, `hedged_carry_method` (`market_1y` vs `cip_proxy_2y`), plus series helpers `forward_premium_pct` (= \(100(F/S-1)\) when market F applies).
+
+### Patches rolled into this minor (v3.2.1 → v3.2.8) — summary
+
+Consolidated **without re-refactoring** tested code: methodology payload + `reg_residual_z` + regression diagnostics charts; composite methodology & historical stress lens; author/i18n/Glossary/builder growth; **CFETS forward-first hedged formula** + cache; **dashboard.js** KPI syntax fix (`hedgedMeta` must not sit inside the `tiles` array literal).
+
+### i18n & QA
+
+- Dictionaries grew from **~245** to **310 keys EN / 310 ZH** (symmetry maintained).
+- Self-check (v3.3.0): HTML `data-i18n` coverage, glossary rows, **version triple** aligned to **`TRACKER_VERSION`**, independent notebook / build artefacts (`data.json`, `.xlsx`, `.ipynb`), hedged carry vs snapshot **< 0.05%** numerical drift on validation runs.
+
+### Cache-bust
+
+- `docs/index.html`: `<script src="dashboard.js?v=3.3.0">`, footer/topbar **v3.3.0**.
+
+---
+
 ## [v3.2] — 2026-05-01 · Authority & Export Layer
 
 ### Vision

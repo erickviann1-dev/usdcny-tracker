@@ -73,6 +73,10 @@ def main():
             "shibor_1y", "us_1y", "mm_spread", "mm_carry",
             "cip_dev_pct", "usdcny_fwd_1y", "forward_premium_pct",
             "hedged_carry_proxy", "hedged_carry_pct_rank", "hedged_carry_method",
+            # v3.3 — offshore CNH funding layer
+            "cnh_hibor_1y", "cnh_hibor_3m", "cnh_hibor_on",
+            "cnh_funding_stress", "cnh_stress_pct_rank",
+            "hedged_carry_offshore",
             "cip_fair_spot", "cip_deviation",
             "reg_predicted", "reg_residual", "reg_predicted_uni", "reg_residual_uni",
             "reg_beta_spread", "reg_beta_dxy", "reg_r2", "reg_residual_z",
@@ -133,6 +137,10 @@ def write_excel(df, snap, series_records):
         "shibor_1y", "us_1y", "mm_spread", "mm_carry",
         "cip_dev_pct", "usdcny_fwd_1y", "forward_premium_pct",
         "hedged_carry_proxy", "hedged_carry_pct_rank", "hedged_carry_method",
+        # v3.3 — offshore CNH funding layer
+        "cnh_hibor_1y", "cnh_hibor_3m", "cnh_hibor_on",
+        "cnh_funding_stress", "cnh_stress_pct_rank",
+        "hedged_carry_offshore",
         "cip_fair_spot", "cip_deviation",
         "reg_predicted", "reg_residual", "reg_predicted_uni", "reg_residual_uni",
         "reg_beta_spread", "reg_beta_dxy", "reg_r2", "reg_residual_z",

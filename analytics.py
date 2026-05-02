@@ -253,6 +253,37 @@ def calc_mispricing(df: pd.DataFrame) -> pd.DataFrame:
                    if len(x.dropna()) > 1 else 50, raw=False)
         )
 
+        # ── v3.3 · OFFSHORE hedged return (uses CNH HIBOR, not Shibor) ──
+        # The honest formula for what a real Hong-Kong-booked carry trade
+        # actually earns. r_CNY uses CNH 1Y HIBOR (offshore fixing), since
+        # onshore Shibor is not a tradable funding cost for offshore desks.
+        # Market typically: cnh_hibor > shibor → offshore hedged return
+        # is WORSE than onshore (CNH costs more to short).
+        if "cnh_hibor_1y" in out.columns:
+            r_cnh = pd.to_numeric(out["cnh_hibor_1y"], errors="coerce") / 100.0
+            mkt_off = (
+                F.notna() & S.notna() & rus.notna() & r_cnh.notna()
+                & (F > 0) & (S > 0) & (F / S <= 1.15) & (F / S >= 0.85)
+            )
+            out["hedged_carry_offshore"] = np.nan
+            out.loc[mkt_off, "hedged_carry_offshore"] = 100.0 * (
+                (1.0 + rus[mkt_off]) * (F[mkt_off] / S[mkt_off]) - (1.0 + r_cnh[mkt_off])
+            )
+
+    # ── v3.3 · CNH funding stress (PBOC offshore liquidity defence signal) ──
+    # CNH HIBOR 1Y − Shibor 1Y. Positive = PBOC pulling CNH out of HK banks.
+    # Historical squeezes: Jan 2017 overnight HIBOR hit 60%+; Sep 2018 hit 25%+.
+    # This is one of the few directly observable "PBOC defence in action" signals.
+    if "cnh_hibor_1y" in out.columns and "shibor_1y" in out.columns:
+        out["cnh_funding_stress"] = out["cnh_hibor_1y"] - out["shibor_1y"]
+        # Percentile rank — highlights tail events
+        out["cnh_stress_pct_rank"] = (
+            out["cnh_funding_stress"]
+            .rolling(252, min_periods=60)
+            .apply(lambda x: stats.percentileofscore(x.dropna(), x.iloc[-1])
+                   if len(x.dropna()) > 1 else 50, raw=False)
+        )
+
     # Rolling-window z-score of multivariate residual (in-sample distribution)
     if "reg_residual" in out.columns:
         rr = out["reg_residual"]
@@ -480,6 +511,13 @@ def latest_snapshot(df: pd.DataFrame) -> dict:
             or last.get("hedged_carry_method") in ("", None)
             else str(last.get("hedged_carry_method"))
         ),
+        # v3.3 — offshore CNH funding layer
+        "cnh_hibor_1y":         g("cnh_hibor_1y"),
+        "cnh_hibor_3m":         g("cnh_hibor_3m"),
+        "cnh_hibor_on":         g("cnh_hibor_on"),
+        "cnh_funding_stress":   g("cnh_funding_stress"),
+        "cnh_stress_pct_rank":  g("cnh_stress_pct_rank", ".0f"),
+        "hedged_carry_offshore":g("hedged_carry_offshore"),
         "cip_deviation":     g("cip_deviation"),
         "reg_residual":      g("reg_residual"),
         "reg_residual_uni":  g("reg_residual_uni"),

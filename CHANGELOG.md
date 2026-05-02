@@ -11,38 +11,66 @@ the previous state under `history/`.
 
 ---
 
-## [v3.3.0] — 2026-05-01 · Market-Quoted Hedged Carry
+## [v3.3.0] — 2026-05-01 · Offshore CNH Funding Layer + Market-Quoted Hedged Carry
 
-### Why this is a **minor** (not patch)
+### Why this is one **minor** release (not a string of patches)
 
-Layer 1’s hedged line is no longer a **pure CIP residual proxy**. When a **market 1Y outright forward** is available, the headline hedged reading is a **covered 1Y return** built from **CFETS-quoted F** and money-market rates (**UST 1Y**, **Shibor 1Y**). That changes the economic interpretation from “theoretical basis stripping” to something much closer to **tradable economics** — warranting **v3.3.0** rather than another v3.2.x patch.
+Two substantive layers shipped together: **(A)** Layer 1 headline hedged carry can be a **market-quoted 1Y covered return** (CFETS **F**, UST 1Y, onshore Shibor 1Y) instead of a pure **CIP residual proxy**; **(B)** the long-standing **CNH data gap** is partially closed with **CNH HIBOR** (full history on free feeds) plus **incremental USDCNH spot** (Yahoo v8 cache). Together they change interpretability enough to warrant **v3.3.0** rather than more v3.2.x patches.
 
-### Why swap out the old CIP proxy for market F/S
+### Market F/S vs legacy CIP proxy (onshore hedged)
 
-- **Old pipeline** (`hedged_carry_proxy = raw_carry − cip_dev_pct`, 2Y-flavoured): could print a large **positive** number (e.g. **+8.04%**) even when **money-market carry** was only ~**+2.25%** (UST1Y − Shibor1Y). In frictionless arbitrage terms that mix reads like a **“free lunch”** — the 2Y nominal spread minus a CIP-implied % is **not** the same object as a **1Y hedged bank deposit loop**.
+- **Old pipeline** (`hedged_carry_proxy = raw_carry − cip_dev_pct`, 2Y-flavoured): could print a large **positive** number (e.g. **+8.04%**) while **money-market carry** was only ~**+2.25%** (UST1Y − Shibor1Y) — a **“free lunch”** mix in frictionless terms, because a **2Y spread minus a CIP %** is **not** a **1Y hedged deposit loop**.
 - **New pipeline** (when `usdcny_fwd_1y` is present):  
-  \(\text{Hedged return (\%)} = 100 \times \big[(1+r_{USD})\frac{F}{S} - (1+r_{CNY})\big]\)  
-  i.e. the **1Y covered interest** expression equivalent to **\(\frac{F}{S}(1+r_{USD}) - (1+r_{CNY})\)** in % of notional. On a recent build this lands near **−0.29%** — i.e. **CNY forward premium / hedging cost eats the nominal MM wedge**, which is far more plausible than +8% **ex-post hedged** upside.
+  \(\text{Hedged (\%)} = 100 \times \big[(1+r_{USD})\frac{F}{S} - (1+r_{CNY})\big]\)  
+  Recent builds land near **−0.29%**: **CNY forward premium / hedge cost** consumes the nominal MM wedge — a more plausible **tradable** reading than +8% hedged upside.
 
-### Data & plumbing
+### Offshore CNH funding & hedged return
 
-- **New source**: CFETS **USD/CNY 1Y all-in forward** via `akshare.fx_c_swap_cm()` (row **1Y**, column **全价汇率**).
-- **Cache**: `cache/cfets_usdcny_1y_fwd.csv` (`CFETS_FWD_CACHE` in `data_fetcher.py`) — **append/upsert by calendar date**; `build.py` calls `update_cfets_usdcny_1y_fwd_cache()` before `get_master_data()`.
-- **Merge rule**: forward series is **forward-filled** only from the **first cached date onward** (no retroactive painting of today’s F over ancient history). Earlier dates **fall back** to the legacy **2Y CIP proxy** (`cip_proxy_2y`).
-- **Snapshot fields**: `usdcny_fwd_1y`, `hedged_carry_method` (`market_1y` vs `cip_proxy_2y`), plus series helpers `forward_premium_pct` (= \(100(F/S-1)\) when market F applies).
+- **CNH HIBOR** (akshare `rate_interbank`, HK interbank market): 1Y / 3M / overnight fixings; **~100% series coverage** from 2013-03-22.
+- **Offshore hedged carry**:  
+  `hedged_carry_offshore = 100 × [(1 + r_USD) × (F/S) − (1 + r_CNH)]` with **r_CNH = CNH HIBOR 1Y** (not Shibor). Example: **−0.50%** offshore vs **−0.29%** onshore; wedge ≈ **`cnh_funding_stress`** (CNH HIBOR 1Y − Shibor 1Y, e.g. **+0.21%** with a low historical percentile — squeeze tail indicator).
+- **USDCNH spot**: Yahoo Finance v8 **daily append** to `cache/usdcnh_spot.csv` where other paths fail; **no free deep history** (see reconnaissance table in repo history). Quality badge for `usdcnh` may stay weak until the cache accumulates.
 
-### Patches rolled into this minor (v3.2.1 → v3.2.8) — summary
+### Data & plumbing (summary)
 
-Consolidated **without re-refactoring** tested code: methodology payload + `reg_residual_z` + regression diagnostics charts; composite methodology & historical stress lens; author/i18n/Glossary/builder growth; **CFETS forward-first hedged formula** + cache; **dashboard.js** KPI syntax fix (`hedgedMeta` must not sit inside the `tiles` array literal).
+- **CFETS 1Y forward**: `akshare.fx_c_swap_cm()` → `cache/cfets_usdcny_1y_fwd.csv` (`CFETS_FWD_CACHE`); merge **forward-fills only after first cache date**; else **2Y CIP fallback** (`cip_proxy_2y`).
+- **Snapshot / series**: `usdcny_fwd_1y`, `hedged_carry_method` (`market_1y` | `cip_proxy_2y`), `forward_premium_pct`; plus `cnh_hibor_1y`, `cnh_hibor_3m`, `cnh_hibor_on`, `cnh_funding_stress`, `cnh_stress_pct_rank`, `hedged_carry_offshore`.
+- **Build**: `build.py` exports new columns to `data.json` and Excel **series** sheet.
+
+### Dashboard (surfacing)
+
+- **KPI tiles**: CNH HIBOR 1Y, CNH funding stress (colour **warn** if > +0.3%, **bear** if > +1%; meta shows 252d percentile), offshore hedged return (same colour logic as onshore hedged).
+- **Layer 03 chart**: `cnh_funding_stress` time series with reference lines at **+1%** and **+5%** (+1% / +5% annotations).
+- **Glossary**: **+6 rows** (`cnh_hibor_1y/3m/on`, `cnh_funding_stress`, `cnh_stress_pct_rank`, `hedged_carry_offshore`); **`gloss.count` → 48 fields** (full `GLOSSARY_DEFS` row count after prior v3.1/v3.2 expansions).
+- **i18n**: **+10 keys × EN/ZH** (`kpi.*`, `meta.*`, `chart.cnhStress*`, `axis.cnh_stress`); **319 × 2** keys total, dictionaries remain symmetric.
+
+### Patches rolled in (v3.2.1 → v3.2.8)
+
+Consolidated **without re-refactoring** tested code: methodology payload + `reg_residual_z` + regression diagnostics; composite methodology & historical stress lens; author/i18n/Glossary/builder growth; **CFETS forward-first hedged** + cache; **dashboard.js** KPI **`hedgedMeta`** placement fix.
 
 ### i18n & QA
 
-- Dictionaries grew from **~245** to **310 keys EN / 310 ZH** (symmetry maintained).
-- Self-check (v3.3.0): HTML `data-i18n` coverage, glossary rows, **version triple** aligned to **`TRACKER_VERSION`**, independent notebook / build artefacts (`data.json`, `.xlsx`, `.ipynb`), hedged carry vs snapshot **< 0.05%** numerical drift on validation runs.
+- **Self-check**: HTML `data-i18n`, glossary row count, **`TRACKER_VERSION`** ↔ script/footer/header; notebook / `.xlsx` / `.ipynb` artefacts; hedged carry vs snapshot **&lt; 0.05%** drift on validation runs.
+- **USDCNH coverage** may still **WARN/FAIL** on fresh clones until the spot cache grows — expected; **CNH HIBOR** series are complete.
 
-### Cache-bust
+### Cache-bust & version
 
-- `docs/index.html`: `<script src="dashboard.js?v=3.3.0">`, footer/topbar **v3.3.0**.
+- `docs/index.html`: `<script src="dashboard.js?v=3.3.0">`, footer/topbar **v3.3.0**; README banner **v3.3.0**.
+
+### Snapshot
+
+Pre–CNH-layer UI state: `history/v3.2.8-pre-cnh/`.
+
+### Reconnaissance — USDCNH history (unchanged facts)
+
+| Source | Outcome |
+|---|---|
+| `Stooq.com/q/d/l/?s=usdcnh` | API-key gated since 2024 |
+| HKMA CNH segment param | Returns HKD, not CNH |
+| `akshare` Baidu / Eastmoney USDCNH | Empty or errors on probe networks |
+| Yahoo v8 multi-year range | Only ~1 row — backend has no free depth |
+
+**Conclusion:** institutional spot/forward history is paid-data territory; **HIBOR** is the high-ROI free anchor.
 
 ---
 

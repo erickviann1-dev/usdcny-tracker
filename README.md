@@ -2,7 +2,7 @@
 
 > 一个量化"美中政策压力 vs 市场定价"博弈的三层宏观追踪器，2 年期利差焦点。
 >
-> **当前版本：v3.2**（双语 · FRED 代码透明 · Excel/Notebook 导出 · GitHub Actions 每日构建）
+> **当前版本：v3.3.0**（双语 · CNH HIBOR 离岸资金层 · 市场报价对冲后回报 · GitHub Actions 每日构建）
 >
 > **For Cursor / future contributors:** before editing, read in this order →
 > `README.md` (this file) → `CHANGELOG.md` (what's been done & why, 最新条目在最上) →
@@ -40,7 +40,7 @@ usdcny-tracker/
 ├── charts.py             Streamlit 版图表（同上）
 ├── docs/                 ★ 静态网页（最终交付物，双语 EN/中文，由 GitHub Pages 托管）
 │   ├── index.html        页面骨架 + CSS + data-i18n 标记
-│   ├── dashboard.js      渲染逻辑 + i18n 引擎 + 234×2 条中英对照词典（已对称）
+│   ├── dashboard.js      渲染逻辑 + i18n 引擎 + 约 319×2 条中英键（对称）
 │   └── data.json         当前数据快照
 ├── tools/snapshot.py     编辑前归档：python tools/snapshot.py "v3.x-标签"
 ├── history/              历史快照（v1.0-mvp / v1.5-multivariate / v3.0-bilingual / v3.0-pre-cachebust）
@@ -182,7 +182,7 @@ composite = W_CARRY × carry_pct_rank
    - 当前免费 API 均无 CNH 历史数据，覆盖率仍为 0%
 
 3. ~~**双语 i18n 引擎**~~ → v3.0 done · v3.0.1 修对称性
-   - EN / ZH 词典各 234 条，对称（`EN ⊕ ZH = ∅`）
+   - EN / ZH 词典各约 319 条，对称（`EN ⊕ ZH = ∅`）
    - `localStorage` 持久化语言偏好
    - 切换时静态 + 动态（KPI/alerts/charts/narrative/regression）全部重渲染
 
@@ -196,12 +196,14 @@ composite = W_CARRY × carry_pct_rank
    - 4 个新 KPI 卡：Hedged Carry / MM Spread / Shibor 1Y / UST 1Y
    - 真实 swap-locked P&L 仍需付费数据，但研究级近似已就绪
 
-### 🔴 仍未解决 — P0
+### 🟢 部分解决（v3.3.0）— CNH 离岸资金层
 
-5. **CNH 离岸真实数据源**
-   - 管道就绪但所有免费 API 都不给 CNH 历史
-   - 没有 CNH → Layer 03 的"市场预期基准"退化为 onshore 前一日收盘
-   - 候选：付费 API（Wind / Bloomberg / Refinitiv）、TradingView 抓取、用户手动每日上传 CSV
+5. ~~**CNH 离岸数据源**~~ → v3.3.0 部分解决
+   - ✅ **CNH HIBOR 1Y / 3M / 隔夜**（akshare 香港银行同业拆借市场）— 100% 覆盖，13 年历史
+   - ✅ **CNH 资金紧张度**（CNH HIBOR − Shibor）— 历史能可视化 PBOC 离岸防御（如 2017/01 隔夜 60%+、2018/09 25%+）
+   - ✅ **离岸口径对冲后回报**（用 CNH HIBOR 替代 Shibor）— 真实 HK 簿记 P&L
+   - ✅ **CNH spot 增量缓存**（Yahoo v8 API）— 每次 build 写入今日值，历史随时间累积
+   - ⚠️ 仍缺：CNH spot 真历史（2013+ 全量序列只能付费拿，Bloomberg BFIX / LSEG WMR / OANDA forwards 等）
 
 ### 🟠 中优先级 — 模型升级
 

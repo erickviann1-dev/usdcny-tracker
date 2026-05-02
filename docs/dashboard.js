@@ -50,6 +50,9 @@ const I18N = {
     "kpi.r2":           "Reg R²",
     "kpi.alpha":        "α · CNY/DXY",
     "kpi.bias":         "Fixing Bias",
+    "kpi.cnhHibor":     "CNH HIBOR 1Y",
+    "kpi.cnhStress":    "CNH Funding Stress",
+    "kpi.hedgedOffshore": "Hedged Return (Offshore)",
 
     "meta.onshore":     "Onshore",
     "meta.hongkong":    "Hong Kong",
@@ -69,6 +72,9 @@ const I18N = {
     "meta.mm1y":        "UST1Y − Shibor1Y",
     "meta.cn1y":        "CN money market",
     "meta.us1y":        "US money market",
+    "meta.cnhHk":       "HK offshore",
+    "meta.cnhStress":   "CNH HIBOR − Shibor",
+    "meta.hedgedOffshore": "uses CNH HIBOR, not Shibor",
 
     "alert.cnh_unavailable": () =>
         `<strong>Data note —</strong> USD/CNH offshore feed unavailable in this build. ` +
@@ -125,6 +131,8 @@ const I18N = {
     "chart.regBetasSub":    "252d window: USD/CNY ~ spread + DXY",
     "chart.regFit":         "Model fit & residual z-score",
     "chart.regFitSub":      "In-sample R² and rolling (ε−μ)/σ (not pseudo-OOS)",
+    "chart.cnhStress":       "CNH Funding Stress — PBOC Offshore Defence",
+    "chart.cnhStressSub":    "CNH HIBOR 1Y − Shibor 1Y · spikes flag squeezes",
 
     "roadmap.label":        "Roadmap",
     "roadmap.swap.title":   "Real swap points, forwards & NDF",
@@ -189,6 +197,7 @@ const I18N = {
     "axis.betaCoef":    "β coefficients",
     "axis.r2short":     "R²",
     "axis.residZ":      "Residual z",
+    "axis.cnh_stress":  "CNH − Shibor (ppt)",
 
     "trace.us2y":       "US 2Y",
     "trace.cn2y":       "CN 2Y",
@@ -381,7 +390,7 @@ const I18N = {
     "gloss.title":      "Every Field, Sourced",
     "gloss.lead":       "Each computed field, its formula, source, and unit. Click to expand.",
     "gloss.summary":    "Full Variable Glossary",
-    "gloss.count":      "(38 fields)",
+    "gloss.count":      "(48 fields)",
 
     "data.eyebrow":     "Export · Data",
     "data.title":       "Recent Observations",
@@ -457,6 +466,9 @@ const I18N = {
     "kpi.r2":           "R²",
     "kpi.alpha":        "α · CNY/DXY",
     "kpi.bias":         "中间价偏差",
+    "kpi.cnhHibor":     "CNH HIBOR 1年",
+    "kpi.cnhStress":    "CNH 资金紧张度",
+    "kpi.hedgedOffshore": "对冲后回报（离岸口径）",
 
     "meta.onshore":     "在岸",
     "meta.hongkong":    "香港",
@@ -476,6 +488,9 @@ const I18N = {
     "meta.mm1y":        "UST1Y − Shibor1Y",
     "meta.cn1y":        "CN 货币市场",
     "meta.us1y":        "US 货币市场",
+    "meta.cnhHk":       "香港离岸",
+    "meta.cnhStress":   "CNH HIBOR − Shibor",
+    "meta.hedgedOffshore": "用 CNH HIBOR，不是 Shibor",
 
     "alert.cnh_unavailable": () =>
         `<strong>数据提示 —</strong> 本次构建中 USD/CNH 离岸报价不可用。` +
@@ -527,6 +542,8 @@ const I18N = {
     "chart.regBetasSub":    "252 个交易日窗口：USD/CNY ~ 利差 + DXY",
     "chart.regFit":         "模型拟合与残差 z 分数",
     "chart.regFitSub":      "样本内 R² 与滚动 (ε−μ)/σ（非样本外检验）",
+    "chart.cnhStress":       "CNH 资金紧张度 — 央行离岸防御",
+    "chart.cnhStressSub":    "CNH HIBOR 1Y − Shibor 1Y · 高点为流动性挤压",
 
     "roadmap.label":        "路线图",
     "roadmap.swap.title":   "真实掉期点、远期与 NDF",
@@ -586,6 +603,7 @@ const I18N = {
     "axis.betaCoef":    "β 系数",
     "axis.r2short":     "R²",
     "axis.residZ":      "残差 z",
+    "axis.cnh_stress":  "CNH − Shibor（百分点）",
 
     "trace.us2y":       "美 2Y",
     "trace.cn2y":       "中 2Y",
@@ -756,7 +774,7 @@ const I18N = {
 
     "gloss.eyebrow":    "参考 · 术语表",
     "gloss.summary":    "完整术语表",
-    "gloss.count":      "（38 个字段）",
+    "gloss.count":      "（48 个字段）",
 
     "data.eyebrow":     "导出 · 数据",
     "data.title":       "近期观测数据",
@@ -994,6 +1012,12 @@ const GLOSSARY_DEFS = [
     ["hedged_carry_method","",    "computed",                "market_1y | cip_proxy_2y",          ""],
     ["cip_dev_pct",      "%",      "computed",                "cip_deviation / spot × 100",      ""],
     ["policy_score",     "0–100",  "computed",                "Fixing-bias percentile",          ""],
+    ["cnh_hibor_1y",     "%",      "akshare rate_interbank",  "CNH HIBOR 1Y (HK interbank)",   "rate_interbank|https://github.com/akfamily/akshare/wiki"],
+    ["cnh_hibor_3m",     "%",      "akshare rate_interbank",  "CNH HIBOR 3M",                    "rate_interbank|https://github.com/akfamily/akshare/wiki"],
+    ["cnh_hibor_on",     "%",      "akshare rate_interbank",  "CNH HIBOR overnight (squeeze tenor)", "rate_interbank|https://github.com/akfamily/akshare/wiki"],
+    ["cnh_funding_stress","%",     "computed",                "cnh_hibor_1y − shibor_1y",        ""],
+    ["cnh_stress_pct_rank","0–100","computed",               "252d percentile of funding stress",""],
+    ["hedged_carry_offshore","%",  "computed",                "1Y covered return w/ CNH HIBOR 1Y", ""],
 ];
 
 let CURRENT_DATA = null;
@@ -1114,6 +1138,15 @@ function renderKPIs(s) {
         ? t("meta.hedgedCip2y")
         : t("meta.cipResid");
 
+    const stress = parseFloat(s.cnh_funding_stress);
+    const stressCls = isNaN(stress) ? "" : stress > 1 ? "bear" : stress > 0.3 ? "warn" : "";
+    const rnkStress = parseFloat(s.cnh_stress_pct_rank);
+    const metaStress = `${t("meta.cnhStress")} · ` + (
+        isNaN(rnkStress)
+            ? "—"
+            : (LANG === "zh" ? `第${rnkStress.toFixed(0)}分位` : `${rnkStress.toFixed(0)}th pctile`)
+    );
+
     const tiles = [
         tile(t("kpi.usdcny"),      s.usdcny,                          "",      t("meta.onshore"),    "DEXCHUS"),
         tile(t("kpi.usdcnh"),      s.usdcnh,                          "",      t("meta.hongkong")),
@@ -1124,6 +1157,11 @@ function renderKPIs(s) {
         tile(t("kpi.hedged"),      isNA(s.hedged_carry_proxy) ? "—" : `${s.hedged_carry_proxy}%`,
                                                                        hedgedCls(s.hedged_carry_proxy),
                                                                                 hedgedMeta),
+        tile(t("kpi.cnhHibor"),    isNA(s.cnh_hibor_1y) ? "—" : `${s.cnh_hibor_1y}%`, "", t("meta.cnhHk")),
+        tile(t("kpi.cnhStress"),   isNA(s.cnh_funding_stress) ? "—" : `${s.cnh_funding_stress}%`,
+                                   stressCls, metaStress),
+        tile(t("kpi.hedgedOffshore"), isNA(s.hedged_carry_offshore) ? "—" : `${s.hedged_carry_offshore}%`,
+                                       hedgedCls(s.hedged_carry_offshore), t("meta.hedgedOffshore")),
         tile(t("kpi.mm"),          isNA(s.mm_spread) ? "—" : `${s.mm_spread}%`, "", t("meta.mm1y")),
         tile(t("kpi.shibor"),      isNA(s.shibor_1y) ? "—" : `${s.shibor_1y}%`, "", t("meta.cn1y")),
         tile(t("kpi.us1y"),        isNA(s.us_1y)     ? "—" : `${s.us_1y}%`,     "", t("meta.us1y"),    "DGS1"),
@@ -1421,6 +1459,39 @@ function renderCharts(series) {
         ...LAYOUT_BASE,
         yaxis: { ...LAYOUT_BASE.yaxis, title: { text: t("axis.usdcny"), font: { size: 10 } } },
     }, PLOTLY_CONFIG);
+
+    /* CNH funding stress — offshore vs onshore funding wedge */
+    const elCnhStress = document.getElementById("chart-cnh-stress");
+    if (elCnhStress) {
+        const stressSer = get("cnh_funding_stress");
+        const x0 = dates[0];
+        const x1 = dates[dates.length - 1];
+        const cnhStressShapes = [
+            { type: "line", xref: "x", yref: "y", x0, x1, y0: 1, y1: 1,
+              line: { color: COLORS.warn, width: 1.5, dash: "dash" } },
+            { type: "line", xref: "x", yref: "y", x0, x1, y0: 5, y1: 5,
+              line: { color: COLORS.bear, width: 1.5, dash: "dash" } },
+        ];
+        Plotly.newPlot("chart-cnh-stress", [
+            { x: dates, y: stressSer, name: t("meta.cnhStress"), type: "scatter",
+              line: { color: COLORS.line3, width: 2 },
+              fill: "tozeroy", fillcolor: "rgba(124,45,18,0.08)" },
+        ], {
+            ...LAYOUT_BASE,
+            yaxis: {
+                ...LAYOUT_BASE.yaxis,
+                title: { text: t("axis.cnh_stress"), font: { size: 10 } },
+                zeroline: true,
+            },
+            shapes: cnhStressShapes,
+            annotations: [
+                { x: x1, y: 1, xref: "x", yref: "y", text: "+1%", showarrow: false,
+                  xanchor: "right", yanchor: "bottom", font: { size: 9, color: COLORS.warn } },
+                { x: x1, y: 5, xref: "x", yref: "y", text: "+5%", showarrow: false,
+                  xanchor: "right", yanchor: "bottom", font: { size: 9, color: COLORS.bear } },
+            ],
+        }, PLOTLY_CONFIG);
+    }
 
     /* Fixing bias */
     const biasPips    = get("fixing_bias").map(v => v == null ? null : v * 10000);

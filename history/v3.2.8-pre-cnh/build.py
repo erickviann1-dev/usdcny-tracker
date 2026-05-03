@@ -11,13 +11,7 @@ import sys
 import os
 import warnings
 from pathlib import Path
-from datetime import datetime, timezone
-
-# Timezone-aware "as of" timestamps (Python 3.9+ stdlib)
-try:
-    from zoneinfo import ZoneInfo
-except ImportError:           # very old Python
-    ZoneInfo = None
+from datetime import datetime
 
 warnings.filterwarnings("ignore")
 
@@ -65,25 +59,8 @@ def main():
     df = run_full_analysis(master_df)
     snap = latest_snapshot(df)
 
-    # Timezone-aware build timestamps. The local "%Y-%m-%d %H:%M:%S"
-    # `generated_at` is whatever the runner uses (UTC on GitHub Actions,
-    # local time on Windows). The browser displays `generated_at_et`
-    # which is always America/New_York (auto EST/EDT).
-    now_utc = datetime.now(timezone.utc)
-    et_label = "ET"
-    if ZoneInfo is not None:
-        try:
-            ny  = now_utc.astimezone(ZoneInfo("America/New_York"))
-            generated_at_et = ny.strftime("%Y-%m-%d %H:%M ") + ny.tzname()  # → "EDT" or "EST"
-        except Exception:
-            generated_at_et = now_utc.strftime("%Y-%m-%d %H:%M UTC")
-    else:
-        generated_at_et = now_utc.strftime("%Y-%m-%d %H:%M UTC")
-
     payload = {
-        "generated_at":     datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "generated_at_utc": now_utc.strftime("%Y-%m-%d %H:%M:%S UTC"),
-        "generated_at_et":  generated_at_et,   # ← user-facing on dashboard
+        "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "snapshot":     snap,
         "quality":      {k: round(float(v), 3) for k, v in quality.items()},
         "series":       df_to_records(df, cols=[
@@ -96,10 +73,6 @@ def main():
             "shibor_1y", "us_1y", "mm_spread", "mm_carry",
             "cip_dev_pct", "usdcny_fwd_1y", "forward_premium_pct",
             "hedged_carry_proxy", "hedged_carry_pct_rank", "hedged_carry_method",
-            # v3.3 — offshore CNH funding layer
-            "cnh_hibor_1y", "cnh_hibor_3m", "cnh_hibor_on",
-            "cnh_funding_stress", "cnh_stress_pct_rank",
-            "hedged_carry_offshore",
             "cip_fair_spot", "cip_deviation",
             "reg_predicted", "reg_residual", "reg_predicted_uni", "reg_residual_uni",
             "reg_beta_spread", "reg_beta_dxy", "reg_r2", "reg_residual_z",
@@ -160,10 +133,6 @@ def write_excel(df, snap, series_records):
         "shibor_1y", "us_1y", "mm_spread", "mm_carry",
         "cip_dev_pct", "usdcny_fwd_1y", "forward_premium_pct",
         "hedged_carry_proxy", "hedged_carry_pct_rank", "hedged_carry_method",
-        # v3.3 — offshore CNH funding layer
-        "cnh_hibor_1y", "cnh_hibor_3m", "cnh_hibor_on",
-        "cnh_funding_stress", "cnh_stress_pct_rank",
-        "hedged_carry_offshore",
         "cip_fair_spot", "cip_deviation",
         "reg_predicted", "reg_residual", "reg_predicted_uni", "reg_residual_uni",
         "reg_beta_spread", "reg_beta_dxy", "reg_r2", "reg_residual_z",

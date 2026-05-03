@@ -214,21 +214,15 @@ def fetch_dxy() -> pd.Series:
     """
     DXY (US Dollar Index) — the "soul variable" for de-noising the regression.
 
-    Try-order (v3.3.2 — every primary path is DAILY freq, not weekly):
-      1. yfinance DX-Y.NYB           (canonical ICE DXY; SSL fails on Windows)
-      2. Yahoo v8 chart API DX-Y.NYB (same data, no SSL issue, works on Windows)
-      3. FRED DTWEXAFEGS             (Advanced Foreign Economies, DAILY)
-      4. akshare macro_usa_real_dollar_index / fx_quote_baidu (legacy)
-      5. FRED DTWEXBGS               (Broad TWI — WEEKLY, last resort only)
-
-    The pre-v3.3.2 chain went straight from yfinance to FRED DTWEXBGS, which
-    is **weekly** — the displayed value sat flat for 5 days at a time and the
-    OLS regression noise spiked. Adding Yahoo v8 + Advanced TWI gives us
-    daily updates on every network.
+    Try-order:
+      1. yfinance DX-Y.NYB  (canonical ICE DXY; SSL may fail on some networks)
+      2. akshare macro_usa_real_dollar_index (Trade-weighted, FRED proxy)
+      3. akshare index_investing_global / fx_quote_baidu
+      4. FRED CSV direct: DTWEXBGS (Broad Dollar Index — proxy, ~95% corr to DXY)
 
     Returns: Series named 'dxy' indexed by date.
     """
-    # ── Attempt 1: yfinance (works on Linux/GitHub Actions, fails on Windows SSL) ──
+    # ── Attempt 1: yfinance ─────────────────────────────────
     try:
         raw = yf.download("DX-Y.NYB",
                           start=_yfdate(START_DATE),
@@ -238,44 +232,6 @@ def fetch_dxy() -> pd.Series:
             s = raw["Close"].squeeze()
             s.name = "dxy"
             return s.dropna()
-    except Exception:
-        pass
-
-    # ── Attempt 2: Yahoo v8 chart API (no SSL issue, works on Windows) ──
-    try:
-        import requests
-        from io import StringIO
-        # range=10y captures full history; interval=1d daily
-        url = "https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?range=10y&interval=1d"
-        r = requests.get(url, headers={"User-Agent": "Mozilla/5.0"}, timeout=15).json()
-        result = r.get("chart", {}).get("result", [])
-        if result:
-            ts = result[0].get("timestamp", [])
-            cl = result[0].get("indicators", {}).get("quote", [{}])[0].get("close", [])
-            if ts and cl:
-                s = pd.Series(cl, index=pd.to_datetime(ts, unit="s"), name="dxy").dropna()
-                s = s[s.index >= pd.Timestamp(START_DATE)]
-                if len(s) > 100:
-                    return s
-    except Exception:
-        pass
-
-    # ── Attempt 3: FRED Advanced Foreign Economies dollar (DAILY) ──
-    try:
-        import requests
-        from io import StringIO
-        url = "https://fred.stlouisfed.org/graph/fredgraph.csv?id=DTWEXAFEGS"
-        resp = requests.get(url, timeout=15, verify=False)
-        if resp.status_code == 200:
-            df = pd.read_csv(StringIO(resp.text))
-            df.columns = ["date", "dxy"]
-            df["date"] = pd.to_datetime(df["date"], errors="coerce")
-            df["dxy"]  = pd.to_numeric(df["dxy"], errors="coerce")
-            s = df.dropna().set_index("date")["dxy"].sort_index()
-            s.name = "dxy"
-            s = s[s.index >= pd.Timestamp(START_DATE)]
-            if len(s) > 100:
-                return s
     except Exception:
         pass
 
@@ -728,134 +684,6 @@ def fetch_us_1y() -> pd.Series:
         return pd.Series(dtype=float, name="us_1y")
 
 
-# ─────────────────────────────────────────────────────────────
-#  v3.3 · Offshore CNH layer — HIBOR + spot incremental cache
-# ─────────────────────────────────────────────────────────────
-
-# Same incremental-cache pattern as CFETS_FWD_CACHE (v3.2.7).
-# Yahoo Finance v8 chart API (different from yfinance!) returns ONE current
-# data point for USDCNH=X — historical depth is empty. So each successful
-# build appends today's value to the cache; history grows over real time.
-CNH_SPOT_CACHE = Path(__file__).resolve().parent / "cache" / "usdcnh_spot.csv"
-
-
-def _akshare_cnh_hibor(tenor: str) -> pd.Series:
-    """Internal: pull one tenor of CNH HIBOR (offshore CNY interbank rate, HK).
-    tenor ∈ {'隔夜', '1月', '3月', '1年'}.
-    Source: akshare `rate_interbank` market='香港银行同业拆借市场', symbol='Hibor人民币'.
-    Coverage on test: 3215 rows from 2013-03-22 to today. Returns Series in %.
-    """
-    try:
-        import akshare as ak  # lazy import — must be inside body (v3.1 lesson)
-        df = ak.rate_interbank(
-            market="香港银行同业拆借市场",
-            symbol="Hibor人民币",
-            indicator=tenor,
-        )
-    except Exception as e:
-        st.warning(f"CNH HIBOR ({tenor}) akshare failed: {e}")
-        return pd.Series(dtype=float)
-
-    if df is None or df.empty:
-        return pd.Series(dtype=float)
-
-    df.columns = df.columns.str.strip()
-    # akshare returns ['报告日', '利率', '涨跌']
-    date_col = next((c for c in df.columns if "报告" in c or "日期" in c), df.columns[0])
-    val_col  = next((c for c in df.columns if "利率" in c or "rate" in c.lower()),
-                    [c for c in df.columns if c != date_col][0])
-    s = pd.Series(
-        pd.to_numeric(df[val_col], errors="coerce").values,
-        index=pd.to_datetime(df[date_col]),
-    ).sort_index().dropna()
-    return s
-
-
-@st.cache_data(ttl=3600, show_spinner=False)
-def fetch_cnh_hibor_1y() -> pd.Series:
-    s = _akshare_cnh_hibor("1年")
-    s.name = "cnh_hibor_1y"
-    return s
-
-
-@st.cache_data(ttl=3600, show_spinner=False)
-def fetch_cnh_hibor_3m() -> pd.Series:
-    s = _akshare_cnh_hibor("3月")
-    s.name = "cnh_hibor_3m"
-    return s
-
-
-@st.cache_data(ttl=3600, show_spinner=False)
-def fetch_cnh_hibor_overnight() -> pd.Series:
-    """CNH HIBOR overnight — the "PBOC offshore liquidity squeeze" signal.
-    When PBOC wants to defend CNY against speculative attack, it pulls
-    CNH out of HK banks → overnight HIBOR spikes (Jan 2017: 60%+; Sep 2018: 25%+).
-    """
-    s = _akshare_cnh_hibor("隔夜")
-    s.name = "cnh_hibor_on"
-    return s
-
-
-@st.cache_data(ttl=3600, show_spinner=False)
-def fetch_usdcnh_yahoo_v8_today() -> float | None:
-    """Yahoo Finance v8 chart API (NOT yfinance — different endpoint, no SSL
-    cert issues on Windows). Returns ONLY today's USDCNH close, since the
-    v8 endpoint doesn't carry CNH historical depth. We cache it incrementally
-    so history grows over real time.
-    """
-    try:
-        import requests
-        url = "https://query1.finance.yahoo.com/v8/finance/chart/USDCNH=X?range=5d&interval=1d"
-        r = requests.get(url, headers={"User-Agent": "Mozilla/5.0"}, timeout=15)
-        j = r.json()
-        result = j.get("chart", {}).get("result", [])
-        if not result:
-            return None
-        closes = result[0].get("indicators", {}).get("quote", [{}])[0].get("close", [])
-        # Filter Nones, take last valid
-        valid = [c for c in closes if c is not None]
-        return float(valid[-1]) if valid else None
-    except Exception as e:
-        st.warning(f"Yahoo v8 USDCNH fetch failed: {e}")
-        return None
-
-
-def _append_cnh_spot_cache(today_value: float | None) -> pd.Series:
-    """Append today's USDCNH value to the CSV cache and return the full history."""
-    CNH_SPOT_CACHE.parent.mkdir(exist_ok=True)
-    today = pd.Timestamp(datetime.now().date())
-
-    # Load existing cache
-    if CNH_SPOT_CACHE.exists():
-        try:
-            cache = pd.read_csv(CNH_SPOT_CACHE, parse_dates=["date"]).set_index("date")
-        except Exception:
-            cache = pd.DataFrame(columns=["usdcnh"])
-            cache.index.name = "date"
-    else:
-        cache = pd.DataFrame(columns=["usdcnh"])
-        cache.index.name = "date"
-
-    if today_value is not None:
-        cache.loc[today] = {"usdcnh": today_value}
-        cache = cache.sort_index()
-        cache.to_csv(CNH_SPOT_CACHE, index_label="date")
-
-    if cache.empty:
-        return pd.Series(dtype=float, name="usdcnh")
-    return pd.Series(cache["usdcnh"].values, index=cache.index, name="usdcnh")
-
-
-@st.cache_data(ttl=3600, show_spinner=False)
-def fetch_usdcnh_offshore_spot_v33() -> pd.Series:
-    """v3.3 — try Yahoo v8 today + cache history. Returns the cached time series.
-    Distinct from v3.0's `fetch_usdcnh_offshore_spot()` (akshare/Eastmoney based,
-    which returns empty on this network). Used additively.
-    """
-    today_val = fetch_usdcnh_yahoo_v8_today()
-    return _append_cnh_spot_cache(today_val)
-
-
 @st.cache_data(ttl=3600, show_spinner=False)
 def get_master_data() -> tuple[pd.DataFrame, dict]:
     """
@@ -878,10 +706,6 @@ def get_master_data() -> tuple[pd.DataFrame, dict]:
     dxy      = fetch_dxy()
     shibor1y = fetch_shibor_1y()      # v3.1: money-market CN funding cost
     us1y     = fetch_us_1y()          # v3.1: money-market US funding cost
-    cnh_1y   = fetch_cnh_hibor_1y()       # v3.3: offshore CNY funding (HK)
-    cnh_3m   = fetch_cnh_hibor_3m()       # v3.3
-    cnh_on   = fetch_cnh_hibor_overnight() # v3.3: liquidity-squeeze signal
-    cnh_spot_v33 = fetch_usdcnh_offshore_spot_v33()  # v3.3 incremental cache
 
     update_cfets_usdcny_1y_fwd_cache()
     fwd_1y_hist = load_cfets_usdcny_1y_fwd_cache()
@@ -932,19 +756,6 @@ def get_master_data() -> tuple[pd.DataFrame, dict]:
     if not us1y.empty:
         df["us_1y"] = us1y.reindex(idx, method="ffill")
 
-    # v3.3 — Offshore CNY (HK) funding curve — CNH HIBOR family
-    if not cnh_1y.empty:
-        df["cnh_hibor_1y"] = cnh_1y.reindex(idx, method="ffill")
-    if not cnh_3m.empty:
-        df["cnh_hibor_3m"] = cnh_3m.reindex(idx, method="ffill")
-    if not cnh_on.empty:
-        df["cnh_hibor_on"] = cnh_on.reindex(idx, method="ffill")
-
-    # v3.3 — USD/CNH spot from incremental Yahoo-v8 cache. Use only if
-    # primary akshare/yfinance chain (already populated `usdcnh` above) is empty.
-    if not cnh_spot_v33.empty and ("usdcnh" not in df.columns or df["usdcnh"].notna().sum() < 5):
-        df["usdcnh"] = cnh_spot_v33.reindex(idx, method="ffill")
-
     # Derived columns
     if "us_2y" in df and "cn_2y" in df:
         df["yield_spread"] = df["us_2y"] - df["cn_2y"]
@@ -953,14 +764,6 @@ def get_master_data() -> tuple[pd.DataFrame, dict]:
     # SOFR-anchored 1Y UST as the USD leg (legacy Libor was discontinued 2023-06).
     if "us_1y" in df and "shibor_1y" in df:
         df["mm_spread"] = df["us_1y"] - df["shibor_1y"]
-
-    # v3.3 — CNH funding stress (offshore tightening signal)
-    # Positive = PBOC pulling CNH out of HK banks → defending CNY
-    # Historical spike examples: Jan 2017 (+50%), Sep 2018 (+15%)
-    if "cnh_hibor_1y" in df and "shibor_1y" in df:
-        df["cnh_funding_stress"] = df["cnh_hibor_1y"] - df["shibor_1y"]
-    if "cnh_hibor_on" in df and "shibor_1y" in df:
-        df["cnh_squeeze_on"] = df["cnh_hibor_on"] - df["shibor_1y"]
 
     if "usdcnh" in df and "usdcny" in df:
         df["onoffshore_gap"] = df["usdcnh"] - df["usdcny"]
@@ -983,10 +786,6 @@ def get_master_data() -> tuple[pd.DataFrame, dict]:
         "shibor_1y": df["shibor_1y"].notna().mean() if "shibor_1y" in df else 0,
         "us_1y":     df["us_1y"].notna().mean()     if "us_1y"     in df else 0,
         "usdcny_fwd_1y": df["usdcny_fwd_1y"].notna().mean() if "usdcny_fwd_1y" in df else 0,
-        # v3.3 — Offshore CNH funding curve
-        "cnh_hibor_1y": df["cnh_hibor_1y"].notna().mean() if "cnh_hibor_1y" in df else 0,
-        "cnh_hibor_3m": df["cnh_hibor_3m"].notna().mean() if "cnh_hibor_3m" in df else 0,
-        "cnh_hibor_on": df["cnh_hibor_on"].notna().mean() if "cnh_hibor_on" in df else 0,
     }
 
     return df, quality

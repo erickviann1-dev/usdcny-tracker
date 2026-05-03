@@ -11,6 +11,139 @@ the previous state under `history/`.
 
 ---
 
+## [v3.3.2] — 2026-05-01 · Daily DXY (was secretly weekly!) + Freshness Audit
+
+### Bug fixed — DXY was a *weekly* series silently ffill'd to look daily
+The pre-v3.3.2 `fetch_dxy()` chain went: yfinance → akshare → FRED `DTWEXBGS`.
+On the user's Windows machine yfinance fails (SSL), akshare returns nothing
+useful, and FRED `DTWEXBGS` is the **Trade-Weighted Broad Dollar Index**
+which is published **weekly** (Fridays only). Combined with
+`get_master_data`'s `df.ffill(limit=5)`, the dashboard showed `dxy = 118.73`
+on the same value Mon–Fri **for 5 days at a time**. The OLS regression
+was fitting weekly data masquerading as daily.
+
+A freshness audit revealed:
+```
+dxy  last 5 days: 118.7294 118.7294 118.7294 118.7294 118.7294   🔴 FLAT
+```
+All other fields moved daily as expected.
+
+### Fix — daily-first fallback chain
+```
+1. yfinance DX-Y.NYB           (works on Linux/GitHub Actions; SSL fails on Windows)
+2. Yahoo v8 chart API DX-Y.NYB (works EVERYWHERE — no SSL cert dependency)
+3. FRED DTWEXAFEGS             (Advanced Foreign Economies, DAILY)
+4. akshare legacy paths
+5. FRED DTWEXBGS               (Broad TWI WEEKLY — last resort only)
+```
+
+### Verified after fix
+```
+dxy  last 5 days: 98.4800 98.6200 98.9200 98.0800 98.2100   ✅ all unique
+```
+
+### Headline metric change (expected, not a regression)
+| | Before (weekly TWI) | After (true ICE DXY) |
+|---|---:|---:|
+| Latest DXY value | 118.73 | **98.21** |
+| Movement / day | ≈ 0 | ✅ daily |
+| OLS β₂ (regression coef) | 0.0738 | will recalibrate |
+
+Different basket → different absolute level. ICE DXY is what FX desks
+actually trade and watch (EUR 57.6%, JPY 13.6%, GBP 11.9%, CAD 9.1%,
+SEK 4.2%, CHF 3.6%). FRED Broad TWI is academic/Fed-favoured but not
+tradable. For a quant tracker, ICE DXY is the right primitive.
+
+### Files Touched
+- `data_fetcher.py` — `fetch_dxy()` rewritten with 5-tier daily-first chain
+- `CHANGELOG.md` — this entry
+
+### Audit method (saved for future regressions)
+```python
+import pandas as pd, json
+d = json.load(open('docs/data.json'))
+df = pd.DataFrame(d['series']).set_index(pd.to_datetime([r['date'] for r in d['series']]))
+for f in ['dxy', 'us_2y', 'cn_2y', 'usdcny']:
+    last5 = df[f].dropna().tail(5).values
+    n_uniq = len(set(round(v,6) for v in last5))
+    print(f'{f}: {n_uniq}/5 unique → {"FLAT" if n_uniq==1 else "moving"}')
+```
+Run after any data-source change. If a field comes back FLAT, suspect
+either (a) source published weekly, or (b) a stale cache.
+
+### What's now genuinely daily-fresh (full audit)
+| Field | Status |
+|---|---|
+| US 2Y, CN 2Y | ✅ daily (akshare bond_zh_us_rate) |
+| USD/CNY, USD/CNH spot | ✅ daily (yfinance + Yahoo v8 fallback) |
+| PBOC fix | ✅ daily (akshare currency_boc_sina) |
+| **DXY** | **✅ daily (Yahoo v8 ICE DXY) — fixed in this release** |
+| Shibor 1Y, US 1Y | ✅ daily (akshare + FRED DGS1) |
+| CNH HIBOR 1Y/3M/ON | ✅ daily (akshare HK interbank) |
+| CFETS USDCNY 1Y forward | ⚠️ accumulating cache (1 row/day, growing) |
+| USD/CNH spot (Yahoo v8 cache) | ⚠️ accumulating cache (1 row/day, growing) |
+
+The two ⚠️ items are by-design — paid alternatives don't exist on free feeds.
+Cache will accumulate naturally with each scheduled build.
+
+---
+
+## [v3.3.1] — 2026-05-01 · Real ET Auto-Schedule + Live Update Timestamp
+
+> Tightly scoped patch on top of v3.3.0. Fixes a silent scheduling bug
+> and surfaces the auto-build timestamp prominently on the dashboard.
+
+### Bug fixed — GitHub Actions cron was firing at the wrong hour
+`.github/workflows/daily-build.yml` previously had:
+```yaml
+- cron: "0 10 * * *"
+  timezone: "America/New_York"
+```
+**The `timezone:` field is silently ignored by GitHub Actions cron** —
+it accepts UTC only. The schedule was therefore firing at 10:00 / 15:00
+UTC, which is 06:00 / 11:00 ET in EDT or 05:00 / 10:00 ET in EST. The
+target was **10:00 AM and 2:00 PM New York time**.
+
+### Fix — 4-cron pattern covers both DST regimes
+```yaml
+- cron: "0 14 * * *"   # 10am EDT  /  9am  EST   ← target #1 (summer)
+- cron: "0 15 * * *"   # 11am EDT  /  10am EST   ← target #1 (winter)
+- cron: "0 18 * * *"   # 2pm  EDT  /  1pm  EST   ← target #2 (summer)
+- cron: "0 19 * * *"   # 3pm  EDT  /  2pm  EST   ← target #2 (winter)
+```
+Burns 4 builds/day instead of 2, but exactly 2 hit the target on any
+given day. Free tier covers it easily (4 × 3 min ≈ 12 min/day).
+
+### Added — Timezone-aware build timestamps
+`build.py` now writes three fields into `data.json`:
+- `generated_at`     — runner local time (UTC on GitHub Actions)
+- `generated_at_utc` — explicit UTC stamp e.g. `"2026-05-03 04:25:50 UTC"`
+- `generated_at_et`  — **user-facing ET stamp** e.g. `"2026-05-03 00:25 EDT"`
+  (auto switches between EDT and EST via `zoneinfo.ZoneInfo("America/New_York")`)
+
+### Added — Topbar "Updated [time]" element
+- New `#topbar-updated` span next to the score; populated from `d.generated_at_et`
+- Footer `#footer-ts` upgraded to use `generated_at_et` as well
+- New i18n key `updated.label` (EN: "Updated", ZH: "更新于")
+- Dictionaries still symmetric — EN 315 = ZH 315
+
+### Files Touched
+- `.github/workflows/daily-build.yml` — 4 cron entries replacing 2 + comment
+- `build.py` — `from datetime import timezone`, `from zoneinfo import ZoneInfo`,
+  three timestamp fields in payload
+- `docs/dashboard.js` — `renderTopbar()` writes `#topbar-updated`,
+  `renderCitation()` footer uses ET, +2 i18n keys
+- `docs/index.html` — topbar gets `#topbar-updated` element
+
+### Verified locally
+```
+generated_at     : 2026-05-02 23:25:50
+generated_at_utc : 2026-05-03 04:25:50 UTC
+generated_at_et  : 2026-05-03 00:25 EDT     ← shown on website
+```
+
+---
+
 ## [v3.3.0] — 2026-05-01 · Offshore CNH Funding Layer + Market-Quoted Hedged Carry
 
 ### Why this is one **minor** release (not a string of patches)

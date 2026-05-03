@@ -2,8 +2,14 @@ name: Daily Data Build
 
 on:
   schedule:
-    # Run at 14:30 UTC every weekday (Mon-Fri) ≈ Beijing 22:30 / NY 9:30-10:30
-    - cron: "30 14 * * 1-5"
+    # ⚠️ GitHub Actions cron is UTC ONLY — the `timezone:` field is silently ignored.
+    # We want 10:00 AM and 2:00 PM New York time. To cover both DST regimes
+    # (EDT = UTC−4 from mid-Mar to early-Nov; EST = UTC−5 the rest of the year)
+    # we fire 4 entries — only 2 of the 4 hit the target on any given day:
+    - cron: "0 14 * * *"   # 10:00 AM EDT  /  09:00 AM EST   ← target #1 (summer)
+    - cron: "0 15 * * *"   # 11:00 AM EDT  /  10:00 AM EST   ← target #1 (winter)
+    - cron: "0 18 * * *"   # 02:00 PM EDT  /  01:00 PM EST   ← target #2 (summer)
+    - cron: "0 19 * * *"   # 03:00 PM EDT  /  02:00 PM EST   ← target #2 (winter)
   workflow_dispatch:  # Allow manual trigger from GitHub UI
 
 permissions:
@@ -39,7 +45,7 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add docs/data.json BUILD_LOG.md docs/usdcny_tracker.xlsx docs/usdcny_tracker_replication.ipynb
           git diff --cached --quiet || git commit -m "$(cat <<EOF
-          auto: daily data update $(date -u +%Y-%m-%d)
+          auto: data update $(TZ=America/New_York date '+%Y-%m-%d %H:%M %Z')
 
           Score: $(python -c "import json; d=json.load(open('docs/data.json')); print(d['snapshot'].get('composite_score','—'))")/100
           USD/CNY: $(python -c "import json; d=json.load(open('docs/data.json')); print(d['snapshot'].get('usdcny','—'))")

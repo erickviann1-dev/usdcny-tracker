@@ -1,0 +1,25 @@
+{
+  "tag": "v3.0.1-pre-hedged",
+  "timestamp": "2026-05-01T13:28:19.334755",
+  "files_saved": [
+    "docs/index.html",
+    "docs/dashboard.js",
+    "docs/data.json",
+    "analytics.py",
+    "data_fetcher.py",
+    "build.py",
+    "config.py",
+    "charts.py",
+    "app.py"
+  ],
+  "files_skipped": [
+    "web/index.html",
+    "web/dashboard.js",
+    "web/data.json"
+  ],
+  "git_sha": "63e7c3da10075aa205d590148d556290b5825e27",
+  "git_dirty": true,
+  "git_status": [
+    "?? history/v3.0.1-pre-hedged/"
+  ]
+}

@@ -256,18 +256,6 @@ a:hover { color: var(--ochre); }
     font-weight: 600;
     letter-spacing: -0.02em;
     margin-bottom: 14px;
-    overflow: hidden;
-    flex-shrink: 0;
-}
-.author-avatar.photo {
-    background: var(--hairline);
-    padding: 0;
-}
-.author-avatar.photo img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
 }
 .author-name {
     font-size: 16px;
@@ -1316,7 +1304,7 @@ footer.site strong { color: var(--ink); font-weight: 500; }
             <div class="brand-mark">SD</div>
             <div class="brand-text">
                 USD/CNY Macro-Policy Tracker
-                <small id="topbar-version">2Y FOCUS · v3.3.0</small>
+                <small id="topbar-version">2Y FOCUS · v1.0</small>
             </div>
         </a>
         <div class="topbar-spacer"></div>
@@ -1324,8 +1312,6 @@ footer.site strong { color: var(--ink); font-weight: 500; }
             <span id="topbar-date">—</span>
             <span class="dot">·</span>
             <span id="topbar-score">—</span>
-            <span class="dot">·</span>
-            <span id="topbar-updated" style="font-size:11px"><span style="color:var(--muted)">Updated</span> —</span>
         </div>
         <div class="topbar-actions">
             <div class="lang-toggle">
@@ -1344,20 +1330,20 @@ footer.site strong { color: var(--ink); font-weight: 500; }
     <!-- ── SIDEBAR ── -->
     <aside class="sidebar">
 
-        <!-- Author card -->
+        <!-- Author card (PLACEHOLDER — fill in your name/bio) -->
         <div class="author-card">
-            <div class="author-avatar photo" id="author-avatar">
-                <img src="images/erick-wei.png" alt="Erick Wei" width="128" height="128" loading="lazy" decoding="async">
-            </div>
-            <div class="author-name" id="author-name">Erick Wei</div>
-            <div class="author-role" id="author-role" data-i18n="html.author.role">Independent researcher · FX &amp; macro</div>
-            <div class="author-bio" id="author-bio" data-i18n="html.author.bio">
-                Open research tooling on USDCNY carry, CIP-implied hedging, and PBOC fixing signals.
+            <div class="author-avatar" id="author-initials">SD</div>
+            <div class="author-name" id="author-name">[Your Name]<span class="placeholder-tag">Edit</span></div>
+            <div class="author-role" id="author-role">[Affiliation · Role]</div>
+            <div class="author-bio" id="author-bio">
+                [Replace this paragraph with your self-introduction. e.g. background,
+                research interests, connection to FX / macro-policy work, why you built
+                this tracker. ~3-4 lines is ideal.]
             </div>
             <div class="author-links">
-                <a class="author-link" href="#" id="author-linkedin" rel="noopener">LinkedIn</a>
-                <a class="author-link" href="mailto:erickviann1@gmail.com" id="author-email">Email</a>
-                <a class="author-link" href="#" id="author-cv" rel="noopener">CV</a>
+                <a class="author-link" href="#" id="author-linkedin">LinkedIn</a>
+                <a class="author-link" href="#" id="author-email">Email</a>
+                <a class="author-link" href="#" id="author-cv">CV</a>
             </div>
         </div>
 
@@ -1370,8 +1356,6 @@ footer.site strong { color: var(--ink); font-weight: 500; }
                 <li><a href="#chapter-02"><span class="num">02</span> <span data-i18n="nav.mispricing">Mispricing</span></a></li>
                 <li><a href="#chapter-03"><span class="num">03</span> <span data-i18n="nav.policy">Policy Intent</span></a></li>
                 <li><a href="#composite"><span class="num">∑</span> <span data-i18n="nav.composite">Composite Trend</span></a></li>
-                <li><a href="#composite-method"><span class="num">§</span> <span data-i18n="nav.method">Composite methodology</span></a></li>
-                <li><a href="#history-stress"><span class="num">◷</span> <span data-i18n="nav.history">Historical stress lens</span></a></li>
                 <li><a href="#builder"><span class="num">⊞</span> <span data-i18n="nav.builder">Build a Chart</span></a></li>
                 <li><a href="#glossary"><span class="num">⊕</span> <span data-i18n="nav.glossary">Glossary</span></a></li>
                 <li><a href="#data"><span class="num">↓</span> <span data-i18n="nav.data">Data &amp; Export</span></a></li>
@@ -1485,14 +1469,13 @@ footer.site strong { color: var(--ink); font-weight: 500; }
                 <div class="chapter-num">01</div>
                 <div class="chapter-title-block">
                     <div class="chapter-eyebrow" data-i18n="ch01.eyebrow">Layer One · Carry Feasibility</div>
-                    <h2 data-i18n-html="ch01.title">Carry Monitor — From Gross Spread to Hedged P&amp;L</h2>
+                    <h2 data-i18n-html="ch01.title">Unhedged Raw Carry — 名义敞口套利</h2>
                     <p class="chapter-lead" data-i18n-html="ch01.lead">
-                        The "water pressure" of carry-trade capital: how much can you earn
-                        borrowing CNY and lending USD? We track both the <strong>raw 2Y yield
-                        differential</strong> and a <strong>CIP-implied hedged carry proxy</strong>
-                        that strips out forward-point costs. When hedged carry is positive and
-                        rising, speculative outflow pressure is structurally building — regardless
-                        of what the spot rate does today.
+                        Free APIs do not expose USD/CNY swap points or NDF forward quotes.
+                        We therefore track the <strong>nominal 2-year yield differential</strong> —
+                        the gross carry-trade incentive <em>before</em> hedging costs. This is
+                        the depth of inversion that fund-flow speculation responds to,
+                        not a true risk-adjusted P&L estimate.
                     </p>
                 </div>
             </div>
@@ -1501,20 +1484,16 @@ footer.site strong { color: var(--ink); font-weight: 500; }
 
             <div class="method-box">
                 <span class="method-label" data-i18n="method">Method</span>
-                <h3 data-i18n="method.carry">Carry Decomposition</h3>
+                <h3 data-i18n="method.def">Definition</h3>
                 <div class="formula">
-Raw Carry            = US_2Y − CN_2Y                           <em>(gross incentive)</em>
-Hedged return        = 100 × [ (1 + UST_1Y/100)×(F₁ᵧ/S) − (1 + Shibor_1Y/100) ]   <em>when CFETS 1Y outright F₁ᵧ is available</em>
-                      ≈ UST_1Y + [100×(F₁ᵧ/S − 1)] − Shibor_1Y   <em>(same object, decomposed)</em>
-Fallback (no F₁ᵧ)    = Raw Carry − CIP_Basis%                   <em>2Y CIP-implied proxy</em>
-MM Spread (1Y)       = UST_1Y − Shibor_1Y                      <em>(funding-rate analog)</em>
+Raw Carry         = US_2Y − CN_2Y
+Carry Pctile (1Y) = rank of today's carry vs trailing 252 trading days
+Carry Pctile (2Y) = rank vs trailing 504 trading days
                 </div>
-                <p data-i18n-html="ch01.method.note">
-                    Free APIs do not expose real swap-point quotes. We derive the hedging cost
-                    from Covered Interest Parity: the CIP basis measures how far the actual
-                    spot deviates from what arbitrage-free forwards imply. A <strong>positive</strong>
-                    hedged carry proxy means real arbitrage profit exists after hedging —
-                    historically rare and a sign of USD funding stress or capital-control friction.
+                <p>
+                    True hedged carry would equal Raw Carry minus the annualised swap cost.
+                    Without forward quotes, that calculation is infeasible. The <em>residual</em>
+                    hedged-carry signal lives in the CIP basis (Layer 02).
                 </p>
             </div>
 
@@ -1532,34 +1511,6 @@ MM Spread (1Y)       = UST_1Y − Shibor_1Y                      <em>(funding-ra
                     <div class="chart-card-sub">Pressure metric vs CNH–CNY discount</div>
                 </div>
                 <div id="chart-carry" style="height:480px"></div>
-            </div>
-
-            <div class="chart-card">
-                <div class="chart-card-head">
-                    <div class="chart-card-title" data-i18n="chart.hedgedCarry">Carry Decomposition — Raw vs Hedged</div>
-                    <div class="chart-card-sub" data-i18n="chart.hedgedCarrySub">Hedged carry = raw carry minus CIP basis (forward-hedge cost proxy)</div>
-                </div>
-                <div id="chart-carry-decomp" style="height:480px"></div>
-            </div>
-
-            <div class="chart-card">
-                <div class="chart-card-head">
-                    <div class="chart-card-title" data-i18n="chart.mmFunding">Money-Market Funding Layer — 1Y Tenor</div>
-                    <div class="chart-card-sub" data-i18n="chart.mmFundingSub">Short-end funding rate differential (modern Libor-Shibor analog)</div>
-                </div>
-                <div id="chart-mm" style="height:440px"></div>
-            </div>
-
-            <div class="method-box" id="roadmap-layer1">
-                <span class="method-label" data-i18n="roadmap.label">Roadmap</span>
-                <h3 data-i18n="roadmap.swap.title">Real swap points, forwards &amp; NDF</h3>
-                <p class="chapter-lead" data-i18n-html="roadmap.swap.body">
-                    This build uses a <strong>CIP-implied hedged-carry proxy</strong> because public APIs do not expose
-                    onshore swap-point strips. The next upgrade is to layer in <strong>USD/CNY forward points</strong>,
-                    <strong>CNH forwards</strong>, <strong>NDF</strong> pricing, and <strong>multi-tenor</strong>
-                    (1M–2Y) hedged carry — separating onshore CNY from offshore CNH — so Layer 1 reflects
-                    tradable economics rather than only theoretical pressure.
-                </p>
             </div>
 
             <div class="findings">
@@ -1637,34 +1588,6 @@ CIP fair value (Layer 02·A):
             <div class="chart-grid-2">
                 <div class="chart-card">
                     <div class="chart-card-head">
-                        <div class="chart-card-title" data-i18n="chart.regBetas">Rolling OLS — β₁ &amp; β₂</div>
-                        <div class="chart-card-sub" data-i18n="chart.regBetasSub">252d window: USD/CNY ~ spread + DXY</div>
-                    </div>
-                    <div id="chart-reg-betas-roll" style="height:280px"></div>
-                </div>
-                <div class="chart-card">
-                    <div class="chart-card-head">
-                        <div class="chart-card-title" data-i18n="chart.regFit">Model fit &amp; residual z-score</div>
-                        <div class="chart-card-sub" data-i18n="chart.regFitSub">In-sample R² and rolling (ε−μ)/σ (not pseudo-OOS)</div>
-                    </div>
-                    <div id="chart-reg-fit-roll" style="height:280px"></div>
-                </div>
-            </div>
-
-            <div class="method-box">
-                <span class="method-label" data-i18n="roadmap.label">Roadmap</span>
-                <h3 data-i18n="roadmap.reg.title">Model stability &amp; alternatives</h3>
-                <p class="chapter-lead" data-i18n-html="roadmap.reg.body">
-                    Rolling coefficients and R² are a first diagnostic step. Further work: expanding-factor controls
-                    (e.g. terms-of-trade proxies), <strong>pseudo out-of-sample</strong> forecasts, and comparison vs.
-                    <strong>rolling OLS with shorter windows, ridge, or small VARs</strong> — published only when
-                    the specification passes stability checks rather than a single static β.
-                </p>
-            </div>
-
-            <div class="chart-grid-2">
-                <div class="chart-card">
-                    <div class="chart-card-head">
                         <div class="chart-card-title">CIP Deviation</div>
                         <div class="chart-card-sub">Spot − CIP-implied fair value</div>
                     </div>
@@ -1698,18 +1621,6 @@ CIP fair value (Layer 02·A):
                 </div>
             </div>
 
-            <div class="method-box" id="roadmap-layer3">
-                <span class="method-label" data-i18n="roadmap.label">Roadmap</span>
-                <h3 data-i18n="roadmap.policy.title">Policy toolkit monitor</h3>
-                <p class="chapter-lead" data-i18n-html="roadmap.policy.body">
-                    Fixing bias is one observable lever. A fuller toolkit would add <strong>CNH liquidity / CNH Hibor</strong>,
-                    <strong>PBOC offshore bill issuance</strong>, <strong>FX risk reserve ratio</strong> changes,
-                    evidence of <strong>counter-cyclical factor</strong> use, <strong>verbal guidance</strong>,
-                    <strong>state-bank spot behaviour</strong>, and the <strong>CNY–CNH spread</strong> — wired in as
-                    data becomes available in this open pipeline.
-                </p>
-            </div>
-
             <div class="method-box">
                 <span class="method-label" data-i18n="method">Method</span>
                 <h3 data-i18n="method.dxyadj">DXY-Adjusted Bias</h3>
@@ -1733,14 +1644,6 @@ Defense Intensity = − rolling_mean(bias, 20d) × 10000  [pips]
                     <div class="chart-card-sub">PBOC Fix vs Onshore CNY vs Offshore CNH</div>
                 </div>
                 <div id="chart-trinity" style="height:360px"></div>
-            </div>
-
-            <div class="chart-card">
-                <div class="chart-card-head">
-                    <div class="chart-card-title" data-i18n="chart.cnhStress">CNH Funding Stress — PBOC Offshore Defence</div>
-                    <div class="chart-card-sub" data-i18n="chart.cnhStressSub">CNH HIBOR 1Y − Shibor 1Y · spikes flag squeezes</div>
-                </div>
-                <div id="chart-cnh-stress" style="height:360px"></div>
             </div>
 
             <div class="chart-card">
@@ -1788,66 +1691,6 @@ Defense Intensity = − rolling_mean(bias, 20d) × 10000  [pips]
             </div>
             <div class="chart-card">
                 <div id="chart-composite" style="height:420px"></div>
-            </div>
-
-            <div class="method-box" id="composite-method">
-                <span class="method-label" data-i18n="method.composite.label">Composite methodology</span>
-                <h3 data-i18n="method.composite.title">Weights, standardisation &amp; the 75 line</h3>
-                <div id="composite-method-body" class="chapter-lead"></div>
-            </div>
-        </section>
-
-        <!-- ═══════════════════ HISTORICAL STRESS ═══════════════════ -->
-        <section id="history-stress" class="chapter">
-            <div class="chapter-head">
-                <div class="chapter-num">◷</div>
-                <div class="chapter-title-block">
-                    <div class="chapter-eyebrow" data-i18n="hist.eyebrow">Credibility · Historical stress lens</div>
-                    <h2 data-i18n-html="hist.title">Episodes to read against the dashboard</h2>
-                    <p class="chapter-lead" data-i18n-html="hist.lead">
-                        This is <strong>not</strong> a formal event-study or backtest: public rebuilt series lack
-                        point-in-time feeds. Use the table as a qualitative checklist — did composite, fixing bias,
-                        hedged-carry proxy, and regression residual <em>co-move</em> ahead of known stress windows?
-                    </p>
-                </div>
-            </div>
-            <div class="interp-matrix">
-                <table>
-                    <thead>
-                        <tr>
-                            <th data-i18n="hist.col.period">Window</th>
-                            <th data-i18n="hist.col.context">Context</th>
-                            <th data-i18n="hist.col.watch">What to check on this site</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td data-i18n="hist.r2015.p">2015</td>
-                            <td data-i18n="hist.r2015.c">CNY reform + devaluation pressure</td>
-                            <td data-i18n-html="hist.r2015.w">Composite vs carry percentile; fixing bias turning defensive; residual volatility.</td>
-                        </tr>
-                        <tr>
-                            <td data-i18n="hist.r2018.p">2018</td>
-                            <td data-i18n="hist.r2018.c">US–China trade war</td>
-                            <td data-i18n-html="hist.r2018.w">Policy score vs spreads; whether mispricing layer leads spot once DXY is filtered.</td>
-                        </tr>
-                        <tr>
-                            <td data-i18n="hist.r2022.p">2022</td>
-                            <td data-i18n="hist.r2022.c">Strong USD / Fed cycle</td>
-                            <td data-i18n-html="hist.r2022.w">DXY-orthogonalised residual — clean China-specific signal vs broad dollar.</td>
-                        </tr>
-                        <tr>
-                            <td data-i18n="hist.r2023.p">2023</td>
-                            <td data-i18n="hist.r2023.c">CNY near 7.30 defence narrative</td>
-                            <td data-i18n-html="hist.r2023.w">Sustained composite &gt; 75 with negative fixing bias; hedged-carry proxy trajectory.</td>
-                        </tr>
-                        <tr>
-                            <td data-i18n="hist.r20245.p">2024–25</td>
-                            <td data-i18n="hist.r20245.c">Managed defence / range-trading phase</td>
-                            <td data-i18n-html="hist.r20245.w">Rolling β stability; residual z extremes; policy percentile vs carry percentile divergence.</td>
-                        </tr>
-                    </tbody>
-                </table>
             </div>
         </section>
 
@@ -1898,7 +1741,7 @@ Defense Intensity = − rolling_mean(bias, 20d) × 10000  [pips]
             </div>
 
             <details class="glossary">
-                <summary><span data-i18n="gloss.summary">Full Variable Glossary</span> <span style="color:var(--muted);font-weight:400;font-size:12px" data-i18n="gloss.count">(48 fields)</span></summary>
+                <summary><span data-i18n="gloss.summary">Full Variable Glossary</span> <span style="color:var(--muted);font-weight:400;font-size:12px" data-i18n="gloss.count">(31 fields)</span></summary>
                 <div style="overflow-x:auto"><table class="glossary-table" id="glossary-table"></table></div>
             </details>
         </section>
@@ -1924,8 +1767,6 @@ Defense Intensity = − rolling_mean(bias, 20d) × 10000  [pips]
                 <div class="dl-row">
                     <a class="dl-btn" id="download-csv" href="#" download="usdcny_tracker.csv" data-i18n="data.csv">↓ Download CSV (full series)</a>
                     <a class="dl-btn ghost" id="download-json" href="data.json" download data-i18n="data.json">↓ Download data.json</a>
-                    <a class="dl-btn ghost" href="usdcny_tracker.xlsx" download data-i18n="data.xlsx">↓ Download Excel (.xlsx)</a>
-                    <a class="dl-btn ghost" href="usdcny_tracker_replication.ipynb" download data-i18n="data.ipynb">↓ Replication Notebook (.ipynb)</a>
                 </div>
             </div>
         </section>
@@ -1974,7 +1815,7 @@ Defense Intensity = − rolling_mean(bias, 20d) × 10000  [pips]
         <footer class="site">
             <div class="row">
                 <div>
-                    <strong>USD/CNY Macro-Policy Divergence Tracker</strong> · v3.3.0 · 2Y Focus<br>
+                    <strong>USD/CNY Macro-Policy Divergence Tracker</strong> · v3.0.1 · 2Y Focus<br>
                     <span data-i18n="footer.gen">Generated</span> <span id="footer-ts">—</span> · <span data-i18n="footer.disclaimer">For research purposes only — not investment advice.</span>
                 </div>
                 <div style="text-align:right">
@@ -1987,6 +1828,6 @@ Defense Intensity = − rolling_mean(bias, 20d) × 10000  [pips]
     </main>
 </div>
 
-<script src="dashboard.js?v=3.3.0"></script>
+<script src="dashboard.js?v=3.0.1"></script>
 </body>
 </html>

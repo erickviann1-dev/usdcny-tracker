@@ -1,0 +1,27 @@
+{
+  "tag": "v3.2.8-pre-cnh",
+  "timestamp": "2026-05-01T19:56:57.842507",
+  "files_saved": [
+    "docs/index.html",
+    "docs/dashboard.js",
+    "docs/data.json",
+    "analytics.py",
+    "data_fetcher.py",
+    "build.py",
+    "config.py",
+    "charts.py",
+    "app.py"
+  ],
+  "files_skipped": [
+    "web/index.html",
+    "web/dashboard.js",
+    "web/data.json"
+  ],
+  "git_sha": "6bcd01a8db9fe1701105cdedfa724d65ef32f05c",
+  "git_dirty": true,
+  "git_status": [
+    "?? history/v3.0.1-pre-hedged/",
+    "?? history/v3.1-pre-export/",
+    "?? history/v3.2.8-pre-cnh/"
+  ]
+}

@@ -1,10 +1,10 @@
 /* ═══════════════════════════════════════════════════════════════
  *  USD/CNY Macro-Policy Divergence Tracker · Dashboard renderer
- *  Editorial / institutional design · v3.3.0
+ *  Editorial / institutional design · v3.3.2
  * ═══════════════════════════════════════════════════════════════ */
 
 /** Single source for top bar + cache-bust alignment (footer & script tag in index.html). */
-const TRACKER_VERSION = "3.3.0";
+const TRACKER_VERSION = "3.3.2";
 
 /* ─────────────────────────────────────────────────────────────
  *  I18N Engine + Dictionaries

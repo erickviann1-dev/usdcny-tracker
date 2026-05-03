@@ -323,8 +323,8 @@ const I18N = {
     "html.papers":      "Related Research",
     "html.lineage":     "Methodology Lineage",
     "html.zones":       "Pressure Zones",
-    "html.author.role": "MPA candidate, SIPA · Columbia University",
-    "html.author.bio":  "Erick Wei is pursuing a Master of Public Administration (MPA) at Columbia University's School of International and Public Affairs (SIPA), concentrating in international finance and capital markets. His research interests span global macro trends, local-currency internationalization, and cross-market technical analysis. Before Columbia, he graduated from Boston University's Department of Economics and served as a core member on several multinational financial consulting projects.",
+    "html.author.role": "Graduate student, SIPA · Columbia University",
+    "html.author.bio":  "Erick Wei is pursuing a Master of Public Administration at Columbia University's School of International and Public Affairs (SIPA), concentrating in international finance and capital markets. His research interests span global macro trends, local-currency internationalization, and cross-market technical analysis. Before Columbia, he graduated from Boston University's Department of Economics and served as a core member on several multinational financial consulting projects.",
 
     "nav.gauge":        "Pressure Gauge",
     "nav.carry":        "Carry Feasibility",
@@ -731,8 +731,8 @@ const I18N = {
     "html.papers":      "相关研究",
     "html.lineage":     "方法论渊源",
     "html.zones":       "压力区间",
-    "html.author.role": "哥伦比亚大学 SIPA · MPA（国际金融与资本市场）",
-    "html.author.bio":  "Erick Wei 目前就读于哥伦比亚大学国际与公共事务学院 (SIPA)，攻读国际金融与资本市场方向的公共管理硕士 (MPA)。他的研究兴趣涵盖全球宏观趋势、本币化进程及跨市场技术指标分析。在加入哥大之前，他毕业于波士顿大学经济系，并曾在多项跨国金融咨询项目中担任核心成员。",
+    "html.author.role": "哥伦比亚大学 SIPA · 国际金融与资本市场",
+    "html.author.bio":  "Erick Wei 目前就读于哥伦比亚大学国际与公共事务学院 (SIPA)，攻读国际金融与资本市场方向的公共管理硕士。他的研究兴趣涵盖全球宏观趋势、本币化进程及跨市场技术指标分析。在加入哥大之前，他毕业于波士顿大学经济系，并曾在多项跨国金融咨询项目中担任核心成员。",
 
     "nav.gauge":        "压力仪表盘",
     "nav.carry":        "套利可行性",

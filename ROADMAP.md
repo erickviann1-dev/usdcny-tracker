@@ -94,7 +94,7 @@ each build. Five cells:
    citation block (mirror what `#citation-block` shows)
 2. **Code** — `pip install pandas numpy requests` + import
 3. **Code** — fetch the live `data.json` from the deployed site
-   (`https://erickviann1-dev.github.io/usdcny-tracker/data.json`), so
+   (`SITE_PUBLIC_ORIGIN` in `config.py`, or env `TRACKER_SITE_ORIGIN`), so
    the notebook always pulls the latest snapshot
 4. **Code** — independently re-compute `raw_carry`,
    `hedged_carry_proxy`, `cip_deviation`, `fixing_bias` from the raw

@@ -36,9 +36,8 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).parent))
 from data_fetcher import get_master_data, update_cfets_usdcny_1y_fwd_cache
-from analytics   import run_full_analysis, latest_snapshot, build_decision_layer
+from analytics   import run_full_analysis, latest_snapshot
 from tools.build_notebook import build_replication_notebook
-from tools.cross_check import run_cross_checks, summarize as summarize_checks
 from config import W_CARRY, W_MISPR, W_FIXING, COMPOSITE_HIGH_THRESHOLD
 
 
@@ -86,8 +85,6 @@ def main():
         "generated_at_utc": now_utc.strftime("%Y-%m-%d %H:%M:%S UTC"),
         "generated_at_et":  generated_at_et,   # ← user-facing on dashboard
         "snapshot":     snap,
-        "decision":     build_decision_layer(snap, df),     # v3.4 verdict + stance
-        "cross_checks": run_cross_checks(snap, df),         # v3.4 integrity audit
         "quality":      {k: round(float(v), 3) for k, v in quality.items()},
         "series":       df_to_records(df, cols=[
             "us_2y", "cn_2y", "yield_spread",
@@ -134,18 +131,6 @@ def main():
     print(f"  Composite score:    {snap['composite_score']}/100")
     print(f"  USD/CNY:            {snap['usdcny']}")
     print(f"  Raw carry:          {snap['raw_carry']}%")
-
-    # v3.4 — surface verdict + integrity check summary in build log
-    decision = payload["decision"]
-    cv = decision.get("carry_verdict", {})
-    ps = decision.get("policy_stance", {})
-    print(f"  Carry verdict:      {cv.get('headline_en','—')}")
-    print(f"  Policy stance:      {ps.get('label_en','—')}")
-    summary = summarize_checks(payload["cross_checks"])
-    icon = {'pass': '✓', 'warn': '⚠', 'fail': '✗'}[summary['overall']]
-    print(f"  Integrity checks:   {icon} {summary['counts']['pass']} pass · "
-          f"{summary['counts']['warn']} warn · {summary['counts']['fail']} fail "
-          f"({summary['total']} total)")
 
     append_build_log(snap, quality, size_kb, len(df))
 

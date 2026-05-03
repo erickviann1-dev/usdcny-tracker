@@ -496,116 +496,6 @@ a:hover { color: var(--ochre); }
     .score-grid { grid-template-columns: 1fr; }
 }
 
-/* ── v3.4 · Decision Cards (verdict + policy stance) ──── */
-.decision-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
-    margin-top: 36px;
-    margin-bottom: 36px;
-}
-@media (max-width: 900px) {
-    .decision-grid { grid-template-columns: 1fr; }
-}
-.decision-card {
-    background: var(--card);
-    border: 1px solid var(--hairline);
-    border-radius: 4px;
-    padding: 26px 28px;
-    box-shadow: var(--shadow-card);
-    position: relative;
-    overflow: hidden;
-}
-.decision-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0; height: 3px;
-    background: var(--ink);
-}
-.decision-card.verdict-yes::before    { background: var(--bull); }
-.decision-card.verdict-no::before     { background: var(--bear); }
-.decision-card.verdict-marginal::before{ background: var(--ochre); }
-.decision-card.stance-defending::before{ background: var(--bull); }
-.decision-card.stance-weakening::before{ background: var(--bear); }
-.decision-card.stance-neutral::before  { background: var(--muted); }
-.decision-card.stance-leaning_defend::before{ background: var(--bull); opacity:0.5; }
-.decision-card.stance-leaning_weak::before  { background: var(--bear); opacity:0.5; }
-.decision-eyebrow {
-    font-size: 10px;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 10px;
-    font-weight: 600;
-}
-.decision-headline {
-    font-family: 'Source Serif 4', Georgia, serif;
-    font-weight: 600;
-    font-size: 28px;
-    line-height: 1.18;
-    color: var(--ink);
-    margin-bottom: 18px;
-    letter-spacing: -0.01em;
-}
-.decision-chain {
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    gap: 6px 16px;
-    font-size: 13px;
-    margin-bottom: 16px;
-    padding: 14px 16px;
-    background: var(--bg-tint);
-    border-radius: 3px;
-    font-family: 'JetBrains Mono', ui-monospace, monospace;
-}
-.decision-chain .step-label { color: var(--muted-soft); }
-.decision-chain .step-value { color: var(--ink); font-weight: 500; text-align: right; }
-.decision-chain .step-unit  { color: var(--muted); font-style: italic; font-size: 11px; }
-.decision-chain .net-row .step-label { color: var(--ink); font-weight: 600; }
-.decision-chain .net-row .step-value { color: var(--ochre); font-weight: 700; }
-.decision-signals {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-bottom: 16px;
-    padding: 14px 16px;
-    background: var(--bg-tint);
-    border-radius: 3px;
-}
-.decision-signals .sig-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 13px;
-}
-.decision-signals .sig-name { color: var(--muted-soft); }
-.decision-signals .sig-val  { font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 500; }
-.decision-signals .sig-val.defend  { color: var(--bull); }
-.decision-signals .sig-val.weaken  { color: var(--bear); }
-.decision-signals .sig-val.neutral { color: var(--muted); }
-.decision-why {
-    font-size: 14px;
-    line-height: 1.55;
-    color: var(--muted);
-    font-style: italic;
-}
-
-/* Cross-check status badge in topbar */
-.xcheck-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 11px;
-    padding: 2px 8px;
-    border-radius: 3px;
-    border: 1px solid var(--hairline);
-    cursor: help;
-}
-.xcheck-badge.pass  { color: var(--bull); border-color: rgba(21,128,61,0.3); }
-.xcheck-badge.warn  { color: var(--ochre); border-color: rgba(161,98,7,0.3); }
-.xcheck-badge.fail  { color: var(--bear); border-color: rgba(185,28,28,0.3); }
-.xcheck-dot { width:6px; height:6px; border-radius:50%; background:currentColor; }
-
 .score-card {
     background: var(--card);
     border: 1px solid var(--hairline);
@@ -1426,7 +1316,7 @@ footer.site strong { color: var(--ink); font-weight: 500; }
             <div class="brand-mark">SD</div>
             <div class="brand-text">
                 USD/CNY Macro-Policy Tracker
-                <small id="topbar-version">2Y FOCUS · v3.3.2</small>
+                <small id="topbar-version">2Y FOCUS · v3.3.0</small>
             </div>
         </a>
         <div class="topbar-spacer"></div>
@@ -1436,8 +1326,6 @@ footer.site strong { color: var(--ink); font-weight: 500; }
             <span id="topbar-score">—</span>
             <span class="dot">·</span>
             <span id="topbar-updated" style="font-size:11px"><span style="color:var(--muted)">Updated</span> —</span>
-            <span class="dot">·</span>
-            <span id="topbar-xcheck" class="xcheck-badge" title="Data integrity checks"><span class="xcheck-dot"></span><span id="topbar-xcheck-text">—</span></span>
         </div>
         <div class="topbar-actions">
             <div class="lang-toggle">
@@ -1462,13 +1350,13 @@ footer.site strong { color: var(--ink); font-weight: 500; }
                 <img src="images/erick-wei.png" alt="Erick Wei" width="128" height="128" loading="lazy" decoding="async">
             </div>
             <div class="author-name" id="author-name">Erick Wei</div>
-            <div class="author-role" id="author-role" data-i18n="html.author.role">Graduate student, SIPA · Columbia University</div>
+            <div class="author-role" id="author-role" data-i18n="html.author.role">Independent researcher · FX &amp; macro</div>
             <div class="author-bio" id="author-bio" data-i18n="html.author.bio">
-                Erick Wei is pursuing a Master of Public Administration at Columbia University's School of International and Public Affairs (SIPA), concentrating in international finance and capital markets. His research interests span global macro trends, local-currency internationalization, and cross-market technical analysis. Before Columbia, he graduated from Boston University's Department of Economics and served as a core member on several multinational financial consulting projects.
+                Open research tooling on USDCNY carry, CIP-implied hedging, and PBOC fixing signals.
             </div>
             <div class="author-links">
                 <a class="author-link" href="#" id="author-linkedin" rel="noopener">LinkedIn</a>
-                <a class="author-link" href="#" id="author-email">Email</a>
+                <a class="author-link" href="mailto:erickviann1@gmail.com" id="author-email">Email</a>
                 <a class="author-link" href="#" id="author-cv" rel="noopener">CV</a>
             </div>
         </div>
@@ -1589,22 +1477,6 @@ footer.site strong { color: var(--ink); font-weight: 500; }
             </div>
 
             <div id="alerts"></div>
-
-            <!-- ═══ v3.4 · DECISION CARDS — verdict + policy stance ═══ -->
-            <div class="decision-grid">
-                <div class="decision-card" id="verdict-card">
-                    <div class="decision-eyebrow" data-i18n="verdict.eyebrow">The Carry-Trade Verdict Today</div>
-                    <div class="decision-headline" id="verdict-headline">—</div>
-                    <div class="decision-chain" id="verdict-chain"></div>
-                    <div class="decision-why" id="verdict-why">—</div>
-                </div>
-                <div class="decision-card" id="stance-card">
-                    <div class="decision-eyebrow" data-i18n="stance.eyebrow">PBOC Policy Stance Today</div>
-                    <div class="decision-headline" id="stance-headline">—</div>
-                    <div class="decision-signals" id="stance-signals"></div>
-                    <div class="decision-why" id="stance-reading">—</div>
-                </div>
-            </div>
         </section>
 
         <!-- ═══════════════════ CHAPTER 01 ═══════════════════ -->
@@ -2094,7 +1966,7 @@ Defense Intensity = − rolling_mean(bias, 20d) × 10000  [pips]
 
             <div class="citation">
                 <div class="citation-label" data-i18n="cite.label">How to Cite</div>
-                <div class="citation-block" id="citation-block">Erick Wei (<span id="cite-year">2026</span>). USD/CNY Macro-Policy Divergence Tracker — 2Y Focus. Online dashboard. Accessed <span id="cite-date">—</span>.</div>
+                <div class="citation-block" id="citation-block">[Author Name] (<span id="cite-year">2026</span>). USD/CNY Macro-Policy Divergence Tracker — 2Y Focus. Online dashboard. Accessed <span id="cite-date">—</span>.</div>
             </div>
         </section>
 
@@ -2102,7 +1974,7 @@ Defense Intensity = − rolling_mean(bias, 20d) × 10000  [pips]
         <footer class="site">
             <div class="row">
                 <div>
-                    <strong>USD/CNY Macro-Policy Divergence Tracker</strong> · v3.4.0 · 2Y Focus<br>
+                    <strong>USD/CNY Macro-Policy Divergence Tracker</strong> · v3.3.0 · 2Y Focus<br>
                     <span data-i18n="footer.gen">Generated</span> <span id="footer-ts">—</span> · <span data-i18n="footer.disclaimer">For research purposes only — not investment advice.</span>
                 </div>
                 <div style="text-align:right">
@@ -2115,6 +1987,6 @@ Defense Intensity = − rolling_mean(bias, 20d) × 10000  [pips]
     </main>
 </div>
 
-<script src="dashboard.js?v=3.4.0"></script>
+<script src="dashboard.js?v=3.3.0"></script>
 </body>
 </html>

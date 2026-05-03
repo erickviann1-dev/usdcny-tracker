@@ -11,6 +11,142 @@ the previous state under `history/`.
 
 ---
 
+## [v3.4.0] — 2026-05-03 · Decision Layer + Cross-Check Integrity Audit
+
+### Vision
+The user's pointed feedback after v3.3.2: *"this site doesn't clearly show
+whether I can do the carry trade today, and there's no plain-English read
+on PBOC policy intent."* True — the numbers were all there, but buried
+in research-style KPI tiles. v3.4.0 promotes them into **two headline
+decision cards** sitting right under the composite score, plus a
+data-integrity badge in the topbar.
+
+### Added — `analytics.py` decision interpreters
+
+**`interpret_carry_verdict(snap)` → dict**
+Translates `hedged_carry_offshore` (preferred) / `hedged_carry_proxy`
+into a YES / MARGINAL / NO answer with full transparency:
+```
+verdict     : 'yes' | 'marginal' | 'no'
+headline_en : "NO — would lose 0.90% / year"
+headline_zh : "不能 — 一年净亏 0.90%"
+chain       : 5-step Borrow → Convert → Invest → Hedge → NET
+reasoning_en/zh : 1-2 sentence "why" using forward_premium_pct
+                  when available, plain CIP framing otherwise
+```
+Decision rule:
+- `hedged > +0.5%` → YES (rare; signals CIP arbitrage)
+- `−0.5% ≤ hedged ≤ +0.5%` → MARGINAL (within transaction-cost band)
+- `hedged < −0.5%` → NO (forward absorbs the carry)
+
+**`interpret_policy_stance(snap, df)` → dict**
+Combines `fixing_bias` + `cnh_funding_stress` + `onoffshore_gap` into
+one of five postures with prose explanation:
+- `defending`         — multiple levers active, e.g. CNH liquidity squeeze
+- `weakening`         — letting CNY drift weak, fix biased weaker
+- `leaning_defend`    — single soft signal of defence
+- `leaning_weak`      — single soft signal of tolerance
+- `neutral`           — all three levers quiet (= PBOC hands-off)
+
+### Added — `tools/cross_check.py` (data integrity audit)
+9 internal-consistency checks run on every build:
+1. **Hedged-carry math identity** — `on − off ≈ cnh_funding_stress`
+   (mathematical, must be exact within rounding)
+2. On/Off basis range (`|CNY − CNH| / CNY < 1%`)
+3. PBOC fix vs spot in trading band (`< 2%`)
+4. DXY day-over-day move sane (`< 5%`)
+5. CNH HIBOR vs Shibor spread (typical −1.5% to +6%)
+6. CN 2Y in plausible range (0.3–5%)
+7. US 2Y in plausible range (0.5–8%)
+8. Composite score in [0, 100]
+9. CIP deviation magnitude (`< 15%`)
+
+Each check returns `{name_en, name_zh, status, detail}`. Today: 9/9 pass.
+
+### Added — `build.py` payload integration
+- `build_decision_layer(snap, df)` runs after `latest_snapshot` and
+  attaches `decision: {carry_verdict, policy_stance}` to the JSON
+- `run_cross_checks(snap, df)` runs after analytics, attaches
+  `cross_checks: [...]` array
+- Build output now prints the verdict + stance + integrity counts
+
+### Added — `docs/index.html` decision-grid UI
+- New `.decision-grid` after the hero, before chapter-01
+- Two `.decision-card` panels — `#verdict-card`, `#stance-card`
+- Top-edge accent stripe colour-codes the answer (green/red/ochre/muted)
+- Method-box style "chain" table for verdict math, signals row for stance
+- Italic prose footer ("why this verdict") in card body
+- Topbar gets an `#topbar-xcheck` badge (small green/yellow/red dot +
+  "Integrity 9/9" count, tooltip lists every check)
+
+### Added — `docs/dashboard.js` render functions
+- `renderVerdict(carry_verdict)` — wires headline / chain / reasoning,
+  applies `verdict-{yes|no|marginal}` class for stripe colour
+- `renderStance(policy_stance)` — wires headline / signals / reading,
+  applies `stance-{defending|weakening|...}` class
+- `renderCrossChecks(checks)` — sets badge colour + count + hover tooltip
+- All three honour `LANG === "zh"` for bilingual switching
+- Wired into `renderAll()` → re-renders on language toggle
+
+### Added — i18n keys (EN + ZH symmetric)
+| Key | EN | ZH |
+|---|---|---|
+| `verdict.eyebrow` | "The Carry-Trade Verdict Today" | "今日套利交易判断" |
+| `stance.eyebrow`  | "PBOC Policy Stance Today"      | "央行政策姿态" |
+
+Other strings come from `decision.carry_verdict.headline_en/zh` etc.
+inside `data.json` itself (not in the i18n dict, since they're computed
+each build). Total dict size: EN 317 = ZH 317.
+
+### Verified locally (today's snapshot)
+```
+Carry verdict:    NO — would lose 0.90% / year
+                  • borrow CNY @ Shibor 1Y    1.47%
+                  • convert USD @ spot        6.8600
+                  • invest UST 1Y             3.72%
+                  • lock 1Y forward           6.6700
+                  • NET (offshore CNH HIBOR)  -0.90%/yr
+
+Policy stance:    MILD DEFENCE
+                  • Fixing bias        -0 pips     (neutral)
+                  • CNH funding stress +0.21%      (neutral)
+                  • On/Off basis       -0.0319     (defend) ← CNH stronger
+                  → "One lever shows defence; others quiet."
+
+Integrity:        ✓ 9 pass · 0 warn · 0 fail (all bounds sane)
+                  Hedged-carry math identity: |delta| = 0.0000% ✓
+```
+
+### Cache-bust → v3.4.0
+- `dashboard.js` header + `TRACKER_VERSION` constant
+- `<script src="dashboard.js?v=3.4.0">`
+- `index.html` footer
+
+### Files Touched
+- `analytics.py`           — +180 lines (2 interpreters + helper export)
+- `tools/cross_check.py`   — new file, 130 lines, 9 checks
+- `build.py`               — wired both into payload + summary print
+- `docs/index.html`        — decision-grid section + topbar badge + ~120 lines CSS
+- `docs/dashboard.js`      — 3 render functions + 2 i18n keys + version bump
+
+### Snapshot
+Pre-edit state saved to `history/v3.3.2-pre-verdict/`.
+
+### What this closes from user feedback
+- ✅ "看不出能不能做这笔套利" → headline verdict YES/NO/MARGINAL with full math chain
+- ✅ "不确定数字是否准确" → 9-check integrity audit + green badge in topbar
+- ✅ "看不到对央行政策的明确解读" → stance card with 5 enumerated postures + prose
+
+### Deliberately NOT done (per user's directive)
+- Skipped per-KPI "verify ↗" external links (user said skip)
+
+### Open after v3.4.0
+- Phase B (v4.0 Macro Backdrop) still in `ROADMAP.md`, awaits assignment
+- CNH spot history still accumulating via Yahoo v8 cache (1 row today)
+- True hedged-carry with NDF / paid swap-points (paid data only)
+
+---
+
 ## [v3.3.2] — 2026-05-01 · Daily DXY (was secretly weekly!) + Freshness Audit
 
 ### Bug fixed — DXY was a *weekly* series silently ffill'd to look daily

@@ -1,17 +1,6 @@
 import os
 from datetime import datetime, timedelta
 
-# ── Published site (notebooks / citations) ─────────────────
-# HTTPS origin, no trailing slash. Include subpath if the site is not at domain root
-# (e.g. https://your-site.netlify.app/usdcny-tracker).
-# Env TRACKER_SITE_ORIGIN overrides this value for CI or local builds.
-# Leave empty until you deploy; tools/build_notebook.py then emits a CONFIGURE_* placeholder.
-_SITE_ENV = os.environ.get("TRACKER_SITE_ORIGIN", "").strip().rstrip("/")
-# After moving off the legacy GitHub Pages hostname, set your real origin here
-# (no trailing slash), e.g. https://your-project.netlify.app/usdcny-tracker
-_SITE_FILE_DEFAULT = ""
-SITE_PUBLIC_ORIGIN = (_SITE_ENV or _SITE_FILE_DEFAULT).strip().rstrip("/")
-
 # ── Date Range ──────────────────────────────────────────────
 LOOKBACK_DAYS = 730          # 2-year history
 START_DATE = (datetime.now() - timedelta(days=LOOKBACK_DAYS)).strftime("%Y%m%d")

@@ -7,6 +7,16 @@ import nbformat as nbf
 from datetime import datetime
 from pathlib import Path
 
+from config import SITE_PUBLIC_ORIGIN
+
+# Shown in generated notebook until SITE_PUBLIC_ORIGIN is set in config.py (or env).
+_NOTEBOOK_ORIGIN_PLACEHOLDER = "https://SET_SITE_PUBLIC_ORIGIN_IN_config_py"
+
+
+def _notebook_public_origin() -> str:
+    o = SITE_PUBLIC_ORIGIN.strip().rstrip("/")
+    return o if o else _NOTEBOOK_ORIGIN_PLACEHOLDER
+
 
 def build_replication_notebook(data_date: str, snapshot: dict):
     """Generate docs/usdcny_tracker_replication.ipynb with 5 cells."""
@@ -20,17 +30,20 @@ def build_replication_notebook(data_date: str, snapshot: dict):
     # Cell 1: Markdown — title + citation
     score = snapshot.get("composite_score", "—")
     usdcny = snapshot.get("usdcny", "—")
+    origin = _notebook_public_origin()
+    dash_root = origin + "/"
+    data_url = origin + "/data.json"
     nb.cells.append(nbf.v4.new_markdown_cell(f"""# USD/CNY Macro-Policy Divergence Tracker — Replication Notebook
 
 **Data date:** {data_date}  
 **Composite Score:** {score}/100 · **USD/CNY:** {usdcny}  
-**Live dashboard:** [erickviann1-dev.github.io/usdcny-tracker](https://erickviann1-dev.github.io/usdcny-tracker/)
+**Live dashboard:** [{dash_root}]({dash_root})
 
 ---
 
 **Citation:**  
 USD/CNY Macro-Policy Divergence Tracker, v3.2. Retrieved {datetime.now().strftime("%Y-%m-%d")}.  
-`https://erickviann1-dev.github.io/usdcny-tracker/`
+`{dash_root}`
 
 ---
 
@@ -53,8 +66,10 @@ except ImportError:
     print("matplotlib not installed — skipping plots")"""))
 
     # Cell 3: Code — fetch live data.json
-    nb.cells.append(nbf.v4.new_code_cell("""# Fetch the latest data.json from the live dashboard
-URL = "https://erickviann1-dev.github.io/usdcny-tracker/data.json"
+    nb.cells.append(
+        nbf.v4.new_code_cell(
+            """# Fetch the latest data.json from the live dashboard
+URL = "{data_url}"
 resp = requests.get(URL)
 resp.raise_for_status()
 data = resp.json()
@@ -65,8 +80,13 @@ df["date"] = pd.to_datetime(df["date"])
 df = df.set_index("date").sort_index()
 
 snap = data["snapshot"]
-print(f"Loaded {len(df)} rows, latest date: {df.index[-1].date()}")
-print(f"Dashboard composite score: {snap.get('composite_score', '—')}/100")"""))
+print(f"Loaded {{len(df)}} rows, latest date: {{df.index[-1].date()}}")
+print(f"Dashboard composite score: {{snap.get('composite_score', '—')}}/100")
+""".format(
+                data_url=data_url
+            )
+        )
+    )
 
     # Cell 4: Code — independent recomputation
     nb.cells.append(nbf.v4.new_code_cell("""# ════════════════════════════════════════════════════════════

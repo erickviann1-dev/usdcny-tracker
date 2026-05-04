@@ -5,9 +5,32 @@ All notable changes to the USD/CNY Macro-Policy Divergence Tracker.
 Format: each entry records (1) what changed, (2) why, (3) snapshot location of
 the previous state under `history/`.
 
-> **Looking for what to do NEXT, not what's been done?** See `ROADMAP.md` —
-> three phases (v3.2 / v4.0 / v5.0) ordered by ROI, with acceptance criteria
-> per item.
+> **Looking for what to do NEXT?** See `ROADMAP.md` → ⭐ **Phase D**
+> (Verdict → Trading Workbench) — this is the new top-priority queue
+> after the user reviewed v3.4.0. Phase A is shipped; Phase B (Macro
+> Backdrop) and Phase C (Working Paper) rank below Phase D now.
+
+---
+
+## 🚧 Pending — Phase D, written 2026-05-03 after v3.4.0 review
+
+User's verdict on v3.4.0: *"够'看一眼能不能做'的水平，但离'真在做这笔交易'
+还差几个维度。"*  Phase D fills the gap with 4 P0/P1 items + 4 P2/P3:
+
+**P0 (target v3.5.0 — Trading Workbench Foundations):**
+- **D.1** Verdict Backtest — Sharpe / hit rate / max DD over full history
+- **D.2** Verdict Sensitivity / Flip-Lines — *"what spot would flip the verdict?"*
+
+**P1 (target v3.6.0 — Decision Context):**
+- **D.3** Policy Stance Persistence — avg duration + transition matrix
+- **D.4** Retail Cost Toggle — institutional vs retail funding spreads
+
+**P2 (deferred):** D.5 Cross-EM carry snapshot · D.6 Carry/Vol IR
+**P3 (deferred):** D.7 Webhook alerts · D.8 Mobile sticky verdict bar
+
+Full specs (file paths · function signatures · acceptance criteria · what
+NOT to do) live in `ROADMAP.md` → Phase D. Cursor: start with D.1 + D.2,
+ship as v3.5.0; D.3 + D.4 follow as v3.6.0. Don't touch Phase B / C.
 
 ---
 

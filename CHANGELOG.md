@@ -6,31 +6,52 @@ Format: each entry records (1) what changed, (2) why, (3) snapshot location of
 the previous state under `history/`.
 
 > **Looking for what to do NEXT?** See `ROADMAP.md` → ⭐ **Phase D**
-> (Verdict → Trading Workbench) — this is the new top-priority queue
-> after the user reviewed v3.4.0. Phase A is shipped; Phase B (Macro
-> Backdrop) and Phase C (Working Paper) rank below Phase D now.
+> — **D.3 + D.4** (v3.6.0) next. **D.1 + D.2** shipped in **v3.5.0**.
 
 ---
 
-## 🚧 Pending — Phase D, written 2026-05-03 after v3.4.0 review
+## [v3.5.0] — 2026-05-04 · Trading Workbench Foundations (Phase D · D.1 + D.2)
 
-User's verdict on v3.4.0: *"够'看一眼能不能做'的水平，但离'真在做这笔交易'
-还差几个维度。"*  Phase D fills the gap with 4 P0/P1 items + 4 P2/P3:
+### Vision
+The dashboard answered *“can I trade carry today?”* in v3.4; v3.5 adds the next
+two trader questions: *historical edge* (Sharpe-style track record) and
+*sensitivity* (what price/rate level flips the verdict).
 
-**P0 (target v3.5.0 — Trading Workbench Foundations):**
-- **D.1** Verdict Backtest — Sharpe / hit rate / max DD over full history
-- **D.2** Verdict Sensitivity / Flip-Lines — *"what spot would flip the verdict?"*
+### Added — `analytics.py`
 
-**P1 (target v3.6.0 — Decision Context):**
-- **D.3** Policy Stance Persistence — avg duration + transition matrix
-- **D.4** Retail Cost Toggle — institutional vs retail funding spreads
+**`backtest_verdict(df)` → dict**  
+Replays `interpret_carry_verdict()` on every historical row. Position sizing:
+`yes → 1.0`, `marginal → 0.5`, `no`/`unknown → 0`. Daily P&L uses the ROADMAP
+spec: **Δ headline hedged carry × prior-day position ÷ 252 ÷ 100** (headline =
+offshore hedged when present, else onshore proxy). Cumulative equity compounds
+`(1 + daily_pnl)`. **Benchmark:** passive long USD/CNY (spot arithmetic returns).
+Exports `dates`, `verdict`, `position`, `daily_pnl`, `cumulative`,
+`benchmark`, `benchmark_cumulative`, and `stats`:
+`total_return`, `sharpe`, `max_dd`, `hit_rate`, `days_long`, `days_flat`, `n_days`.
 
-**P2 (deferred):** D.5 Cross-EM carry snapshot · D.6 Carry/Vol IR
-**P3 (deferred):** D.7 Webhook alerts · D.8 Mobile sticky verdict bar
+**`compute_flip_lines(snap)` → list[dict]**  
+Holds other inputs fixed and solves the **market 1Y** hedged formula for
+**±0.5%/yr** crossings on: `usdcny`, `usdcny_fwd_1y`, `us_1y`, `shibor_1y`,
+`cnh_hibor_1y` (CNH row only when offshore headline applies). Each row includes
+`today`, `flip_to_yes`, `flip_to_no`, signed distance helpers (`dist_*_pct` /
+`dist_*_pp`), labels, and `mode`. Values outside plausible FX/rate bands →
+`null` (dashboard shows **—**).
 
-Full specs (file paths · function signatures · acceptance criteria · what
-NOT to do) live in `ROADMAP.md` → Phase D. Cursor: start with D.1 + D.2,
-ship as v3.5.0; D.3 + D.4 follow as v3.6.0. Don't touch Phase B / C.
+### Added — `build.py`
+- Top-level JSON keys **`backtest`** and **`flip_lines`**, printed at end of build.
+
+### Added — `docs/index.html` + `docs/dashboard.js`
+- Inside **`#verdict-card`**: small Plotly chart **`chart-verdict-backtest`**
+  (strategy vs benchmark, indexed to 100), stats strip (`backtest.*` i18n keys),
+  and **`verdict-flip-lines`** grid (`flip.*` i18n keys). Survives EN/ZH toggle.
+
+### Added — `tools/selfcheck.py`
+- **[15] v3.5 BACKTEST + FLIP LINES** — schema checks; **WARN** if Sharpe ≤ 0
+  (informational; sample-dependent).
+
+### Release hygiene
+- Cache-bust **`dashboard.js?v=3.5.0`**; **`TRACKER_VERSION`** `3.5.0`.
+- Snapshot of pre-release tree: **`history/v3.4-pre-backtest/`**.
 
 ---
 

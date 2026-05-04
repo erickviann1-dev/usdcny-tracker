@@ -25,7 +25,7 @@ def check(ok, msg, level="FAIL"):
 
 # ═══════════════════════════════════════════════════════════
 print("=" * 60)
-print("  USD/CNY Tracker v3.3 — Self-Check Report")
+print("  USD/CNY Tracker v3.5 — Self-Check Report")
 print("=" * 60)
 
 # 1. File existence + size
@@ -189,12 +189,30 @@ bp = open("build.py", encoding="utf-8").read()
 check("write_excel" in bp, "write_excel() function present")
 check("build_replication_notebook" in bp, "build_replication_notebook() import present")
 check("from tools.build_notebook" in bp, "Notebook import path correct")
+check("backtest_verdict" in bp and "compute_flip_lines" in bp,
+      "build.py wires backtest_verdict + compute_flip_lines")
 
 # 13. requirements.txt
 print("\n[14] REQUIREMENTS")
 req = open("requirements.txt", encoding="utf-8").read()
 check("nbformat" in req, "nbformat in requirements.txt")
 check("openpyxl" in req, "openpyxl in requirements.txt")
+
+# 14. v3.5 trading workbench payloads
+print("\n[15] v3.5 BACKTEST + FLIP LINES")
+check("backtest" in data, "data.backtest present")
+fl = data.get("flip_lines")
+check(isinstance(fl, list) and len(fl) >= 3,
+      f"data.flip_lines list ({len(fl) if isinstance(fl, list) else 0} rows)")
+bt = data.get("backtest") or {}
+st = bt.get("stats") or {}
+check(st.get("sharpe") is not None, f"backtest.stats.sharpe = {st.get('sharpe')}")
+check(st.get("max_dd") is not None, f"backtest.stats.max_dd = {st.get('max_dd')}")
+sh = st.get("sharpe")
+if sh is not None and float(sh) <= 0:
+    check(False, f"Sharpe {sh} ≤ 0 (non-positive track record)", level="WARN")
+else:
+    check(True, f"Sharpe sanity: {sh}")
 
 # Summary
 print("\n" + "=" * 60)

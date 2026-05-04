@@ -244,13 +244,13 @@ answer regardless of scroll position. Hide on >900px (desktop already
 shows topbar).
 
 ### Phase D acceptance summary
-- [ ] D.1 Backtest chart + stats live (P0)
-- [ ] D.2 Flip-lines panel under verdict (P0)
+- [x] D.1 Backtest chart + stats live (P0) — shipped **v3.5.0**
+- [x] D.2 Flip-lines panel under verdict (P0) — shipped **v3.5.0**
 - [ ] D.3 Stance persistence one-liner in stance card (P1)
 - [ ] D.4 Retail toggle in verdict card (P1)
-- [ ] CHANGELOG `[v3.5.0]` covering D.1+D.2, then `[v3.6.0]` covering D.3+D.4
-- [ ] Cache-bust `?v=3.5.0` and `?v=3.6.0` respectively
-- [ ] Snapshot before each: `history/v3.4-pre-backtest/`, `history/v3.5-pre-stance-persistence/`
+- [x] CHANGELOG `[v3.5.0]` covering D.1+D.2 — done; `[v3.6.0]` for D.3+D.4 next
+- [x] Cache-bust `?v=3.5.0` for v3.5.0 release (`?v=3.6.0` with v3.6.0)
+- [x] Snapshot before v3.5.0: `history/v3.4-pre-backtest/` — done · `history/v3.5-pre-stance-persistence/` before v3.6.0
 
 ### What NOT to do (Phase D guardrails)
 - Don't remove the existing verdict / stance / integrity cards. Add

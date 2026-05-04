@@ -1,0 +1,36 @@
+{
+  "tag": "v3.4-pre-backtest",
+  "timestamp": "2026-05-03T21:06:47.456914",
+  "files_saved": [
+    "docs/index.html",
+    "docs/dashboard.js",
+    "docs/data.json",
+    "analytics.py",
+    "data_fetcher.py",
+    "build.py",
+    "config.py",
+    "charts.py",
+    "app.py"
+  ],
+  "files_skipped": [
+    "web/index.html",
+    "web/dashboard.js",
+    "web/data.json"
+  ],
+  "git_sha": "8e44423055807b1263718aa09a4ccc3a4e734087",
+  "git_dirty": true,
+  "git_status": [
+    "M BUILD_LOG.md",
+    " M CHANGELOG.md",
+    " M ROADMAP.md",
+    " M analytics.py",
+    " M build.py",
+    " M docs/dashboard.js",
+    " M docs/data.json",
+    " M docs/index.html",
+    " M docs/usdcny_tracker.xlsx",
+    " M docs/usdcny_tracker_replication.ipynb",
+    " M tools/selfcheck.py",
+    "?? history/v3.4-pre-backtest/"
+  ]
+}

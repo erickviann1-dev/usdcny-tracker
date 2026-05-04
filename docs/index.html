@@ -609,6 +609,14 @@ a:hover { color: var(--ochre); }
     margin-top: 8px;
     font-family: 'JetBrains Mono', ui-monospace, monospace;
 }
+.verdict-backtest-disclaimer {
+    font-size: 12px;
+    line-height: 1.55;
+    color: var(--muted);
+    font-style: italic;
+    margin-top: 12px;
+    max-width: 52rem;
+}
 .verdict-flip-grid {
     font-size: 12px;
 }
@@ -1472,7 +1480,7 @@ footer.site strong { color: var(--ink); font-weight: 500; }
             <div class="brand-mark">SD</div>
             <div class="brand-text">
                 USD/CNY Macro-Policy Tracker
-                <small id="topbar-version">2Y FOCUS · v3.5.1</small>
+                <small id="topbar-version">2Y FOCUS · v3.5.2</small>
             </div>
         </a>
         <div class="topbar-spacer"></div>
@@ -1646,6 +1654,7 @@ footer.site strong { color: var(--ink); font-weight: 500; }
                         <div class="verdict-subhead" data-i18n="backtest.title">Verdict signal · cumulative track record</div>
                         <div id="chart-verdict-backtest" style="height:220px;width:100%;"></div>
                         <div class="verdict-backtest-stats" id="verdict-backtest-stats"></div>
+                        <p class="verdict-backtest-disclaimer" id="verdict-backtest-disclaimer" aria-live="polite"></p>
                     </div>
                     <div id="verdict-flip-wrap" class="verdict-workbench">
                         <div class="verdict-subhead" id="verdict-flip-head" data-i18n="flip.title">Verdict flips when:</div>
@@ -2157,7 +2166,7 @@ Defense Intensity = − rolling_mean(bias, 20d) × 10000  [pips]
         <footer class="site">
             <div class="row">
                 <div>
-                    <strong>USD/CNY Macro-Policy Divergence Tracker</strong> · v3.5.1 · 2Y Focus<br>
+                    <strong>USD/CNY Macro-Policy Divergence Tracker</strong> · v3.5.2 · 2Y Focus<br>
                     <span data-i18n="footer.gen">Generated</span> <span id="footer-ts">—</span> · <span data-i18n="footer.disclaimer">For research purposes only — not investment advice.</span>
                 </div>
                 <div style="text-align:right">
@@ -2170,6 +2179,6 @@ Defense Intensity = − rolling_mean(bias, 20d) × 10000  [pips]
     </main>
 </div>
 
-<script src="dashboard.js?v=3.5.1"></script>
+<script src="dashboard.js?v=3.5.2"></script>
 </body>
 </html>

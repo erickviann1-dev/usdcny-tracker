@@ -25,7 +25,7 @@ def check(ok, msg, level="FAIL"):
 
 # ═══════════════════════════════════════════════════════════
 print("=" * 60)
-print("  USD/CNY Tracker v3.5.1 — Self-Check Report")
+print("  USD/CNY Tracker v3.5.2 — Self-Check Report")
 print("=" * 60)
 
 # 1. File existence + size
@@ -206,14 +206,19 @@ check(isinstance(fl, list) and len(fl) >= 3,
       f"data.flip_lines list ({len(fl) if isinstance(fl, list) else 0} rows)")
 bt = data.get("backtest") or {}
 st = bt.get("stats") or {}
-check(st.get("sharpe") is not None, f"backtest.stats.sharpe = {st.get('sharpe')}")
-check(st.get("max_dd") is not None, f"backtest.stats.max_dd = {st.get('max_dd')}")
+check(
+    st.get("pct_days_yes") is not None,
+    f"backtest.stats.pct_days_yes = {st.get('pct_days_yes')}",
+)
+check(
+    st.get("current_hedged_pctile") is not None,
+    f"backtest.stats.current_hedged_pctile = {st.get('current_hedged_pctile')}",
+)
+check(
+    "current_yes_streak" in st,
+    f"backtest.stats.current_yes_streak = {st.get('current_yes_streak')}",
+)
 check("days_marginal" in st, f"backtest.stats.days_marginal = {st.get('days_marginal')}")
-sh = st.get("sharpe")
-if sh is not None and float(sh) <= 0:
-    check(False, f"Sharpe {sh} ≤ 0 (non-positive track record)", level="WARN")
-else:
-    check(True, f"Sharpe sanity: {sh}")
 
 # Summary
 print("\n" + "=" * 60)

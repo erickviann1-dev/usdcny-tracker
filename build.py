@@ -157,11 +157,13 @@ def main():
 
     bt = payload.get("backtest") or {}
     bst = bt.get("stats") or {}
-    print(f"  Verdict backtest:   Sharpe {bst.get('sharpe', '—')} · "
-          f"max DD {bst.get('max_dd', '—')} · "
-          f"hit {bst.get('hit_rate', '—')} · "
-          f"n={bst.get('n_days', '—')} · "
-          f"MARGINAL days={bst.get('days_marginal', '—')}")
+    py = bst.get("pct_days_yes")
+    py_s = f"{float(py)*100:.1f}%" if py is not None else "—"
+    pctile = bst.get("current_hedged_pctile")
+    streak = bst.get("current_yes_streak", "—")
+    print(f"  Verdict backtest:   %YES={py_s} · proxy hedged %ile={pctile if pctile is not None else '—'} · "
+          f"YES streak={streak} · n={bst.get('n_days', '—')} · "
+          f"MARGINAL={bst.get('days_marginal', '—')}")
 
     append_build_log(snap, quality, size_kb, len(df))
 

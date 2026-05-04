@@ -609,19 +609,23 @@ def _position_from_verdict(verdict: str) -> float:
 
 def backtest_verdict(df: pd.DataFrame) -> dict:
     """
-    Historical replay of interpret_carry_verdict with simple trading-style P&L.
+    Historical replay of `interpret_carry_verdict` with a synthetic cumulative curve.
 
-    Daily P&L (v3.5.1+): prior-day **annualised** headline hedged carry × prior-day
-    position ÷ 252 ÷ 100 → daily carry accrual as decimal return (not Δcarry, which
-    tracked signal variance). Headline series = offshore hedged if present, else
-    onshore proxy. Benchmark: passive long USD/CNY spot.
+    **v3.5.2 honesty note:** Verdict labels follow interpret_carry_verdict (headline
+    offshore when available). The cumulative curve uses **prior-day hedged_carry_proxy**
+    (v3.1 CIP) × position — the series with full 2Y history — see UI disclaimer vs
+    live v3.3 forward-based verdict.
+
+    Daily P&L: prior-day proxy hedged × position ÷ 252 ÷ 100. Benchmark: spot returns.
     """
     empty = {
         "dates": [], "verdict": [], "position": [], "daily_pnl": [],
         "cumulative": [], "benchmark": [], "benchmark_cumulative": [],
         "stats": {
-            "total_return": None, "sharpe": None, "max_dd": None,
-            "hit_rate": None, "days_long": 0, "days_flat": 0,
+            "total_return": None,
+            "pct_days_yes": None,
+            "current_hedged_pctile": None,
+            "current_yes_streak": 0,
             "days_yes": 0, "days_marginal": 0, "days_no": 0,
             "n_days": 0,
         },
@@ -632,21 +636,26 @@ def backtest_verdict(df: pd.DataFrame) -> dict:
     dates_out = []
     verdict_out = []
     position_out = []
-    hedged_series = []
+    proxy_carry_series = []
     spot_series = []
 
     for idx, row in df.iterrows():
         snap_r = _snap_dict_from_row(row)
         vc = interpret_carry_verdict(snap_r)
         v = vc.get("verdict", "unknown")
-        h = _headline_hedged_row(row)
         spt = row.get("usdcny")
         spt = float(spt) if pd.notna(spt) else np.nan
+
+        ph = np.nan
+        if "hedged_carry_proxy" in row.index:
+            vph = row["hedged_carry_proxy"]
+            if pd.notna(vph):
+                ph = float(vph)
+        proxy_carry_series.append(ph)
 
         dates_out.append(idx.strftime("%Y-%m-%d") if hasattr(idx, "strftime") else str(idx))
         verdict_out.append(v if v in ("yes", "marginal", "no") else "unknown")
         position_out.append(_position_from_verdict(v))
-        hedged_series.append(h)
         spot_series.append(spt)
 
     n = len(dates_out)
@@ -656,13 +665,13 @@ def backtest_verdict(df: pd.DataFrame) -> dict:
     bench_cum = [1.0] * n
 
     for t in range(1, n):
-        h_tm = hedged_series[t - 1]
+        hc_tm = proxy_carry_series[t - 1]
         pos_tm = position_out[t - 1]
 
-        if np.isnan(h_tm):
+        if np.isnan(hc_tm):
             r_sig = 0.0
         else:
-            r_sig = pos_tm * h_tm / 252.0 / 100.0
+            r_sig = pos_tm * hc_tm / 252.0 / 100.0
 
         s_t = spot_series[t]
         s_tm = spot_series[t - 1]
@@ -682,31 +691,27 @@ def backtest_verdict(df: pd.DataFrame) -> dict:
     daily_pnl[0] = 0.0
     benchmark[0] = 0.0
 
-    r_tail = np.array([daily_pnl[i] for i in range(1, n) if daily_pnl[i] is not None])
-    mean_d = float(np.nanmean(r_tail)) if len(r_tail) else 0.0
-    std_d = float(np.nanstd(r_tail, ddof=1)) if len(r_tail) > 1 else 0.0
-    sharpe = (mean_d / std_d * np.sqrt(252)) if std_d > 1e-12 else 0.0
-
-    eq = np.array([cumulative[i] for i in range(n)])
-    peak = np.maximum.accumulate(eq)
-    dd = eq / np.where(peak > 0, peak, np.nan) - 1.0
-    max_dd = float(np.nanmin(dd)) if len(dd) else 0.0
-
     total_ret = float(cumulative[-1] - 1.0) if n else 0.0
 
-    long_pnls = [
-        daily_pnl[t]
-        for t in range(1, n)
-        if position_out[t - 1] > 0 and daily_pnl[t] is not None
-    ]
-    hits = sum(1 for x in long_pnls if x > 0)
-    hit_rate = (hits / len(long_pnls)) if long_pnls else None
-
-    days_long = sum(1 for p in position_out if p > 0)
-    days_flat = sum(1 for p in position_out if p == 0)
     days_yes = sum(1 for v in verdict_out if v == "yes")
     days_marginal = sum(1 for v in verdict_out if v == "marginal")
     days_no = sum(1 for v in verdict_out if v == "no")
+
+    hist_proxy = np.array([x for x in proxy_carry_series if not np.isnan(x)])
+    cur_proxy = proxy_carry_series[-1] if proxy_carry_series else np.nan
+    if len(hist_proxy) >= 1 and not np.isnan(cur_proxy):
+        current_hedged_pctile = float(stats.percentileofscore(hist_proxy, cur_proxy))
+    else:
+        current_hedged_pctile = None
+
+    current_yes_streak = 0
+    for i in range(n - 1, -1, -1):
+        if verdict_out[i] == "yes":
+            current_yes_streak += 1
+        else:
+            break
+
+    pct_days_yes = round(float(days_yes) / float(n), 6) if n else None
 
     return {
         "dates": dates_out,
@@ -718,11 +723,9 @@ def backtest_verdict(df: pd.DataFrame) -> dict:
         "benchmark_cumulative": bench_cum,
         "stats": {
             "total_return": round(total_ret, 6),
-            "sharpe": round(sharpe, 4),
-            "max_dd": round(max_dd, 6),
-            "hit_rate": None if hit_rate is None else round(hit_rate, 4),
-            "days_long": int(days_long),
-            "days_flat": int(days_flat),
+            "pct_days_yes": pct_days_yes,
+            "current_hedged_pctile": None if current_hedged_pctile is None else round(current_hedged_pctile, 4),
+            "current_yes_streak": int(current_yes_streak),
             "days_yes": int(days_yes),
             "days_marginal": int(days_marginal),
             "days_no": int(days_no),

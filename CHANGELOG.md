@@ -7,11 +7,28 @@ the previous state under `history/`.
 
 > **Looking for what to do NEXT?** See `ROADMAP.md` → ⭐ **Phase D**
 > — **D.3 + D.4** (v3.6.0) next. **D.1 + D.2** shipped in **v3.5.0**; **v3.5.1**
-> patches verdict-backtest P&L math only.
+> patched verdict-backtest P&L math; **v3.5.2** relabels stats + adds backtest disclaimer.
 
 ---
 
-## [v3.5.1] — 2026-05-04 · Verdict backtest P&L methodology fix (patch)
+## [v3.5.2] — 2026-05-05 · Backtest honesty / labeling (not a feature)
+
+### What changed
+**Not a feature release.** Removes misleading trading metrics (**Sharpe**, **hit rate**, **max drawdown**) from `backtest.stats` — they mixed headline/offshore semantics with a simplified carry-accrual replay and implied a tradable track record.
+
+### Replacements
+- **`pct_days_yes`** — fraction of days at verdict YES.
+- **`current_hedged_pctile`** — today’s **hedged_carry_proxy** vs its **full-sample** historical distribution (percentile rank).
+- **`current_yes_streak`** — trailing consecutive YES days through the last date.
+
+### Also
+- Verdict backtest **cumulative curve** accrues **proxy** hedged carry (v3.1 CIP) × position for a single consistent long-history series; verdict labels still follow `interpret_carry_verdict`.
+- Dashboard: bilingual italic **disclaimer** under the backtest chart (`backtest.disclaimer_en` / `backtest.disclaimer_zh`).
+- **`build.py`** console line reports **%YES**, proxy **%ile**, **YES streak**, **n**, **MARGINAL** days.
+
+Cache-bust **`?v=3.5.2`**.
+
+---
 
 ### What changed
 **Not a feature release.** Corrects `backtest_verdict()` daily return:
@@ -47,12 +64,14 @@ two trader questions: *historical edge* (Sharpe-style track record) and
 Replays `interpret_carry_verdict()` on every historical row. Position sizing:
 `yes → 1.0`, `marginal → 0.5`, `no`/`unknown → 0`. ~~Daily P&L initially used
 Δ(headline hedged carry)~~ — **incorrect** for economic carry; **corrected in v3.5.1**
-to prior-day headline × position ÷ 252 ÷ 100 (see **`[v3.5.1]`**). Cumulative equity compounds
+to prior-day headline hedged × position ÷ 252 ÷ 100 (*v3.5.2*: replay curve uses **proxy**
+hedged carry only for consistency with the long-history disclaimer — see **`[v3.5.2]`**). Cumulative equity compounds
 `(1 + daily_pnl)`. **Benchmark:** passive long USD/CNY (spot arithmetic returns).
 Exports `dates`, `verdict`, `position`, `daily_pnl`, `cumulative`,
-`benchmark`, `benchmark_cumulative`, and `stats`:
-`total_return`, `sharpe`, `max_dd`, `hit_rate`, `days_long`, `days_flat`, `n_days`
-(+ verdict day counts from **v3.5.1** onward).
+`benchmark`, `benchmark_cumulative`, and `stats`. **v3.5.2** shape:
+`total_return`, `pct_days_yes`, `current_hedged_pctile`, `current_yes_streak`,
+`days_yes`, `days_marginal`, `days_no`, `n_days` — **v3.5.0–v3.5.1** also emitted
+Sharpe / max-DD / hit-rate / long-flat counts (**removed in v3.5.2** as misleading).
 
 **`compute_flip_lines(snap)` → list[dict]**  
 Holds other inputs fixed and solves the **market 1Y** hedged formula for

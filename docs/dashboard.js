@@ -1,10 +1,10 @@
 /* ═══════════════════════════════════════════════════════════════
  *  USD/CNY Macro-Policy Divergence Tracker · Dashboard renderer
- *  Editorial / institutional design · v3.5.1
+ *  Editorial / institutional design · v3.5.2
  * ═══════════════════════════════════════════════════════════════ */
 
 /** Single source for top bar + cache-bust alignment (footer & script tag in index.html). */
-const TRACKER_VERSION = "3.5.1";
+const TRACKER_VERSION = "3.5.2";
 
 /* ─────────────────────────────────────────────────────────────
  *  I18N Engine + Dictionaries
@@ -24,11 +24,14 @@ const I18N = {
     "backtest.strategy": "Strategy (verdict-sized)",
     "backtest.benchmark":"Benchmark · USD/CNY spot only",
     "backtest.axis":     "Index (start = 100)",
-    "backtest.sharpe":   "Sharpe",
-    "backtest.maxdd":    "Max DD",
-    "backtest.hitrate":  "Hit rate",
-    "backtest.days":     "Days long / flat",
+    "backtest.pct_yes":  "% days YES",
+    "backtest.hedged_pctile": "Proxy hedged %ile (2Y)",
+    "backtest.yes_streak": "YES streak (days)",
+    "backtest.days_ymn": "YES / MARGINAL / NO",
+    "backtest.n":        "n",
     "backtest.total":    "Total return",
+    "backtest.disclaimer_en": "Historical backtest uses the v3.1 CIP-proxy hedged-carry formula (the only one with 2-year history). The live verdict uses the v3.3 market-quoted forward formula (more accurate but only daily-fresh). The two formulas can differ by several percentage points during PBOC defence regimes — this chart shows the proxy's regime-conditional shape, not a tradable P&L track record.",
+    "backtest.disclaimer_zh": "历史回测使用 v3.1 CIP-推导对冲套利公式（这是唯一有 2 年完整历史的口径）。今日裁决使用 v3.3 真实市场远期公式（更准确但仅每日刷新）。央行防御期两个公式可能相差数个百分点 —— 此图展示信号在不同政策状态下的形态，不是可交易的 P&L 业绩。",
 
     "flip.title":        "Verdict flips when (±0.5% hedged carry):",
     "flip.col.var":      "Input",
@@ -459,11 +462,14 @@ const I18N = {
     "backtest.strategy": "策略（按判断仓位）",
     "backtest.benchmark":"基准 · 仅持有 USD/CNY 现货",
     "backtest.axis":     "指数（起点=100）",
-    "backtest.sharpe":   "夏普",
-    "backtest.maxdd":    "最大回撤",
-    "backtest.hitrate":  "命中率",
-    "backtest.days":     "做多天数 / 空仓天数",
+    "backtest.pct_yes":  "YES 天数占比",
+    "backtest.hedged_pctile": "proxy 对冲收益历史分位",
+    "backtest.yes_streak": "YES 连续天数",
+    "backtest.days_ymn": "YES / 边际 / NO",
+    "backtest.n":        "样本天数",
     "backtest.total":    "总收益",
+    "backtest.disclaimer_en": "Historical backtest uses the v3.1 CIP-proxy hedged-carry formula (the only one with 2-year history). The live verdict uses the v3.3 market-quoted forward formula (more accurate but only daily-fresh). The two formulas can differ by several percentage points during PBOC defence regimes — this chart shows the proxy's regime-conditional shape, not a tradable P&L track record.",
+    "backtest.disclaimer_zh": "历史回测使用 v3.1 CIP-推导对冲套利公式（这是唯一有 2 年完整历史的口径）。今日裁决使用 v3.3 真实市场远期公式（更准确但仅每日刷新）。央行防御期两个公式可能相差数个百分点 —— 此图展示信号在不同政策状态下的形态，不是可交易的 P&L 业绩。",
 
     "flip.title":        "判断翻转所需水平（对冲后年化 ±0.5%）：",
     "flip.col.var":      "变量",
@@ -1371,17 +1377,22 @@ function renderVerdictBacktest(bt) {
     }, { responsive: true, displayModeBar: false });
 
     const st = bt.stats || {};
-    const hr = st.hit_rate != null ? `${(st.hit_rate * 100).toFixed(1)}%` : "—";
+    const pctYes = st.pct_days_yes != null ? `${(Number(st.pct_days_yes) * 100).toFixed(1)}%` : "—";
+    const hpct = st.current_hedged_pctile != null ? `${Number(st.current_hedged_pctile).toFixed(1)}%` : "—";
+    const ystk = st.current_yes_streak != null ? String(st.current_yes_streak) : "—";
     const tr = st.total_return != null ? `${(st.total_return * 100).toFixed(2)}%` : "—";
-    const mdd = st.max_dd != null ? `${(st.max_dd * 100).toFixed(2)}%` : "—";
-    const sh = st.sharpe != null ? st.sharpe.toFixed(2) : "—";
     statsEl.innerHTML = [
-        `<span><strong>${t("backtest.sharpe")}</strong> ${sh}</span>`,
-        `<span><strong>${t("backtest.maxdd")}</strong> ${mdd}</span>`,
-        `<span><strong>${t("backtest.hitrate")}</strong> ${hr}</span>`,
-        `<span><strong>${t("backtest.days")}</strong> ${st.days_long ?? "—"} / ${st.days_flat ?? "—"}</span>`,
+        `<span><strong>${t("backtest.pct_yes")}</strong> ${pctYes}</span>`,
+        `<span><strong>${t("backtest.hedged_pctile")}</strong> ${hpct}</span>`,
+        `<span><strong>${t("backtest.yes_streak")}</strong> ${ystk}</span>`,
+        `<span><strong>${t("backtest.days_ymn")}</strong> ${st.days_yes ?? "—"} / ${st.days_marginal ?? "—"} / ${st.days_no ?? "—"} · ${t("backtest.n")}=${st.n_days ?? "—"}</span>`,
         `<span><strong>${t("backtest.total")}</strong> ${tr}</span>`,
     ].join(" · ");
+
+    const discEl = document.getElementById("verdict-backtest-disclaimer");
+    if (discEl) {
+        discEl.innerHTML = `<span>${escapeHtml(t("backtest.disclaimer_en"))}</span><br><span>${escapeHtml(t("backtest.disclaimer_zh"))}</span>`;
+    }
 }
 
 function renderFlipLines(rows) {

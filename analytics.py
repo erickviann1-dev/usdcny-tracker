@@ -611,9 +611,10 @@ def backtest_verdict(df: pd.DataFrame) -> dict:
     """
     Historical replay of interpret_carry_verdict with simple trading-style P&L.
 
-    Daily P&L (ROADMAP D.1): Δ hedged_carry × prior-day position ÷ 252 ÷ 100,
-    where hedged_carry is the same headline series as the verdict (offshore if
-    available, else onshore proxy). Benchmark: passive long USD/CNY spot.
+    Daily P&L (v3.5.1+): prior-day **annualised** headline hedged carry × prior-day
+    position ÷ 252 ÷ 100 → daily carry accrual as decimal return (not Δcarry, which
+    tracked signal variance). Headline series = offshore hedged if present, else
+    onshore proxy. Benchmark: passive long USD/CNY spot.
     """
     empty = {
         "dates": [], "verdict": [], "position": [], "daily_pnl": [],
@@ -621,6 +622,7 @@ def backtest_verdict(df: pd.DataFrame) -> dict:
         "stats": {
             "total_return": None, "sharpe": None, "max_dd": None,
             "hit_rate": None, "days_long": 0, "days_flat": 0,
+            "days_yes": 0, "days_marginal": 0, "days_no": 0,
             "n_days": 0,
         },
     }
@@ -654,14 +656,13 @@ def backtest_verdict(df: pd.DataFrame) -> dict:
     bench_cum = [1.0] * n
 
     for t in range(1, n):
-        h_t = hedged_series[t]
         h_tm = hedged_series[t - 1]
         pos_tm = position_out[t - 1]
 
-        if np.isnan(h_t) or np.isnan(h_tm):
+        if np.isnan(h_tm):
             r_sig = 0.0
         else:
-            r_sig = pos_tm * (h_t - h_tm) / 252.0 / 100.0
+            r_sig = pos_tm * h_tm / 252.0 / 100.0
 
         s_t = spot_series[t]
         s_tm = spot_series[t - 1]
@@ -703,6 +704,9 @@ def backtest_verdict(df: pd.DataFrame) -> dict:
 
     days_long = sum(1 for p in position_out if p > 0)
     days_flat = sum(1 for p in position_out if p == 0)
+    days_yes = sum(1 for v in verdict_out if v == "yes")
+    days_marginal = sum(1 for v in verdict_out if v == "marginal")
+    days_no = sum(1 for v in verdict_out if v == "no")
 
     return {
         "dates": dates_out,
@@ -719,6 +723,9 @@ def backtest_verdict(df: pd.DataFrame) -> dict:
             "hit_rate": None if hit_rate is None else round(hit_rate, 4),
             "days_long": int(days_long),
             "days_flat": int(days_flat),
+            "days_yes": int(days_yes),
+            "days_marginal": int(days_marginal),
+            "days_no": int(days_no),
             "n_days": int(n),
         },
     }

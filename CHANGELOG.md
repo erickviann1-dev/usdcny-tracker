@@ -6,7 +6,31 @@ Format: each entry records (1) what changed, (2) why, (3) snapshot location of
 the previous state under `history/`.
 
 > **Looking for what to do NEXT?** See `ROADMAP.md` → ⭐ **Phase D**
-> — **D.3 + D.4** (v3.6.0) next. **D.1 + D.2** shipped in **v3.5.0**.
+> — **D.3 + D.4** (v3.6.0) next. **D.1 + D.2** shipped in **v3.5.0**; **v3.5.1**
+> patches verdict-backtest P&L math only.
+
+---
+
+## [v3.5.1] — 2026-05-04 · Verdict backtest P&L methodology fix (patch)
+
+### What changed
+**Not a feature release.** Corrects `backtest_verdict()` daily return:
+
+- **Bug (v3.5.0):** used **Δ(headline hedged carry)** × position — measures day-over-day
+  *signal change*, not economic carry accrual → unrealistically tiny volatility (~0.025%/yr scale).
+- **Fix:** daily P&L = **prior-day annualised headline hedged carry** × prior-day position
+  **÷ 252 ÷ 100** (carry accrual in decimal return space). Headline series unchanged:
+  offshore hedged if present, else onshore proxy.
+
+### Also
+- `backtest.stats` adds **`days_yes`**, **`days_marginal`**, **`days_no`** (historical verdict counts).
+- **`build.py`** prints **`MARGINAL days=`** on each run for quick QA.
+
+### Expectations
+Sharpe may remain slightly negative — acceptable *honest* outcome for this sample window;
+no parameter tuning to force Sharpe positive.
+
+Cache-bust **`?v=3.5.1`**.
 
 ---
 
@@ -21,13 +45,14 @@ two trader questions: *historical edge* (Sharpe-style track record) and
 
 **`backtest_verdict(df)` → dict**  
 Replays `interpret_carry_verdict()` on every historical row. Position sizing:
-`yes → 1.0`, `marginal → 0.5`, `no`/`unknown → 0`. Daily P&L uses the ROADMAP
-spec: **Δ headline hedged carry × prior-day position ÷ 252 ÷ 100** (headline =
-offshore hedged when present, else onshore proxy). Cumulative equity compounds
+`yes → 1.0`, `marginal → 0.5`, `no`/`unknown → 0`. ~~Daily P&L initially used
+Δ(headline hedged carry)~~ — **incorrect** for economic carry; **corrected in v3.5.1**
+to prior-day headline × position ÷ 252 ÷ 100 (see **`[v3.5.1]`**). Cumulative equity compounds
 `(1 + daily_pnl)`. **Benchmark:** passive long USD/CNY (spot arithmetic returns).
 Exports `dates`, `verdict`, `position`, `daily_pnl`, `cumulative`,
 `benchmark`, `benchmark_cumulative`, and `stats`:
-`total_return`, `sharpe`, `max_dd`, `hit_rate`, `days_long`, `days_flat`, `n_days`.
+`total_return`, `sharpe`, `max_dd`, `hit_rate`, `days_long`, `days_flat`, `n_days`
+(+ verdict day counts from **v3.5.1** onward).
 
 **`compute_flip_lines(snap)` → list[dict]**  
 Holds other inputs fixed and solves the **market 1Y** hedged formula for

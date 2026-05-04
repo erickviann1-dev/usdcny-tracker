@@ -25,7 +25,7 @@ def check(ok, msg, level="FAIL"):
 
 # ═══════════════════════════════════════════════════════════
 print("=" * 60)
-print("  USD/CNY Tracker v3.5 — Self-Check Report")
+print("  USD/CNY Tracker v3.5.1 — Self-Check Report")
 print("=" * 60)
 
 # 1. File existence + size
@@ -208,6 +208,7 @@ bt = data.get("backtest") or {}
 st = bt.get("stats") or {}
 check(st.get("sharpe") is not None, f"backtest.stats.sharpe = {st.get('sharpe')}")
 check(st.get("max_dd") is not None, f"backtest.stats.max_dd = {st.get('max_dd')}")
+check("days_marginal" in st, f"backtest.stats.days_marginal = {st.get('days_marginal')}")
 sh = st.get("sharpe")
 if sh is not None and float(sh) <= 0:
     check(False, f"Sharpe {sh} ≤ 0 (non-positive track record)", level="WARN")

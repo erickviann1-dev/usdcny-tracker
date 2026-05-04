@@ -160,7 +160,8 @@ def main():
     print(f"  Verdict backtest:   Sharpe {bst.get('sharpe', '—')} · "
           f"max DD {bst.get('max_dd', '—')} · "
           f"hit {bst.get('hit_rate', '—')} · "
-          f"n={bst.get('n_days', '—')}")
+          f"n={bst.get('n_days', '—')} · "
+          f"MARGINAL days={bst.get('days_marginal', '—')}")
 
     append_build_log(snap, quality, size_kb, len(df))
 

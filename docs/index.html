@@ -147,6 +147,13 @@ a:hover { color: var(--ochre); }
     margin-top: 2px;
 }
 .topbar-spacer { flex: 1; }
+.back-link {
+    display: flex; align-items: center; gap: 5px;
+    color: var(--muted); font-size: 12px;
+    text-decoration: none; transition: color 0.15s;
+    flex-shrink: 0;
+}
+.back-link:hover { color: var(--ink); }
 .topbar-meta {
     display: flex;
     align-items: center;
@@ -1476,6 +1483,7 @@ footer.site strong { color: var(--ink); font-weight: 500; }
 <!-- ═══════════════════ TOP BAR ═══════════════════ -->
 <div class="topbar">
     <div class="topbar-inner">
+        <a href="https://erickviann1-dev.github.io/" class="back-link" data-i18n="html.back">← Portfolio</a>
         <a href="#" class="brand">
             <div class="brand-mark">SD</div>
             <div class="brand-text">

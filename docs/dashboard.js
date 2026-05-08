@@ -335,6 +335,7 @@ const I18N = {
     "cite.generated":   "Generated",
 
     /* ── Static-HTML keys (mirror of zh dict for full symmetry, v3.0.1) ── */
+    "html.back":        "← Portfolio",
     "html.loader":      "Loading market data…",
     "html.download":    "Download",
     "html.begin":       "Begin →",
@@ -762,6 +763,7 @@ const I18N = {
     "cite.retrieved":   "获取于",
     "cite.generated":   "生成于",
 
+    "html.back":        "← 返回主页",
     "html.loader":      "正在加载市场数据……",
     "html.download":    "下载",
     "html.begin":       "开始 →",

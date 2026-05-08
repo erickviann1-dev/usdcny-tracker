@@ -247,72 +247,6 @@ a:hover { color: var(--ochre); }
 }
 
 /* Author block (PLACEHOLDER for user to fill in) */
-.author-card {
-    margin-bottom: 32px;
-    padding-bottom: 28px;
-    border-bottom: 1px solid var(--hairline);
-}
-.author-avatar {
-    width: 64px; height: 64px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--navy), var(--ochre));
-    color: #fff;
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'Source Serif 4', serif;
-    font-size: 24px;
-    font-weight: 600;
-    letter-spacing: -0.02em;
-    margin-bottom: 14px;
-    overflow: hidden;
-    flex-shrink: 0;
-}
-.author-avatar.photo {
-    background: var(--hairline);
-    padding: 0;
-}
-.author-avatar.photo img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-}
-.author-name {
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--ink);
-    margin-bottom: 2px;
-}
-.author-role {
-    font-size: 12px;
-    color: var(--muted);
-    margin-bottom: 12px;
-    letter-spacing: 0.3px;
-}
-.author-bio {
-    font-size: 13px;
-    color: var(--muted);
-    line-height: 1.65;
-    margin-bottom: 16px;
-}
-.author-links {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-}
-.author-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 5px 11px;
-    border: 1px solid var(--hairline);
-    border-radius: 3px;
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--ink);
-    background: var(--card);
-    transition: all 0.15s;
-}
-.author-link:hover { border-color: var(--ink); color: var(--ink); }
 .placeholder-tag {
     display: inline-block;
     margin-left: 6px;
@@ -365,42 +299,6 @@ a:hover { color: var(--ochre); }
     color: var(--muted);
     font-style: italic;
     min-width: 20px;
-}
-
-/* Papers cards (PLACEHOLDER) */
-.paper-card {
-    display: block;
-    padding: 12px 14px;
-    border: 1px solid var(--hairline);
-    background: var(--card);
-    margin-bottom: 8px;
-    transition: all 0.15s;
-    border-radius: 3px;
-}
-.paper-card:hover {
-    border-color: var(--ink);
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-card);
-}
-.paper-card .paper-meta {
-    font-size: 10px;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
-    margin-bottom: 4px;
-}
-.paper-card .paper-title {
-    font-family: 'Source Serif 4', serif;
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--ink);
-    line-height: 1.35;
-    margin-bottom: 4px;
-}
-.paper-card .paper-authors {
-    font-size: 11px;
-    color: var(--muted);
-    font-style: italic;
 }
 
 /* Methodology lineage */
@@ -1518,23 +1416,6 @@ footer.site strong { color: var(--ink); font-weight: 500; }
     <!-- ── SIDEBAR ── -->
     <aside class="sidebar">
 
-        <!-- Author card -->
-        <div class="author-card">
-            <div class="author-avatar photo" id="author-avatar">
-                <img src="images/erick-wei.png" alt="Erick Wei" width="128" height="128" loading="lazy" decoding="async">
-            </div>
-            <div class="author-name" id="author-name">Erick Wei</div>
-            <div class="author-role" id="author-role" data-i18n="html.author.role">Graduate student, SIPA · Columbia University</div>
-            <div class="author-bio" id="author-bio" data-i18n="html.author.bio">
-                Erick Wei is pursuing a Master of Public Administration at Columbia University's School of International and Public Affairs (SIPA), concentrating in international finance and capital markets. His research interests span global macro trends, local-currency internationalization, and cross-market technical analysis. Before Columbia, he graduated from Boston University's Department of Economics and served as a core member on several multinational financial consulting projects.
-            </div>
-            <div class="author-links">
-                <a class="author-link" href="#" id="author-linkedin" rel="noopener">LinkedIn</a>
-                <a class="author-link" href="#" id="author-email">Email</a>
-                <a class="author-link" href="#" id="author-cv" rel="noopener">CV</a>
-            </div>
-        </div>
-
         <!-- Contents nav -->
         <div class="sidebar-section">
             <h4 data-i18n="html.contents">Contents</h4>
@@ -1550,26 +1431,6 @@ footer.site strong { color: var(--ink); font-weight: 500; }
                 <li><a href="#glossary"><span class="num">⊕</span> <span data-i18n="nav.glossary">Glossary</span></a></li>
                 <li><a href="#data"><span class="num">↓</span> <span data-i18n="nav.data">Data &amp; Export</span></a></li>
             </ul>
-        </div>
-
-        <!-- Related papers (PLACEHOLDER) -->
-        <div class="sidebar-section">
-            <h4><span data-i18n="html.papers">Related Research</span><span class="placeholder-tag">Edit</span></h4>
-            <a class="paper-card" href="#" id="paper-1">
-                <div class="paper-meta">Working Paper · 2026</div>
-                <div class="paper-title">[Paper Title 1 — replace]</div>
-                <div class="paper-authors">[Authors] et al.</div>
-            </a>
-            <a class="paper-card" href="#" id="paper-2">
-                <div class="paper-meta">Note · 2025</div>
-                <div class="paper-title">[Paper Title 2 — replace]</div>
-                <div class="paper-authors">[Authors]</div>
-            </a>
-            <a class="paper-card" href="#" id="paper-3">
-                <div class="paper-meta">Letter · 2025</div>
-                <div class="paper-title">[Paper Title 3 — replace]</div>
-                <div class="paper-authors">[Authors]</div>
-            </a>
         </div>
 
         <!-- Methodology lineage -->

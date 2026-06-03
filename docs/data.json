@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-06-03 21:26:07",
-  "generated_at_utc": "2026-06-03 21:26:07 UTC",
-  "generated_at_et": "2026-06-03 17:26 EDT",
+  "generated_at": "2026-06-03 21:53:57",
+  "generated_at_utc": "2026-06-03 21:53:57 UTC",
+  "generated_at_et": "2026-06-03 17:53 EDT",
   "snapshot": {
     "date": "2026-06-03",
     "usdcny": "6.76",
@@ -115,7 +115,7 @@
         [
           "Onshore / Offshore basis",
           "在岸 / 离岸价差",
-          "+0.0158",
+          "+0.0164",
           "weaken"
         ]
       ],
@@ -31099,9 +31099,9 @@
       "cn_2y": 1.2352,
       "yield_spread": 2.8448,
       "usdcny": 6.762199878692627,
-      "usdcnh": 6.777989864349365,
+      "usdcnh": 6.778619766235352,
       "pboc_fix": 6.763999999999999,
-      "onoffshore_gap": 0.01578998565673828,
+      "onoffshore_gap": 0.01641988754272461,
       "dxy": 99.22000122070312,
       "dxy_ret": 0.0,
       "raw_carry": 2.8448,

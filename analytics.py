@@ -225,8 +225,19 @@ def calc_mispricing(df: pd.DataFrame) -> pd.DataFrame:
             F = pd.to_numeric(out["usdcny_fwd_1y"], errors="coerce")
         else:
             F = pd.Series(np.nan, index=out.index)
-        rus = pd.to_numeric(out["us_1y"], errors="coerce") / 100.0 if "us_1y" in out.columns else pd.Series(np.nan, index=out.index)
+        rus_raw = pd.to_numeric(out["us_1y"], errors="coerce") / 100.0 if "us_1y" in out.columns else pd.Series(np.nan, index=out.index)
         rcn = pd.to_numeric(out["shibor_1y"], errors="coerce") / 100.0 if "shibor_1y" in out.columns else pd.Series(np.nan, index=out.index)
+
+        # ── v3.6.1 · Substitute US 2Y when US 1Y is unavailable ──────────
+        # Previously, missing us_1y forced fallback to the CIP-proxy 2Y formula,
+        # which produces a *theoretical* number ("what you'd earn if CIP reverts")
+        # rather than a *tradeable* one. That's misleading — you can only realise
+        # the locked-in forward, not "eventual CIP reversion". US 2Y is close
+        # enough to US 1Y (within ~30bps in normal regimes) to give a usable
+        # estimate of the real tradeable return.
+        rus_2y = pd.to_numeric(out["us_2y"], errors="coerce") / 100.0 if "us_2y" in out.columns else pd.Series(np.nan, index=out.index)
+        rus = rus_raw.combine_first(rus_2y)
+        rus_is_substitute = rus_raw.isna() & rus_2y.notna()
 
         mkt = (
             F.notna() & S.notna() & rus.notna() & rcn.notna()
@@ -237,14 +248,17 @@ def calc_mispricing(df: pd.DataFrame) -> pd.DataFrame:
             (1.0 + rus[mkt]) * (F[mkt] / S[mkt]) - (1.0 + rcn[mkt])
         )
         out.loc[mkt, "hedged_carry_method"] = "market_1y"
+        out.loc[mkt & rus_is_substitute, "hedged_carry_method"] = "market_1y_us2y_subst"
 
+        # CIP-proxy fallback — ONLY when there's no usable forward at all.
+        # Now that we substitute US 2Y for US 1Y, this branch should rarely fire.
         cip_fb = (
             (~mkt) & out["raw_carry"].notna() & out["cip_dev_pct"].notna()
         )
         out.loc[cip_fb, "hedged_carry_proxy"] = (
             out.loc[cip_fb, "raw_carry"] - out.loc[cip_fb, "cip_dev_pct"]
         )
-        out.loc[cip_fb, "hedged_carry_method"] = "cip_proxy_2y"
+        out.loc[cip_fb, "hedged_carry_method"] = "cip_proxy_2y_theoretical"
 
         out["hedged_carry_pct_rank"] = (
             out["hedged_carry_proxy"]
@@ -497,9 +511,18 @@ def interpret_carry_verdict(snap: dict) -> dict:
     fwd_premium = f("forward_premium_pct")
 
     # Headline number is offshore if available (more honest for HK desks),
-    # else onshore proxy. Both should be < 0 today per our v3.3 data.
+    # else onshore proxy.
     headline_val = off if off is not None else on
     method = "offshore (CNH HIBOR)" if off is not None else "onshore (Shibor)"
+
+    # ── v3.6.1 · CIP-proxy theoretical guard ────────────────────────────
+    # If both onshore and offshore market_1y formulas fail and we fall back
+    # to "cip_proxy_2y_theoretical", the number is NOT tradeable — it's the
+    # CIP-implied appreciation, not a forward-locked return. Refuse to
+    # generate a YES verdict in that case; surface the theoretical number
+    # but warn loudly.
+    hc_method = str(snap.get("hedged_carry_method") or "")
+    is_theoretical = "theoretical" in hc_method or "cip_proxy" in hc_method
 
     if headline_val is None:
         return {"verdict": "unknown", "headline_en": "—", "headline_zh": "—",
@@ -507,7 +530,25 @@ def interpret_carry_verdict(snap: dict) -> dict:
                 "reasoning_zh": "数据不足，无法判断。"}
 
     # Decision rule (annualised %, after FX hedge)
-    if headline_val > 0.5:
+    # If today's hedged_carry came from the CIP-proxy fallback (no usable
+    # forward + 1Y rate), the number is THEORETICAL, not tradeable. Force
+    # the verdict to a clear caution and explain.
+    if is_theoretical:
+        verdict = "data_gap"
+        en_label = (f"UNAVAILABLE — figure shown ({headline_val:+.2f}%) is the "
+                    f"CIP-implied theoretical return, not a tradeable forward-locked one")
+        zh_label = (f"无法判断 — 显示的 {headline_val:+.2f}% 是 CIP 理论"
+                    f"推导值，不是可锁定的真实对冲收益")
+        why_en = ("The 1-year forward or 1-year rate inputs are missing today, "
+                  "so the dashboard fell back to a CIP-implied formula that "
+                  "assumes the market eventually reverts to interest-parity. "
+                  "You cannot trade against an assumption — only against the "
+                  "actual forward quote. Wait for the next scheduled data "
+                  "refresh before sizing any position.")
+        why_zh = ("今日 1 年远期或 1 年利率输入缺失，dashboard 回退到 CIP 隐含公式 —— "
+                  "这个公式假设市场最终回归利率平价，是理论值不是可交易值。"
+                  "你只能对着真实的远期报价下单，对不着假设。等下一轮数据刷新后再判断。")
+    elif headline_val > 0.5:
         verdict = "yes"
         en_label = f"YES — earns roughly +{headline_val:.2f}% per year, net of hedge"
         zh_label = f"可以做 — 对冲后约 +{headline_val:.2f}%/年"
@@ -574,6 +615,34 @@ def interpret_carry_verdict(snap: dict) -> dict:
                       f"{headline_val:+.2f}%/yr",
                       method, method_zh])
 
+    # ── v3.6.1 · Explicit ¥1,000,000 cash-flow simulation ───────────────
+    # So the reader can sanity-check the percentage by following the money.
+    # Uses the SAME inputs the verdict was computed from.
+    sim = None
+    if spot is not None and fwd is not None and sh1y is not None and (us1y is not None or raw is not None):
+        rUS = (us1y if us1y is not None else (raw + sh1y))  # fallback: rUS ≈ raw_carry + Shibor
+        notional_cny = 1_000_000.0
+        usd_at_t0 = notional_cny / spot
+        usd_at_t1 = usd_at_t0 * (1.0 + rUS / 100.0)
+        cny_back  = usd_at_t1 * fwd
+        cny_owed  = notional_cny * (1.0 + sh1y / 100.0)
+        pnl_cny   = cny_back - cny_owed
+        pnl_pct   = pnl_cny / notional_cny * 100.0
+        sim = {
+            "notional_cny":  round(notional_cny, 0),
+            "spot":          round(spot, 4),
+            "fwd_1y":        round(fwd, 4),
+            "rUS_pct":       round(rUS, 3),
+            "rUS_source":    "US 1Y" if us1y is not None else "US 2Y (substituted)",
+            "rCN_pct":       round(sh1y, 3),
+            "usd_at_t0":     round(usd_at_t0, 0),
+            "usd_at_t1":     round(usd_at_t1, 0),
+            "cny_back":      round(cny_back, 0),
+            "cny_owed":      round(cny_owed, 0),
+            "pnl_cny":       round(pnl_cny, 0),
+            "pnl_pct":       round(pnl_pct, 3),
+        }
+
     return {
         "verdict":      verdict,
         "headline_en":  en_label,
@@ -582,6 +651,8 @@ def interpret_carry_verdict(snap: dict) -> dict:
         "reasoning_en": why_en,
         "reasoning_zh": why_zh,
         "method":       method,
+        "is_theoretical": is_theoretical,
+        "simulation":   sim,
     }
 
 

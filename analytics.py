@@ -509,50 +509,70 @@ def interpret_carry_verdict(snap: dict) -> dict:
     # Decision rule (annualised %, after FX hedge)
     if headline_val > 0.5:
         verdict = "yes"
-        en_label = f"YES — would earn {headline_val:+.2f}% / year"
-        zh_label = f"可以 — 一年净收益 {headline_val:+.2f}%"
+        en_label = f"YES — earns roughly +{headline_val:.2f}% per year, net of hedge"
+        zh_label = f"可以做 — 对冲后约 +{headline_val:.2f}%/年"
         why_en = ("Positive after-hedge return is rare on USD/CNY — usually "
                   "signals dislocated USD funding or capital-control friction. "
-                  "Verify forward quote before sizing.")
-        why_zh = ("USD/CNY 套利做出正收益很罕见 — 通常意味着美元融资紧张或资本"
-                  "管制摩擦。建议核实远期报价后再下单。")
+                  "Verify the forward quote before sizing the trade.")
+        why_zh = ("USD/CNY 对冲后赚钱在历史上是少见状态 —— 通常意味着美元融资紧张"
+                  "或资本管制摩擦。建议核实远期报价后再下单。")
     elif headline_val < -0.5:
         verdict = "no"
-        en_label = f"NO — would lose {abs(headline_val):.2f}% / year"
-        zh_label = f"不能 — 一年净亏 {abs(headline_val):.2f}%"
+        en_label = f"NO — loses roughly {abs(headline_val):.2f}% per year, net of hedge"
+        zh_label = f"不要做 — 对冲后约亏 {abs(headline_val):.2f}%/年"
         if fwd_premium is not None and raw is not None:
-            why_en = (f"Market already prices CNY {abs(fwd_premium):.2f}% stronger "
-                      f"in the 1Y forward, exceeding the {raw:.2f}% nominal yield "
+            why_en = (f"The 1-year forward already prices in {abs(fwd_premium):.2f}% "
+                      f"of CNY appreciation, exceeding the {raw:.2f}% nominal yield "
                       f"pickup. CIP closes the apparent arbitrage.")
-            why_zh = (f"远期已把 CNY 升值 {abs(fwd_premium):.2f}% 定价进去，超过名义"
-                      f"利差 {raw:.2f}%。CIP 把表面套利空间填平了。")
+            why_zh = (f"1 年远期已把 CNY 升值 {abs(fwd_premium):.2f}% 定价进去，"
+                      f"超过名义利差 {raw:.2f}%。CIP 把表面套利空间填平了。")
         else:
-            why_en = ("Forward premium absorbs the nominal carry. "
-                      "Hedging cost > yield pickup.")
+            why_en = ("Forward premium absorbs the nominal carry — "
+                      "hedging cost is larger than yield pickup.")
             why_zh = "远期升水吃掉了名义利差，对冲成本 > 收益。"
     else:
+        # Marginal band — handle negative vs positive separately so the
+        # English / Chinese reads naturally (avoid "only -0.50%" which
+        # sounds like a small gain but is actually a loss).
         verdict = "marginal"
-        en_label = f"MARGINAL — only {headline_val:+.2f}% / year"
-        zh_label = f"边缘 — 仅 {headline_val:+.2f}%/年"
-        why_en = ("Within transaction-cost band. Bid/offer + execution slippage "
-                  "likely consumes any apparent edge.")
-        why_zh = ("在交易成本带内。买卖价差 + 滑点很可能吃掉这点收益。")
+        if headline_val >= 0:
+            en_label = f"MARGINAL — barely positive at +{headline_val:.2f}% per year"
+            zh_label = f"勉强可行 — 对冲后仅 +{headline_val:.2f}%/年"
+        else:
+            en_label = f"MARGINAL — small loss of {abs(headline_val):.2f}% per year"
+            zh_label = f"边缘亏损 — 对冲后亏 {abs(headline_val):.2f}%/年"
+        why_en = ("Result sits inside the typical bid-offer / financing-spread band. "
+                  "Execution slippage will likely consume any apparent edge — "
+                  "treat as no-go for retail-sized positions.")
+        why_zh = ("结果落在常见的买卖价差与融资点差带内。下单滑点很可能吃掉这点收益 ——"
+                  "零售规模下视同不可做。")
 
+    # Chain — every cell rendered in current site language. Stored as 5-tuples
+    # [label_en, label_zh, value, unit_en, unit_zh]; renderer picks columns
+    # based on language. (Was 3-tuples with English-only — Chinese users
+    # were seeing mixed CN/EN text in the verdict card. Fixed v3.6.0.)
     chain = []
     if sh1y is not None:
-        chain.append(["borrow CNY @ Shibor 1Y", f"{sh1y:.2f}%", "cost"])
+        chain.append(["Borrow CNY at Shibor 1Y",     "借入 CNY · Shibor 1 年",
+                      f"{sh1y:.2f}%", "funding cost", "融资成本"])
     if spot is not None:
-        chain.append(["convert USD @ spot", f"{spot:.4f}", "USD/CNY"])
+        chain.append(["Convert USD at spot",         "按即期价换成 USD",
+                      f"{spot:.4f}", "USD/CNY", "USD/CNY"])
     if us1y is not None:
-        chain.append(["invest UST 1Y", f"{us1y:.2f}%", "yield"])
+        chain.append(["Invest in UST 1Y",            "买入 1 年期美债",
+                      f"{us1y:.2f}%", "USD yield", "美元收益"])
     if fwd is not None:
-        chain.append(["lock 1Y forward", f"{fwd:.4f}", "USD/CNY"])
+        chain.append(["Lock 1Y forward to close",    "1 年远期锁汇平仓",
+                      f"{fwd:.4f}", "USD/CNY", "USD/CNY"])
     if fwd_premium is not None:
-        chain.append(["forward premium",
-                      f"{fwd_premium:+.2f}%", "CNY appreciation priced in"])
+        chain.append(["Forward premium (priced in)", "远期升水（已被定价）",
+                      f"{fwd_premium:+.2f}%",
+                      "expected CNY appreciation",   "市场预期 CNY 升值幅度"])
     if headline_val is not None:
-        chain.append(["NET (after hedge)", f"{headline_val:+.2f}%/yr",
-                      method])
+        method_zh = "离岸口径 (CNH HIBOR)" if "offshore" in method else "在岸口径 (Shibor)"
+        chain.append(["NET after hedge",             "对冲后净收益",
+                      f"{headline_val:+.2f}%/yr",
+                      method, method_zh])
 
     return {
         "verdict":      verdict,
@@ -1019,36 +1039,43 @@ def interpret_policy_stance(snap: dict, df: pd.DataFrame) -> dict:
         elif onoff_gap < -0.005: defending_signals += 1  # CNH stronger
 
     if defending_signals >= 2 and weakening_signals == 0:
-        stance, label_en, label_zh = "defending", "DEFENDING CNY", "防御人民币"
-        reading_en = ("Multiple defence levers active — fix biased stronger, "
-                      "and either CNH funding squeeze or offshore-onshore basis "
-                      "confirms intervention. PBOC is spending policy capital.")
-        reading_zh = ("多条防御工具在动 — 中间价定得偏强，叠加 CNH 流动性挤压"
-                      "或在离岸价差确认介入。央行正在消耗政策资本。")
+        stance, label_en, label_zh = "defending", "ACTIVELY DEFENDING CNY", "正在防御人民币"
+        reading_en = ("Multiple defence levers are active simultaneously — the fix "
+                      "is biased stronger than the DXY-adjusted expectation, and "
+                      "either a CNH funding squeeze or an offshore-onshore basis "
+                      "shift confirms direct intervention. PBOC is spending policy "
+                      "capital to hold the line.")
+        reading_zh = ("多条防御工具同时启动 —— 中间价相对 DXY 调整后预期定得更强，"
+                      "叠加 CNH 流动性挤压或在岸离岸价差扩大确认直接干预。"
+                      "央行正在消耗政策资本守线。")
     elif weakening_signals >= 2 and defending_signals == 0:
-        stance, label_en, label_zh = "weakening", "ALLOWING WEAKNESS", "默许走弱"
-        reading_en = ("Fix drifting weaker than DXY-adjusted expectation, "
-                      "and offshore market also bids USD higher. PBOC is "
-                      "letting CNY find its own level.")
-        reading_zh = ("中间价比 DXY 调整后预期更弱，且离岸市场也在做多美元。"
-                      "央行让人民币自己找位置。")
+        stance, label_en, label_zh = "weakening", "ALLOWING WEAKNESS", "默许人民币走弱"
+        reading_en = ("The fix is drifting weaker than the DXY-adjusted "
+                      "expectation, and the offshore market is also bidding USD "
+                      "higher. PBOC is letting CNY find its own level — no "
+                      "intervention signal in any of the defence levers.")
+        reading_zh = ("中间价比 DXY 调整后预期更弱，离岸市场也在追高美元。"
+                      "央行让人民币自己找位置 —— 三条防御工具均未出手。")
     elif defending_signals == 1 and weakening_signals == 0:
         stance, label_en, label_zh = "leaning_defend", "MILD DEFENCE", "轻度防御"
-        reading_en = ("One of the three levers shows defence; others quiet. "
-                      "Soft signal, not full intervention.")
-        reading_zh = ("三条工具里有一条出现防御信号，其他静音。属于软信号，"
-                      "不是全面干预。")
+        reading_en = ("One of the three defence levers shows activity; the other "
+                      "two are quiet. This is a soft tilt, not full intervention "
+                      "— consistent with PBOC \"speaking through the fix\" rather "
+                      "than spending reserves.")
+        reading_zh = ("三条防御工具中有一条出现动作，另外两条平静。属于软性信号，"
+                      "不是全面干预 —— 跟央行通过中间价\"喊话\"、而非动用外储的姿态一致。")
     elif weakening_signals == 1 and defending_signals == 0:
-        stance, label_en, label_zh = "leaning_weak", "MILD TILT WEAK", "轻度允许走弱"
-        reading_en = ("One signal mildly tilts toward weaker CNY tolerance.")
-        reading_zh = ("有一条信号轻度倾向允许人民币走弱。")
+        stance, label_en, label_zh = "leaning_weak", "MILD TILT TO WEAKNESS", "轻度允许走弱"
+        reading_en = ("One signal mildly tilts toward tolerating a weaker CNY. "
+                      "Not yet a clear policy direction.")
+        reading_zh = ("一条信号轻度倾向容忍人民币走弱。尚未形成明确的政策方向。")
     else:
-        stance, label_en, label_zh = "neutral", "NEUTRAL · hands-off", "中性 · 被动观察"
+        stance, label_en, label_zh = "neutral", "NEUTRAL · HANDS OFF", "中性 · 被动观察"
         reading_en = ("None of the three defence levers is active. PBOC is "
-                      "letting market dynamics run; current spot level appears "
-                      "inside the tolerance band.")
-        reading_zh = ("三条防御工具都没有出手。央行让市场自己跑，当前汇率水平"
-                      "在容忍区间内。")
+                      "letting market dynamics run; the current spot level "
+                      "appears to be inside the policy tolerance band.")
+        reading_zh = ("三条防御工具都没有出手。央行让市场自己跑，"
+                      "当前汇率水平在政策容忍区间之内。")
 
     def signal_row(name_en, name_zh, value, fmt, defend_test, weaken_test):
         if value is None:
@@ -1063,13 +1090,13 @@ def interpret_policy_stance(snap: dict, df: pd.DataFrame) -> dict:
         return [name_en, name_zh, formatted, color]
 
     signals = [
-        signal_row("Fixing bias", "中间价偏离",
+        signal_row("Fixing bias (DXY-adj.)", "中间价偏离 (剔除 DXY)",
                    bias, lambda v: f"{v*10000:+.0f} pips",
                    lambda v: v < -0.001, lambda v: v > +0.001),
-        signal_row("CNH funding stress", "CNH 资金紧张",
+        signal_row("CNH funding stress", "CNH 离岸资金紧张度",
                    cnh_stress, lambda v: f"{v:+.2f}%",
                    lambda v: v > 1.0, lambda v: v < -0.5),
-        signal_row("On/Off basis", "在/离岸价差",
+        signal_row("Onshore / Offshore basis", "在岸 / 离岸价差",
                    onoff_gap, lambda v: f"{v:+.4f}",
                    lambda v: v < -0.005, lambda v: v > 0.005),
     ]

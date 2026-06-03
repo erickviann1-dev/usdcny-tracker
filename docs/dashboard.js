@@ -1,10 +1,10 @@
 /* ═══════════════════════════════════════════════════════════════
  *  USD/CNY Macro-Policy Divergence Tracker · Dashboard renderer
- *  Editorial / institutional design · v3.5.3
+ *  Editorial / institutional design · v3.6.0
  * ═══════════════════════════════════════════════════════════════ */
 
 /** Single source for top bar + cache-bust alignment (footer & script tag in index.html). */
-const TRACKER_VERSION = "3.5.3";
+const TRACKER_VERSION = "3.6.0";
 
 /* ─────────────────────────────────────────────────────────────
  *  I18N Engine + Dictionaries
@@ -1324,10 +1324,17 @@ function renderVerdict(v) {
     (v.chain || []).forEach((step, i) => {
         const isNet = i === v.chain.length - 1;
         const cls = isNet ? "net-row" : "";
+        // v3.6.0 — chain rows are now 5-tuples [label_en, label_zh, value, unit_en, unit_zh].
+        // Fall back to 3-tuple shape [label, value, unit] for backward compat
+        // if the data is still pre-v3.6.0.
+        const isBilingual = step.length >= 5;
+        const label = isBilingual ? (LANG === "zh" ? step[1] : step[0]) : step[0];
+        const value = isBilingual ? step[2] : step[1];
+        const unit  = isBilingual ? (LANG === "zh" ? step[4] : step[3]) : step[2];
         chainEl.insertAdjacentHTML("beforeend",
-            `<div class="step-label ${cls}">${escapeHtml(step[0])}</div>` +
-            `<div class="step-value ${cls}">${escapeHtml(step[1])}</div>` +
-            `<div class="step-unit ${cls}">${escapeHtml(step[2])}</div>`);
+            `<div class="step-label ${cls}">${escapeHtml(label)}</div>` +
+            `<div class="step-value ${cls}">${escapeHtml(value)}</div>` +
+            `<div class="step-unit ${cls}">${escapeHtml(unit)}</div>`);
     });
 
     document.getElementById("verdict-why").textContent =

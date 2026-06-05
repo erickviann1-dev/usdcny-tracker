@@ -4,7 +4,7 @@
  * ═══════════════════════════════════════════════════════════════ */
 
 /** Single source for top bar + cache-bust alignment (footer & script tag in index.html). */
-const TRACKER_VERSION = "3.6.0";
+const TRACKER_VERSION = "3.6.1";
 
 /* ─────────────────────────────────────────────────────────────
  *  I18N Engine + Dictionaries
@@ -90,6 +90,7 @@ const I18N = {
     "meta.vsdxyadj":    "vs DXY-adj.",
     "meta.cipResid":    "2Y CIP proxy",
     "meta.hedgedMarket1y": "CFETS 1Y F + UST1Y − Shibor1Y",
+    "meta.hedgedMarketProxy": "CFETS 1Y F + UST2Y proxy",
     "meta.hedgedCip2y":    "raw carry − CIP basis (2Y)",
     "meta.mm1y":        "UST1Y − Shibor1Y",
     "meta.cn1y":        "CN money market",
@@ -107,6 +108,10 @@ const I18N = {
         `this build uses fixing as spot proxy because yfinance is unreachable on this ` +
         `network. Layer 03 fixing-bias signal will appear degenerate (≈ 0) until ` +
         `a true onshore-spot source is restored.`,
+    "alert.proxy_verdict": () =>
+        `<strong>Proxy verdict —</strong> US 1Y coverage is missing in this build, ` +
+        `so the carry verdict substitutes US 2Y for the USD leg. Treat the first-screen ` +
+        `answer as a decision aid, not an executable trade ticket, until DGS1 refreshes.`,
     "alert.carry_body": (carry) =>
         `<strong>Carry alert —</strong> US−CN 2Y spread = <strong>${carry}%</strong>. ` +
         `Significant carry-trade incentive active.`,
@@ -526,6 +531,7 @@ const I18N = {
     "meta.vsdxyadj":    "vs DXY 调整",
     "meta.cipResid":    "2Y CIP 代理",
     "meta.hedgedMarket1y": "CFETS 1年期 F + 美 1Y − Shibor1Y",
+    "meta.hedgedMarketProxy": "CFETS 1年期 F + 美2Y代理",
     "meta.hedgedCip2y":    "名义利差 − CIP 基差（2Y）",
     "meta.mm1y":        "UST1Y − Shibor1Y",
     "meta.cn1y":        "CN 货币市场",
@@ -541,6 +547,10 @@ const I18N = {
         `<strong>数据提示 —</strong> USD/CNY 即期与央行中间价完全一致 — ` +
         `本次构建因 yfinance 不可达而以中间价替代即期。第三层偏差信号将呈退化状态（≈ 0），` +
         `直至恢复真实在岸即期源。`,
+    "alert.proxy_verdict": () =>
+        `<strong>代理裁决 —</strong> 本次构建缺少美债 1 年收益率覆盖，` +
+        `因此套利裁决用美债 2 年替代美元腿。DGS1 恢复刷新前，第一屏结论应视为决策辅助，` +
+        `不是可直接执行的交易单。`,
     "alert.carry_body": (carry) =>
         `<strong>套利预警 —</strong> 美中 2Y 利差 = <strong>${carry}%</strong>，套利激励显著。`,
     "alert.fixbias_body": (pips, dir) =>
@@ -880,7 +890,7 @@ function t(key, ...args) {
     return fb ?? key;
 }
 
-function switchLang(lang) {
+function switchLang(lang, shouldTrack = false) {
     LANG = lang;
     localStorage.setItem("tracker-lang", lang);
     document.querySelectorAll(".lang-toggle button[data-lang]").forEach(btn => {
@@ -888,6 +898,7 @@ function switchLang(lang) {
     });
     applyStaticI18n();
     if (window.__data) renderAll(window.__data);
+    if (shouldTrack && window.siteTrack) window.siteTrack("switch_language", { lang, site_section: "usdcny_tracker" });
 }
 
 function applyStaticI18n() {
@@ -1089,7 +1100,7 @@ async function boot() {
 
     document.querySelectorAll(".lang-toggle button[data-lang]").forEach(btn => {
         btn.classList.toggle("active", btn.dataset.lang === LANG);
-        btn.addEventListener("click", () => switchLang(btn.dataset.lang));
+        btn.addEventListener("click", () => switchLang(btn.dataset.lang, true));
     });
 
     renderAll(data);
@@ -1186,6 +1197,8 @@ function renderKPIs(s) {
 
     const hedgedMeta = s.hedged_carry_method === "market_1y"
         ? t("meta.hedgedMarket1y")
+        : s.hedged_carry_method === "market_1y_us2y_subst"
+        ? t("meta.hedgedMarketProxy")
         : s.hedged_carry_method === "cip_proxy_2y"
         ? t("meta.hedgedCip2y")
         : t("meta.cipResid");
@@ -1270,6 +1283,9 @@ function renderAlerts(s, q) {
             alerts.push({ cls: "", html: t("alert.spot_eq_fix") });
         }
     }
+    if (s.hedged_carry_method === "market_1y_us2y_subst" || (q.us_1y != null && q.us_1y < 0.3)) {
+        alerts.push({ cls: "warn", html: t("alert.proxy_verdict") });
+    }
 
     const carry = parseFloat(s.raw_carry);
     if (!isNaN(carry) && carry > 2.5) {
@@ -1313,7 +1329,7 @@ function renderVerdict(v) {
     card.style.display = "";
 
     // Reset verdict colour stripe
-    card.classList.remove("verdict-yes","verdict-no","verdict-marginal");
+    card.classList.remove("verdict-yes","verdict-no","verdict-marginal","verdict-data_gap","verdict-unknown");
     card.classList.add(`verdict-${v.verdict}`);
 
     document.getElementById("verdict-headline").textContent =

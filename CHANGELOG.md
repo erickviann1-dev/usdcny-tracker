@@ -5,9 +5,59 @@ All notable changes to the USD/CNY Macro-Policy Divergence Tracker.
 Format: each entry records (1) what changed, (2) why, (3) snapshot location of
 the previous state under `history/`.
 
-> **Looking for what to do NEXT?** See `ROADMAP.md` → ⭐ **Phase D**
-> — **D.3 + D.4** (v3.6.0) next. **D.1 + D.2** shipped in **v3.5.0**; **v3.5.1**
-> patched verdict-backtest P&L math; **v3.5.2** relabels stats + adds backtest disclaimer.
+> **Looking for what to do NEXT?** See `ROADMAP.md` → ⭐ **Phase D**.
+> Current page-audit patch is **v3.6.1**: version alignment, proxy-verdict
+> disclosure, and carry-verdict cash-flow consistency.
+
+---
+
+## [v3.6.2-analytics-scaffold] — 2026-06-04 · Private visitor analytics wiring
+
+### What changed
+- Added `docs/site-analytics.js`, a lightweight analytics bridge for page
+  views, section views, named clicks, downloads, and language switches.
+- Wired the USD/CNY tracker page to the shared private analytics backend
+  scaffold in `../portfolio-hub/analytics-worker/`.
+- Added named tracking to the top CSV download, Data-section CSV / JSON / Excel
+  / notebook downloads, and the `Begin` jump action.
+- Added a quiet footer `Privacy` link pointing to the portfolio privacy notice.
+
+### Current state
+The tracker now points to the deployed Cloudflare Worker collect endpoint:
+
+```text
+https://erick-site-analytics.erickviann1.workers.dev/collect
+```
+
+### Test status
+Local structural tests passed for tracker analytics script wiring, privacy link,
+download-button tracking, and language-switch tracking. Runtime / deployment
+smoke test passed from the shared backend: dashboard HTTP 200, `/collect`
+accepted a synthetic page view, and `/summary` returned the test event. See
+`../portfolio-hub/analytics-worker/TEST_REPORT.md`.
+
+---
+
+## [v3.6.1-page-audit] — 2026-06-03 · Carry verdict trust fixes
+
+### What changed
+- Aligned public version surfaces: `TRACKER_VERSION`, footer/topbar, and
+  `dashboard.js?v=3.6.1` now agree.
+- Fixed `interpret_carry_verdict()` cash-flow simulation so the explicit
+  ¥1,000,000 walkthrough uses the same funding side as the headline verdict:
+  offshore verdicts use CNH HIBOR, onshore verdicts use Shibor.
+- Fixed the US-rate substitute path: when US 1Y is unavailable, the simulation
+  uses US 2Y directly instead of back-solving from `raw_carry + funding`.
+- Added a visible **Proxy verdict** warning when `market_1y_us2y_subst` is used
+  or US 1Y coverage is missing. The first-screen answer is now framed as a
+  decision aid, not an executable ticket, until DGS1 refreshes.
+- Updated current `docs/data.json` so the displayed headline and cash-flow
+  simulation no longer contradict each other.
+
+### Current caveat
+Python is not available in this shell, so `python build.py` was not rerun here.
+The source logic and current `docs/data.json` were patched together; the next
+successful build should preserve the same semantics.
 
 ---
 

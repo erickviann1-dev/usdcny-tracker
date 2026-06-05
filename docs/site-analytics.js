@@ -1,17 +1,27 @@
 /*
- * Erick Wei research-site analytics bridge.
+ * Erick Wei research-site analytics bridge — v2 (2026-06-05)
+ *
+ * v2 changes vs v1:
+ *   - sendBeacon now uses text/plain Content-Type (was application/json)
+ *     · application/json triggers a CORS preflight which iOS Safari + ITP
+ *       was silently failing → mobile visits were not being recorded
+ *     · text/plain is a "simple" CORS request, no preflight, works on
+ *       iOS Safari, Brave Shields, AdGuard, Firefox Strict
+ *   - fetch() fallback also uses text/plain, credentials: "omit"
+ *   - Added ?ew_debug=1 URL flag → logs each beacon to console
  *
  * Privacy model:
  * - no cookies
  * - no IP collection in the browser payload
- * - anonymous session id stored in localStorage
- * - sends only page path, referrer host, viewport, language, and named events
+ * - anonymous session id in localStorage (key: ew_analytics_session_v1)
+ * - sends only page path, referrer host, viewport, language, named events
  *
  * Configure before loading this file:
  * window.SITE_ANALYTICS_CONFIG = {
- *   site: "usdcny-tracker",
+ *   site: "portfolio-hub",
  *   endpoint: "https://YOUR-WORKER.workers.dev/collect",
- *   enabled: true
+ *   enabled: true,
+ *   debug: false           // or pass ?ew_debug=1 in URL
  * };
  */
 (function () {
@@ -68,24 +78,43 @@
 
   function send(event, props) {
     const body = JSON.stringify(payload(event, props));
+    const debug = cfg.debug || /[?&]ew_debug=1/.test(location.search);
 
     if (enabled) {
+      // v2 — use text/plain (simple CORS request, no preflight, survives
+      // iOS Safari ITP + Brave Shields + most content blockers). The
+      // Worker happily parses JSON from any body it receives.
+      let sent = false;
       try {
         if (navigator.sendBeacon) {
-          const ok = navigator.sendBeacon(endpoint, new Blob([body], { type: "application/json" }));
-          if (ok) return;
+          sent = navigator.sendBeacon(
+            endpoint,
+            new Blob([body], { type: "text/plain;charset=UTF-8" })
+          );
+          if (debug) console.info("[site-analytics] beacon", event, "→", sent ? "queued" : "FALSE");
         }
-      } catch (_) {}
-      try {
-        fetch(endpoint, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body,
-          keepalive: true,
-          mode: "cors"
-        }).catch(function () {});
-      } catch (_) {}
-    } else if (cfg.debug) {
+      } catch (e) {
+        if (debug) console.warn("[site-analytics] beacon error", e);
+      }
+      if (!sent) {
+        try {
+          fetch(endpoint, {
+            method: "POST",
+            headers: { "Content-Type": "text/plain;charset=UTF-8" },
+            body,
+            keepalive: true,
+            mode: "cors",
+            credentials: "omit"
+          }).then(function (r) {
+            if (debug) console.info("[site-analytics] fetch", event, "→", r.status);
+          }).catch(function (err) {
+            if (debug) console.warn("[site-analytics] fetch error", err);
+          });
+        } catch (e) {
+          if (debug) console.warn("[site-analytics] fetch throw", e);
+        }
+      }
+    } else if (debug) {
       console.info("[site-analytics disabled]", event, props || {});
     }
 
@@ -103,9 +132,11 @@
     const href = el.getAttribute && el.getAttribute("href");
     if (href) {
       if (el.hasAttribute("download")) return "download_" + clean(el.getAttribute("download") || href, 80);
-      if (/data\.json/i.test(href)) return "download_data_json";
-      if (/xlsx/i.test(href)) return "download_excel";
-      if (/ipynb/i.test(href)) return "download_notebook";
+      if (/linkedin/i.test(href)) return "contact_linkedin";
+      if (/mailto:/i.test(href)) return "contact_email";
+      if (/ssrn/i.test(href)) return "paper_ssrn";
+      if (/usdcny-tracker/i.test(href)) return "open_usdcny_tracker";
+      if (/bean-model/i.test(href)) return "open_bean_model";
       return "click_link";
     }
     return "click";

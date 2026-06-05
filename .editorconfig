@@ -1,0 +1,28 @@
+# UTF-8 + LF everywhere — protects against the encoding corruption
+# (2026-06-04 / 2026-06-05) where Windows codecs wrote files as cp1252/gbk
+# and turned ═ into ┢ and · into 路.
+#
+# Cursor, VS Code, JetBrains, Notepad++, Vim and most modern editors
+# read this file automatically.
+
+root = true
+
+[*]
+charset                  = utf-8        # NO BOM, just utf-8
+end_of_line              = lf
+insert_final_newline     = true
+trim_trailing_whitespace = true
+indent_style             = space
+indent_size              = 4
+
+[*.{html,htm,css,js,json,md}]
+charset                  = utf-8
+end_of_line              = lf
+
+[*.py]
+charset                  = utf-8
+end_of_line              = lf
+indent_size              = 4
+
+[Makefile]
+indent_style             = tab

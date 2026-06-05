@@ -1,0 +1,28 @@
+# Force LF on text files — prevents Windows CRLF round-trip from interacting
+# with codec-blind tools that re-encode files when they think they need to
+# "fix" line endings.
+
+* text=auto eol=lf
+
+# Explicit UTF-8 text files
+*.html  text eol=lf working-tree-encoding=UTF-8
+*.htm   text eol=lf working-tree-encoding=UTF-8
+*.css   text eol=lf working-tree-encoding=UTF-8
+*.js    text eol=lf working-tree-encoding=UTF-8
+*.json  text eol=lf working-tree-encoding=UTF-8
+*.md    text eol=lf working-tree-encoding=UTF-8
+*.py    text eol=lf working-tree-encoding=UTF-8
+*.yml   text eol=lf
+*.yaml  text eol=lf
+
+# Binary — never let git touch their bytes
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.pdf   binary
+*.woff  binary
+*.woff2 binary
+*.ico   binary
+*.xlsx  binary
+*.docx  binary

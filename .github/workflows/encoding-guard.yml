@@ -1,0 +1,93 @@
+name: Encoding Guard
+
+# On every push / PR — scan all text files for the corruption patterns
+# that hit this repo on 2026-06-04. If any U+FFFD, BOM, or known mojibake
+# byte is present, fail the build BEFORE GitHub Pages deploys.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Scan text files for encoding corruption
+        run: |
+          python3 << 'PYEOF'
+          import sys, os, pathlib
+
+          EXTS = {'.html', '.htm', '.css', '.js', '.json', '.md',
+                  '.py', '.yml', '.yaml', '.txt'}
+          SKIP_DIRS = {'.git', 'node_modules', 'history',
+                       '__pycache__', 'cache', '.venv'}
+          # Skip this guard file itself (it may legitimately mention
+          # mojibake examples in comments / pattern lists).
+          SELF = 'encoding-guard.yml'
+
+          # Mojibake patterns written as \u escapes so this file stays
+          # ASCII and never trips its own scanner.
+          # U+2522 ┢  = GBK-misread of ═  (box drawing)
+          # U+922B 鈫  = GBK-misread of ←  (back arrow)
+          MOJIBAKE = {
+              '┢': 'GBK-misread of box drawing char (was =)',
+              '鈫': 'GBK-misread of left-arrow',
+          }
+          FFFD = '�'
+          BOM  = b'\xEF\xBB\xBF'
+
+          errors = []
+          scanned = 0
+
+          for root, dirs, files in os.walk('.'):
+              dirs[:] = [d for d in dirs if d not in SKIP_DIRS]
+              for fn in files:
+                  if fn == SELF:
+                      continue
+                  ext = pathlib.Path(fn).suffix.lower()
+                  if ext not in EXTS:
+                      continue
+                  p = os.path.join(root, fn)
+                  try:
+                      raw = open(p, 'rb').read()
+                  except Exception as e:
+                      errors.append(f'{p}: read failed: {e}')
+                      continue
+                  scanned += 1
+
+                  if raw.startswith(BOM):
+                      errors.append(f'{p}: BOM at start (should be naked UTF-8)')
+
+                  try:
+                      text = raw.decode('utf-8')
+                  except UnicodeDecodeError as e:
+                      errors.append(f'{p}: not valid UTF-8: {e}')
+                      continue
+
+                  n_fffd = text.count(FFFD)
+                  if n_fffd > 0:
+                      idx = text.find(FFFD)
+                      ctx = text[max(0,idx-20):idx+20].replace('\n', ' ')
+                      errors.append(
+                          f'{p}: {n_fffd} U+FFFD replacement chars '
+                          f'(first at offset {idx}: "...{ctx}...")'
+                      )
+
+                  for m, why in MOJIBAKE.items():
+                      if m in text:
+                          errors.append(f'{p}: mojibake U+{ord(m):04X} - {why}')
+
+          print(f'Scanned {scanned} text files.')
+          if errors:
+              print(f'\nENCODING GUARD FAILED -- {len(errors)} issue(s):\n')
+              for e in errors:
+                  print(f'  - {e}')
+              print(f'\nFix locally with UTF-8 (no BOM, LF). See .editorconfig.')
+              sys.exit(1)
+          print('All text files are clean UTF-8 with no BOM and no mojibake.')
+          PYEOF

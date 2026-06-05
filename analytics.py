@@ -507,13 +507,17 @@ def interpret_carry_verdict(snap: dict) -> dict:
     fwd  = f("usdcny_fwd_1y")
     spot = f("usdcny")
     us1y = f("us_1y")
+    us2y = f("us_2y")
     sh1y = f("shibor_1y")
+    cnh1y = f("cnh_hibor_1y")
     fwd_premium = f("forward_premium_pct")
 
     # Headline number is offshore if available (more honest for HK desks),
     # else onshore proxy.
     headline_val = off if off is not None else on
     method = "offshore (CNH HIBOR)" if off is not None else "onshore (Shibor)"
+    funding_rate = cnh1y if off is not None and cnh1y is not None else sh1y
+    funding_source = "CNH HIBOR 1Y" if off is not None and cnh1y is not None else "Shibor 1Y"
 
     # ── v3.6.1 · CIP-proxy theoretical guard ────────────────────────────
     # If both onshore and offshore market_1y formulas fail and we fall back
@@ -523,6 +527,7 @@ def interpret_carry_verdict(snap: dict) -> dict:
     # but warn loudly.
     hc_method = str(snap.get("hedged_carry_method") or "")
     is_theoretical = "theoretical" in hc_method or "cip_proxy" in hc_method
+    is_proxy = "subst" in hc_method or us1y is None
 
     if headline_val is None:
         return {"verdict": "unknown", "headline_en": "—", "headline_zh": "—",
@@ -550,8 +555,10 @@ def interpret_carry_verdict(snap: dict) -> dict:
                   "你只能对着真实的远期报价下单，对不着假设。等下一轮数据刷新后再判断。")
     elif headline_val > 0.5:
         verdict = "yes"
-        en_label = f"YES — earns roughly +{headline_val:.2f}% per year, net of hedge"
-        zh_label = f"可以做 — 对冲后约 +{headline_val:.2f}%/年"
+        prefix_en = "PROXY YES" if is_proxy else "YES"
+        prefix_zh = "代理口径可做" if is_proxy else "可以做"
+        en_label = f"{prefix_en} — earns roughly +{headline_val:.2f}% per year, net of hedge"
+        zh_label = f"{prefix_zh} — 对冲后约 +{headline_val:.2f}%/年"
         why_en = ("Positive after-hedge return is rare on USD/CNY — usually "
                   "signals dislocated USD funding or capital-control friction. "
                   "Verify the forward quote before sizing the trade.")
@@ -559,8 +566,10 @@ def interpret_carry_verdict(snap: dict) -> dict:
                   "或资本管制摩擦。建议核实远期报价后再下单。")
     elif headline_val < -0.5:
         verdict = "no"
-        en_label = f"NO — loses roughly {abs(headline_val):.2f}% per year, net of hedge"
-        zh_label = f"不要做 — 对冲后约亏 {abs(headline_val):.2f}%/年"
+        prefix_en = "PROXY NO" if is_proxy else "NO"
+        prefix_zh = "代理口径不要做" if is_proxy else "不要做"
+        en_label = f"{prefix_en} — loses roughly {abs(headline_val):.2f}% per year, net of hedge"
+        zh_label = f"{prefix_zh} — 对冲后约亏 {abs(headline_val):.2f}%/年"
         if fwd_premium is not None and raw is not None:
             why_en = (f"The 1-year forward already prices in {abs(fwd_premium):.2f}% "
                       f"of CNY appreciation, exceeding the {raw:.2f}% nominal yield "
@@ -577,31 +586,46 @@ def interpret_carry_verdict(snap: dict) -> dict:
         # sounds like a small gain but is actually a loss).
         verdict = "marginal"
         if headline_val >= 0:
-            en_label = f"MARGINAL — barely positive at +{headline_val:.2f}% per year"
-            zh_label = f"勉强可行 — 对冲后仅 +{headline_val:.2f}%/年"
+            prefix_en = "PROXY MARGINAL" if is_proxy else "MARGINAL"
+            prefix_zh = "代理口径边缘可行" if is_proxy else "勉强可行"
+            en_label = f"{prefix_en} — barely positive at +{headline_val:.2f}% per year"
+            zh_label = f"{prefix_zh} — 对冲后仅 +{headline_val:.2f}%/年"
         else:
-            en_label = f"MARGINAL — small loss of {abs(headline_val):.2f}% per year"
-            zh_label = f"边缘亏损 — 对冲后亏 {abs(headline_val):.2f}%/年"
+            prefix_en = "PROXY MARGINAL" if is_proxy else "MARGINAL"
+            prefix_zh = "代理口径边缘亏损" if is_proxy else "边缘亏损"
+            en_label = f"{prefix_en} — small loss of {abs(headline_val):.2f}% per year"
+            zh_label = f"{prefix_zh} — 对冲后亏 {abs(headline_val):.2f}%/年"
         why_en = ("Result sits inside the typical bid-offer / financing-spread band. "
                   "Execution slippage will likely consume any apparent edge — "
                   "treat as no-go for retail-sized positions.")
         why_zh = ("结果落在常见的买卖价差与融资点差带内。下单滑点很可能吃掉这点收益 ——"
                   "零售规模下视同不可做。")
 
+    if is_proxy and not is_theoretical:
+        why_en = ("Proxy verdict: the US 1Y yield is unavailable in this build, so "
+                  "US 2Y is substituted for the USD leg. " + why_en)
+        why_zh = ("代理口径：本次构建缺少美债 1 年收益率，因此美元腿使用美债 2 年替代。"
+                  + why_zh)
+
     # Chain — every cell rendered in current site language. Stored as 5-tuples
     # [label_en, label_zh, value, unit_en, unit_zh]; renderer picks columns
     # based on language. (Was 3-tuples with English-only — Chinese users
     # were seeing mixed CN/EN text in the verdict card. Fixed v3.6.0.)
     chain = []
-    if sh1y is not None:
-        chain.append(["Borrow CNY at Shibor 1Y",     "借入 CNY · Shibor 1 年",
-                      f"{sh1y:.2f}%", "funding cost", "融资成本"])
+    if funding_rate is not None:
+        funding_label_en = f"Borrow CNY at {funding_source}"
+        funding_label_zh = "借入 CNY · CNH HIBOR 1 年" if funding_source.startswith("CNH") else "借入 CNY · Shibor 1 年"
+        chain.append([funding_label_en, funding_label_zh,
+                      f"{funding_rate:.2f}%", "funding cost", "融资成本"])
     if spot is not None:
         chain.append(["Convert USD at spot",         "按即期价换成 USD",
                       f"{spot:.4f}", "USD/CNY", "USD/CNY"])
     if us1y is not None:
         chain.append(["Invest in UST 1Y",            "买入 1 年期美债",
                       f"{us1y:.2f}%", "USD yield", "美元收益"])
+    elif us2y is not None:
+        chain.append(["Invest in USD leg (UST 2Y proxy)", "美元腿收益（美债 2 年替代）",
+                      f"{us2y:.2f}%", "proxy USD yield", "代理美元收益"])
     if fwd is not None:
         chain.append(["Lock 1Y forward to close",    "1 年远期锁汇平仓",
                       f"{fwd:.4f}", "USD/CNY", "USD/CNY"])
@@ -619,13 +643,13 @@ def interpret_carry_verdict(snap: dict) -> dict:
     # So the reader can sanity-check the percentage by following the money.
     # Uses the SAME inputs the verdict was computed from.
     sim = None
-    if spot is not None and fwd is not None and sh1y is not None and (us1y is not None or raw is not None):
-        rUS = (us1y if us1y is not None else (raw + sh1y))  # fallback: rUS ≈ raw_carry + Shibor
+    if spot is not None and fwd is not None and funding_rate is not None and (us1y is not None or us2y is not None):
+        rUS = (us1y if us1y is not None else us2y)
         notional_cny = 1_000_000.0
         usd_at_t0 = notional_cny / spot
         usd_at_t1 = usd_at_t0 * (1.0 + rUS / 100.0)
         cny_back  = usd_at_t1 * fwd
-        cny_owed  = notional_cny * (1.0 + sh1y / 100.0)
+        cny_owed  = notional_cny * (1.0 + funding_rate / 100.0)
         pnl_cny   = cny_back - cny_owed
         pnl_pct   = pnl_cny / notional_cny * 100.0
         sim = {
@@ -634,7 +658,8 @@ def interpret_carry_verdict(snap: dict) -> dict:
             "fwd_1y":        round(fwd, 4),
             "rUS_pct":       round(rUS, 3),
             "rUS_source":    "US 1Y" if us1y is not None else "US 2Y (substituted)",
-            "rCN_pct":       round(sh1y, 3),
+            "rCN_pct":       round(funding_rate, 3),
+            "rCN_source":    funding_source,
             "usd_at_t0":     round(usd_at_t0, 0),
             "usd_at_t1":     round(usd_at_t1, 0),
             "cny_back":      round(cny_back, 0),
@@ -652,6 +677,7 @@ def interpret_carry_verdict(snap: dict) -> dict:
         "reasoning_zh": why_zh,
         "method":       method,
         "is_theoretical": is_theoretical,
+        "is_proxy":     is_proxy,
         "simulation":   sim,
     }
 

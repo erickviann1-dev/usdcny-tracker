@@ -9,9 +9,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400;1,8..60,500&display=swap" rel="stylesheet">
 <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
 <style>
-/* ═══════════════════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════════════════�?
  *  DESIGN TOKENS
- * ═══════════════════════════════════════════════════════════════ */
+ * ══════════════════════════════════════════════════════════════�?*/
 :root {
     /* Paper-like institutional palette */
     --bg:           #faf8f5;
@@ -65,9 +65,9 @@
     --t-caption:    11px;
 }
 
-/* ═══════════════════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════════════════�?
  *  BASE
- * ═══════════════════════════════════════════════════════════════ */
+ * ══════════════════════════════════════════════════════════════�?*/
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 html { scroll-behavior: smooth; }
@@ -94,9 +94,9 @@ a:hover { color: var(--ochre); }
 .hairline { border: none; border-top: 1px solid var(--hairline); margin: 0; }
 .rule     { border: none; border-top: 1px solid var(--rule); margin: 0; }
 
-/* ═══════════════════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════════════════�?
  *  STICKY TOP BAR
- * ═══════════════════════════════════════════════════════════════ */
+ * ══════════════════════════════════════════════════════════════�?*/
 .topbar {
     position: sticky;
     top: 0;
@@ -221,9 +221,9 @@ a:hover { color: var(--ochre); }
 }
 .lang-toggle button.active { background: var(--ink); color: var(--bg); }
 
-/* ═══════════════════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════════════════�?
  *  LAYOUT
- * ═══════════════════════════════════════════════════════════════ */
+ * ══════════════════════════════════════════════════════════════�?*/
 .shell {
     display: grid;
     grid-template-columns: var(--sidebar-w) 1fr;
@@ -236,9 +236,9 @@ a:hover { color: var(--ochre); }
     .shell { grid-template-columns: 1fr; gap: 24px; }
 }
 
-/* ═══════════════════════════════════════════════════════════════
- *  SIDEBAR — Author + Papers + Nav
- * ═══════════════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════════════�?
+ *  SIDEBAR �?Author + Papers + Nav
+ * ══════════════════════════════════════════════════════════════�?*/
 .sidebar {
     padding: 56px 0 96px;
     position: sticky;
@@ -315,7 +315,7 @@ a:hover { color: var(--ochre); }
 .lineage { font-size: 12px; color: var(--muted); line-height: 1.7; }
 .lineage li { margin-bottom: 4px; padding-left: 14px; position: relative; list-style: none; }
 .lineage li::before {
-    content: "—";
+    content: "�?;
     position: absolute; left: 0;
     color: var(--rule);
 }
@@ -333,9 +333,9 @@ a:hover { color: var(--ochre); }
 .zone .zone-label { flex: 1; }
 .zone .zone-range { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted-soft); }
 
-/* ═══════════════════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════════════════�?
  *  MAIN
- * ═══════════════════════════════════════════════════════════════ */
+ * ══════════════════════════════════════════════════════════════�?*/
 .main {
     padding: 56px 0 96px;
     min-width: 0;
@@ -361,7 +361,7 @@ a:hover { color: var(--ochre); }
     background: var(--ochre);
 }
 
-/* ── Hero ───────────────────────────────────────────────── */
+/* ┢�┢� Hero ┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢� */
 .hero {
     padding: 0 0 56px;
     border-bottom: 1px solid var(--rule);
@@ -399,7 +399,7 @@ a:hover { color: var(--ochre); }
     font-weight: 600;
 }
 
-/* ── Composite Score Display (custom, non-Plotly) ─────── */
+/* ┢�┢� Composite Score Display (custom, non-Plotly) ┢�┢�┢�┢�┢�┢�┢� */
 .score-grid {
     display: grid;
     grid-template-columns: 1.05fr 1fr;
@@ -411,7 +411,7 @@ a:hover { color: var(--ochre); }
     .score-grid { grid-template-columns: 1fr; }
 }
 
-/* ── v3.4 · Decision Cards (verdict + policy stance) ──── */
+/* ┢�┢� v3.4 · Decision Cards (verdict + policy stance) ┢�┢�┢�┢� */
 .decision-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -505,7 +505,7 @@ a:hover { color: var(--ochre); }
     font-style: italic;
 }
 
-/* v3.5 — verdict workbench (backtest + flip lines) */
+/* v3.5 �?verdict workbench (backtest + flip lines) */
 .verdict-workbench {
     margin-bottom: 16px;
 }
@@ -689,7 +689,7 @@ a:hover { color: var(--ochre); }
 .score-bar-labels span:not(:last-child) { border-right: 1px solid var(--hairline); padding-left: 4px; }
 .score-bar-labels span:last-child { padding-left: 4px; }
 
-/* ── KPI panel (asymmetric grid) ────────────────────────── */
+/* ┢�┢� KPI panel (asymmetric grid) ┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢� */
 .kpi-panel {
     background: var(--card);
     border: 1px solid var(--hairline);
@@ -781,7 +781,7 @@ a:hover { color: var(--ochre); }
 .q-badge.est { color: var(--ochre); border-color: var(--ochre); background: #fffbeb; }
 .q-badge.err { color: var(--bear);  border-color: var(--bear); background: #fef2f2; }
 
-/* ── Data limitations banner ───────────────────────────── */
+/* ┢�┢� Data limitations banner ┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢�┢� */
 .banner {
     background: linear-gradient(180deg, #fffbeb 0%, #fef3c7 100%);
     border: 1px solid #fcd34d;
@@ -797,9 +797,9 @@ a:hover { color: var(--ochre); }
 .banner.bear { background: linear-gradient(180deg, #fef2f2 0%, #fee2e2 100%); border-color: #fecaca; border-left-color: var(--bear); color: #7f1d1d; }
 .banner.bull { background: linear-gradient(180deg, #f0fdf4 0%, #dcfce7 100%); border-color: #bbf7d0; border-left-color: var(--bull); color: #14532d; }
 
-/* ═══════════════════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════════════════�?
  *  CHAPTERS (Layer sections)
- * ═══════════════════════════════════════════════════════════════ */
+ * ══════════════════════════════════════════════════════════════�?*/
 .chapter {
     padding: 80px 0 48px;
     border-top: 1px solid var(--rule);
@@ -982,7 +982,7 @@ a:hover { color: var(--ochre); }
 }
 .findings li:last-child { border-bottom: none; }
 .findings li::before {
-    content: "▸";
+    content: "�?;
     position: absolute; left: 0;
     color: var(--ochre);
     font-weight: 600;
@@ -1051,9 +1051,9 @@ a:hover { color: var(--ochre); }
 .interp-matrix tr:last-child td { border-bottom: none; }
 .interp-matrix td:first-child { font-weight: 600; color: var(--ink); }
 
-/* ═══════════════════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════════════════�?
  *  CHART BUILDER
- * ═══════════════════════════════════════════════════════════════ */
+ * ══════════════════════════════════════════════════════════════�?*/
 .builder {
     background: var(--card);
     border: 1px solid var(--hairline);
@@ -1121,9 +1121,9 @@ a:hover { color: var(--ochre); }
     border-color: var(--ink);
 }
 
-/* ═══════════════════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════════════════�?
  *  GLOSSARY
- * ═══════════════════════════════════════════════════════════════ */
+ * ══════════════════════════════════════════════════════════════�?*/
 details.glossary {
     background: var(--card);
     border: 1px solid var(--hairline);
@@ -1155,7 +1155,7 @@ details.glossary summary::after {
     color: var(--muted);
     transition: transform 0.2s;
 }
-details.glossary[open] summary::after { content: "−"; }
+details.glossary[open] summary::after { content: "�?; }
 details.glossary[open] summary { background: var(--card); }
 .glossary-table {
     width: 100%;
@@ -1183,9 +1183,9 @@ details.glossary[open] summary { background: var(--card); }
 }
 .glossary-table tr:last-child td { border-bottom: none; }
 
-/* ═══════════════════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════════════════�?
  *  DATA TABLE
- * ═══════════════════════════════════════════════════════════════ */
+ * ══════════════════════════════════════════════════════════════�?*/
 .data-section { background: var(--card); border: 1px solid var(--hairline); border-radius: 6px; padding: 24px 28px; box-shadow: var(--shadow-card); }
 .data-table-wrap { overflow-x: auto; margin: 16px 0; }
 .data-table {
@@ -1231,9 +1231,9 @@ details.glossary[open] summary { background: var(--card); }
 .dl-btn.ghost { background: var(--card); color: var(--ink); }
 .dl-btn.ghost:hover { background: var(--ink); color: var(--bg); }
 
-/* ═══════════════════════════════════════════════════════════════
- *  FEATURED RESEARCH (footer cards) — PLACEHOLDER
- * ═══════════════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════════════�?
+ *  FEATURED RESEARCH (footer cards) �?PLACEHOLDER
+ * ══════════════════════════════════════════════════════════════�?*/
 .featured {
     margin: 80px 0 32px;
     padding-top: 48px;
@@ -1342,10 +1342,19 @@ footer.site {
 }
 footer.site .row { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
 footer.site strong { color: var(--ink); font-weight: 500; }
+footer.site .privacy-link {
+    color: var(--muted-soft);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+}
+footer.site .privacy-link:hover {
+    color: var(--ink);
+    border-bottom-color: var(--rule);
+}
 
-/* ═══════════════════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════════════════�?
  *  LOADER
- * ═══════════════════════════════════════════════════════════════ */
+ * ══════════════════════════════════════════════════════════════�?*/
 #loader {
     position: fixed; inset: 0;
     background: var(--bg);
@@ -1382,17 +1391,17 @@ footer.site strong { color: var(--ink); font-weight: 500; }
 </head>
 <body>
 
-<!-- ═══════════════════ LOADER ═══════════════════ -->
+<!-- ══════════════════�?LOADER ══════════════════�?-->
 <div id="loader">
     <div class="loader-mark">SD</div>
-    <div class="loader-text" data-i18n="html.loader">Loading market data…</div>
+    <div class="loader-text" data-i18n="html.loader">Loading market data�?/div>
 </div>
 
-<!-- ═══════════════════ TOP BAR ═══════════════════ -->
+<!-- ══════════════════�?TOP BAR ══════════════════�?-->
 <div class="topbar">
     <div class="topbar-inner">
         <a href="https://erickviann1-dev.github.io/" class="back-link">
-            <span class="arrow">←</span>
+            <span class="arrow">�?/span>
             <span data-i18n="html.back">Back to portfolio</span>
         </a>
         <a href="#" class="brand">
@@ -1404,45 +1413,45 @@ footer.site strong { color: var(--ink); font-weight: 500; }
         </a>
         <div class="topbar-spacer"></div>
         <div class="topbar-meta" id="topbar-meta">
-            <span id="topbar-date">—</span>
+            <span id="topbar-date">�?/span>
             <span class="dot">·</span>
-            <span id="topbar-score">—</span>
+            <span id="topbar-score">�?/span>
             <span class="dot">·</span>
-            <span id="topbar-updated" style="font-size:11px"><span style="color:var(--muted)">Updated</span> —</span>
+            <span id="topbar-updated" style="font-size:11px"><span style="color:var(--muted)">Updated</span> �?/span>
             <span class="dot">·</span>
-            <span id="topbar-xcheck" class="xcheck-badge" title="Data integrity checks"><span class="xcheck-dot"></span><span id="topbar-xcheck-text">—</span></span>
+            <span id="topbar-xcheck" class="xcheck-badge" title="Data integrity checks"><span class="xcheck-dot"></span><span id="topbar-xcheck-text">�?/span></span>
         </div>
         <div class="topbar-actions">
             <div class="lang-toggle">
                 <button class="active" data-lang="en">EN</button>
-                <button data-lang="zh">中</button>
+                <button data-lang="zh">�?/button>
             </div>
-            <a class="topbar-btn" id="dl-csv-top" href="#" download data-i18n="html.download">Download</a>
-            <a class="topbar-btn primary" href="#chapter-01" data-i18n="html.begin">Begin →</a>
+            <a class="topbar-btn" id="dl-csv-top" href="#" download data-i18n="html.download" data-track="download_csv_top">Download</a>
+            <a class="topbar-btn primary" href="#chapter-01" data-i18n="html.begin" data-track="jump_begin">Begin �?/a>
         </div>
     </div>
 </div>
 
-<!-- ═══════════════════ SHELL ═══════════════════ -->
+<!-- ══════════════════�?SHELL ══════════════════�?-->
 <div class="shell">
 
-    <!-- ── SIDEBAR ── -->
+    <!-- ┢�┢� SIDEBAR ┢�┢� -->
     <aside class="sidebar">
 
         <!-- Contents nav -->
         <div class="sidebar-section">
             <h4 data-i18n="html.contents">Contents</h4>
             <ul class="toc">
-                <li><a href="#hero"><span class="num">—</span> <span data-i18n="nav.gauge">Pressure Gauge</span></a></li>
+                <li><a href="#hero"><span class="num">�?/span> <span data-i18n="nav.gauge">Pressure Gauge</span></a></li>
                 <li><a href="#chapter-01"><span class="num">01</span> <span data-i18n="nav.carry">Carry Feasibility</span></a></li>
                 <li><a href="#chapter-02"><span class="num">02</span> <span data-i18n="nav.mispricing">Mispricing</span></a></li>
                 <li><a href="#chapter-03"><span class="num">03</span> <span data-i18n="nav.policy">Policy Intent</span></a></li>
-                <li><a href="#composite"><span class="num">∑</span> <span data-i18n="nav.composite">Composite Trend</span></a></li>
+                <li><a href="#composite"><span class="num">�?/span> <span data-i18n="nav.composite">Composite Trend</span></a></li>
                 <li><a href="#composite-method"><span class="num">§</span> <span data-i18n="nav.method">Composite methodology</span></a></li>
-                <li><a href="#history-stress"><span class="num">◷</span> <span data-i18n="nav.history">Historical stress lens</span></a></li>
-                <li><a href="#builder"><span class="num">⊞</span> <span data-i18n="nav.builder">Build a Chart</span></a></li>
-                <li><a href="#glossary"><span class="num">⊕</span> <span data-i18n="nav.glossary">Glossary</span></a></li>
-                <li><a href="#data"><span class="num">↓</span> <span data-i18n="nav.data">Data &amp; Export</span></a></li>
+                <li><a href="#history-stress"><span class="num">�?/span> <span data-i18n="nav.history">Historical stress lens</span></a></li>
+                <li><a href="#builder"><span class="num">�?/span> <span data-i18n="nav.builder">Build a Chart</span></a></li>
+                <li><a href="#glossary"><span class="num">�?/span> <span data-i18n="nav.glossary">Glossary</span></a></li>
+                <li><a href="#data"><span class="num">�?/span> <span data-i18n="nav.data">Data &amp; Export</span></a></li>
             </ul>
         </div>
 
@@ -1450,32 +1459,32 @@ footer.site strong { color: var(--ink); font-weight: 500; }
         <div class="sidebar-section">
             <h4 data-i18n="html.lineage">Methodology Lineage</h4>
             <ul class="lineage">
-                <li>BIS Quarterly Review — Cross-Currency Basis</li>
+                <li>BIS Quarterly Review �?Cross-Currency Basis</li>
                 <li>IMF Capital Flow Diagnostics</li>
-                <li>Giacomelli &amp; Pesenti — Policy Divergence Framework</li>
-                <li>Fed FRED — Trade-Weighted Dollar Index</li>
-                <li>PBOC — Daily Central Parity Mechanism</li>
+                <li>Giacomelli &amp; Pesenti �?Policy Divergence Framework</li>
+                <li>Fed FRED �?Trade-Weighted Dollar Index</li>
+                <li>PBOC �?Daily Central Parity Mechanism</li>
             </ul>
         </div>
 
         <!-- Pressure zones -->
         <div class="sidebar-section">
             <h4 data-i18n="html.zones">Pressure Zones</h4>
-            <div class="zone"><div class="swatch" style="background:#22c55e"></div><div class="zone-label" data-i18n="zone.Low">Low</div><div class="zone-range">0–25</div></div>
-            <div class="zone"><div class="swatch" style="background:#84cc16"></div><div class="zone-label" data-i18n="zone.Moderate">Moderate</div><div class="zone-range">25–50</div></div>
-            <div class="zone"><div class="swatch" style="background:#facc15"></div><div class="zone-label" data-i18n="zone.Elevated">Elevated</div><div class="zone-range">50–75</div></div>
-            <div class="zone"><div class="swatch" style="background:#f97316"></div><div class="zone-label" data-i18n="zone.High">High</div><div class="zone-range">75–90</div></div>
-            <div class="zone"><div class="swatch" style="background:#ef4444"></div><div class="zone-label" data-i18n="zone.Extreme">Extreme</div><div class="zone-range">90–100</div></div>
+            <div class="zone"><div class="swatch" style="background:#22c55e"></div><div class="zone-label" data-i18n="zone.Low">Low</div><div class="zone-range">0�?5</div></div>
+            <div class="zone"><div class="swatch" style="background:#84cc16"></div><div class="zone-label" data-i18n="zone.Moderate">Moderate</div><div class="zone-range">25�?0</div></div>
+            <div class="zone"><div class="swatch" style="background:#facc15"></div><div class="zone-label" data-i18n="zone.Elevated">Elevated</div><div class="zone-range">50�?5</div></div>
+            <div class="zone"><div class="swatch" style="background:#f97316"></div><div class="zone-label" data-i18n="zone.High">High</div><div class="zone-range">75�?0</div></div>
+            <div class="zone"><div class="swatch" style="background:#ef4444"></div><div class="zone-label" data-i18n="zone.Extreme">Extreme</div><div class="zone-range">90�?00</div></div>
         </div>
 
     </aside>
 
-    <!-- ── MAIN ── -->
+    <!-- ┢�┢� MAIN ┢�┢� -->
     <main class="main">
 
-        <!-- ═══════════════════ HERO ═══════════════════ -->
+        <!-- ══════════════════�?HERO ══════════════════�?-->
         <section id="hero" class="hero">
-            <div class="overline"><span data-i18n="hero.overline">As of</span> <span id="hero-date">—</span></div>
+            <div class="overline"><span data-i18n="hero.overline">As of</span> <span id="hero-date">�?/span></div>
 
             <h1 class="hero-display" data-i18n-html="hero.display">
                 Quantifying the battle between <em>carry-trade pressure</em>
@@ -1484,7 +1493,7 @@ footer.site strong { color: var(--ink); font-weight: 500; }
 
             <p class="hero-lead" data-i18n-html="hero.lead">
                 <span class="drop-cap">A</span>
-                three-layer pressure gauge for USD/CNY at the 2-year tenor —
+                three-layer pressure gauge for USD/CNY at the 2-year tenor �?
                 from the gross yield differential, through DXY-orthogonalised
                 regression residuals, to the daily fixing's hidden defence
                 posture. One number that tells you whether the line still holds.
@@ -1495,12 +1504,12 @@ footer.site strong { color: var(--ink); font-weight: 500; }
                 <!-- Composite score card -->
                 <div class="score-card" id="score-card">
                     <div class="score-label" data-i18n="score.label">Composite Policy Pressure</div>
-                    <div class="score-asof" id="score-asof">—</div>
+                    <div class="score-asof" id="score-asof">�?/div>
                     <div class="score-display">
-                        <span class="score-value" id="score-value">—</span>
+                        <span class="score-value" id="score-value">�?/span>
                         <span class="score-denom">/ 100</span>
                     </div>
-                    <div class="score-status" id="score-status">—</div>
+                    <div class="score-status" id="score-status">�?/div>
                     <div class="score-bar" id="score-bar">
                         <div class="score-bar-zone" style="left:0%;   width:25%; background:#22c55e"></div>
                         <div class="score-bar-zone" style="left:25%;  width:25%; background:#84cc16"></div>
@@ -1526,11 +1535,11 @@ footer.site strong { color: var(--ink); font-weight: 500; }
 
             <div id="alerts"></div>
 
-            <!-- ═══ v3.4 · DECISION CARDS — verdict + policy stance ═══ -->
+            <!-- ══�?v3.4 · DECISION CARDS �?verdict + policy stance ══�?-->
             <div class="decision-grid">
                 <div class="decision-card" id="verdict-card">
                     <div class="decision-eyebrow" data-i18n="verdict.eyebrow">The Carry-Trade Verdict Today</div>
-                    <div class="decision-headline" id="verdict-headline">—</div>
+                    <div class="decision-headline" id="verdict-headline">�?/div>
                     <div class="decision-chain" id="verdict-chain"></div>
                     <div id="verdict-backtest-wrap" class="verdict-workbench">
                         <div class="verdict-subhead" data-i18n="backtest.title">Verdict signal · cumulative track record</div>
@@ -1542,30 +1551,30 @@ footer.site strong { color: var(--ink); font-weight: 500; }
                         <div class="verdict-subhead" id="verdict-flip-head" data-i18n="flip.title">Verdict flips when:</div>
                         <div class="verdict-flip-grid" id="verdict-flip-lines"></div>
                     </div>
-                    <div class="decision-why" id="verdict-why">—</div>
+                    <div class="decision-why" id="verdict-why">�?/div>
                 </div>
                 <div class="decision-card" id="stance-card">
                     <div class="decision-eyebrow" data-i18n="stance.eyebrow">PBOC Policy Stance Today</div>
-                    <div class="decision-headline" id="stance-headline">—</div>
+                    <div class="decision-headline" id="stance-headline">�?/div>
                     <div class="decision-signals" id="stance-signals"></div>
-                    <div class="decision-why" id="stance-reading">—</div>
+                    <div class="decision-why" id="stance-reading">�?/div>
                 </div>
             </div>
         </section>
 
-        <!-- ═══════════════════ CHAPTER 01 ═══════════════════ -->
+        <!-- ══════════════════�?CHAPTER 01 ══════════════════�?-->
         <section id="chapter-01" class="chapter">
             <div class="chapter-head">
                 <div class="chapter-num">01</div>
                 <div class="chapter-title-block">
                     <div class="chapter-eyebrow" data-i18n="ch01.eyebrow">Layer One · Carry Feasibility</div>
-                    <h2 data-i18n-html="ch01.title">Carry Monitor — From Gross Spread to Hedged P&amp;L</h2>
+                    <h2 data-i18n-html="ch01.title">Carry Monitor �?From Gross Spread to Hedged P&amp;L</h2>
                     <p class="chapter-lead" data-i18n-html="ch01.lead">
                         The "water pressure" of carry-trade capital: how much can you earn
                         borrowing CNY and lending USD? We track both the <strong>raw 2Y yield
                         differential</strong> and a <strong>CIP-implied hedged carry proxy</strong>
                         that strips out forward-point costs. When hedged carry is positive and
-                        rising, speculative outflow pressure is structurally building — regardless
+                        rising, speculative outflow pressure is structurally building �?regardless
                         of what the spot rate does today.
                     </p>
                 </div>
@@ -1577,24 +1586,24 @@ footer.site strong { color: var(--ink); font-weight: 500; }
                 <span class="method-label" data-i18n="method">Method</span>
                 <h3 data-i18n="method.carry">Carry Decomposition</h3>
                 <div class="formula">
-Raw Carry            = US_2Y − CN_2Y                           <em>(gross incentive)</em>
-Hedged return        = 100 × [ (1 + UST_1Y/100)×(F₁ᵧ/S) − (1 + Shibor_1Y/100) ]   <em>when CFETS 1Y outright F₁ᵧ is available</em>
-                      ≈ UST_1Y + [100×(F₁ᵧ/S − 1)] − Shibor_1Y   <em>(same object, decomposed)</em>
-Fallback (no F₁ᵧ)    = Raw Carry − CIP_Basis%                   <em>2Y CIP-implied proxy</em>
-MM Spread (1Y)       = UST_1Y − Shibor_1Y                      <em>(funding-rate analog)</em>
+Raw Carry            = US_2Y �?CN_2Y                           <em>(gross incentive)</em>
+Hedged return        = 100 × [ (1 + UST_1Y/100)×(F₁ᵧ/S) �?(1 + Shibor_1Y/100) ]   <em>when CFETS 1Y outright F₁ᵧ is available</em>
+                      �?UST_1Y + [100×(F₁ᵧ/S �?1)] �?Shibor_1Y   <em>(same object, decomposed)</em>
+Fallback (no F₁ᵧ)    = Raw Carry �?CIP_Basis%                   <em>2Y CIP-implied proxy</em>
+MM Spread (1Y)       = UST_1Y �?Shibor_1Y                      <em>(funding-rate analog)</em>
                 </div>
                 <p data-i18n-html="ch01.method.note">
                     Free APIs do not expose real swap-point quotes. We derive the hedging cost
                     from Covered Interest Parity: the CIP basis measures how far the actual
                     spot deviates from what arbitrage-free forwards imply. A <strong>positive</strong>
-                    hedged carry proxy means real arbitrage profit exists after hedging —
+                    hedged carry proxy means real arbitrage profit exists after hedging �?
                     historically rare and a sign of USD funding stress or capital-control friction.
                 </p>
             </div>
 
             <div class="chart-card">
                 <div class="chart-card-head">
-                    <div class="chart-card-title">Interest-Rate Differential — 2Y Tenor</div>
+                    <div class="chart-card-title">Interest-Rate Differential �?2Y Tenor</div>
                     <div class="chart-card-sub">Spread shaded by sign</div>
                 </div>
                 <div id="chart-yields" style="height:440px"></div>
@@ -1610,7 +1619,7 @@ MM Spread (1Y)       = UST_1Y − Shibor_1Y                      <em>(funding-ra
 
             <div class="chart-card">
                 <div class="chart-card-head">
-                    <div class="chart-card-title" data-i18n="chart.hedgedCarry">Carry Decomposition — Raw vs Hedged</div>
+                    <div class="chart-card-title" data-i18n="chart.hedgedCarry">Carry Decomposition �?Raw vs Hedged</div>
                     <div class="chart-card-sub" data-i18n="chart.hedgedCarrySub">Hedged carry = raw carry minus CIP basis (forward-hedge cost proxy)</div>
                 </div>
                 <div id="chart-carry-decomp" style="height:480px"></div>
@@ -1618,7 +1627,7 @@ MM Spread (1Y)       = UST_1Y − Shibor_1Y                      <em>(funding-ra
 
             <div class="chart-card">
                 <div class="chart-card-head">
-                    <div class="chart-card-title" data-i18n="chart.mmFunding">Money-Market Funding Layer — 1Y Tenor</div>
+                    <div class="chart-card-title" data-i18n="chart.mmFunding">Money-Market Funding Layer �?1Y Tenor</div>
                     <div class="chart-card-sub" data-i18n="chart.mmFundingSub">Short-end funding rate differential (modern Libor-Shibor analog)</div>
                 </div>
                 <div id="chart-mm" style="height:440px"></div>
@@ -1631,7 +1640,7 @@ MM Spread (1Y)       = UST_1Y − Shibor_1Y                      <em>(funding-ra
                     This build uses a <strong>CIP-implied hedged-carry proxy</strong> because public APIs do not expose
                     onshore swap-point strips. The next upgrade is to layer in <strong>USD/CNY forward points</strong>,
                     <strong>CNH forwards</strong>, <strong>NDF</strong> pricing, and <strong>multi-tenor</strong>
-                    (1M–2Y) hedged carry — separating onshore CNY from offshore CNH — so Layer 1 reflects
+                    (1M�?Y) hedged carry �?separating onshore CNY from offshore CNH �?so Layer 1 reflects
                     tradable economics rather than only theoretical pressure.
                 </p>
             </div>
@@ -1639,12 +1648,12 @@ MM Spread (1Y)       = UST_1Y − Shibor_1Y                      <em>(funding-ra
             <div class="findings">
                 <h4 data-i18n="find.title">Key Findings</h4>
                 <ul id="findings-01">
-                    <li>Loading…</li>
+                    <li>Loading�?/li>
                 </ul>
             </div>
         </section>
 
-        <!-- ═══════════════════ CHAPTER 02 ═══════════════════ -->
+        <!-- ══════════════════�?CHAPTER 02 ══════════════════�?-->
         <section id="chapter-02" class="chapter">
             <div class="chapter-head">
                 <div class="chapter-num">02</div>
@@ -1671,13 +1680,13 @@ MM Spread (1Y)       = UST_1Y − Shibor_1Y                      <em>(funding-ra
                 <h3 data-i18n="method.multivar">Multivariate Specification</h3>
                 <div class="formula">
 Single-variable (legacy):
-&nbsp;&nbsp;USD/CNY_t = α + β₁ · Spread_t + ε_t
+&nbsp;&nbsp;USD/CNY_t = α + β�?· Spread_t + ε_t
 
 <em>Canonical (this build):</em>
-&nbsp;&nbsp;USD/CNY_t = α + β₁ · Spread_t + <em>β₂ · DXY_t</em> + ε_t
+&nbsp;&nbsp;USD/CNY_t = α + β�?· Spread_t + <em>β�?· DXY_t</em> + ε_t
 
-Residual &gt; 0  ⟹  CNY weaker than rate-differential AND broad-dollar predict
-Residual &lt; 0  ⟹  CNY stronger than the model — likely defence or capital inflows
+Residual &gt; 0  �? CNY weaker than rate-differential AND broad-dollar predict
+Residual &lt; 0  �? CNY stronger than the model �?likely defence or capital inflows
 
 CIP fair value (Layer 02·A):
 &nbsp;&nbsp;F_CIP = S_base × [(1+r_CN)² / (1+r_US)²] / [(1+r_CN_base)² / (1+r_US_base)²]
@@ -1686,7 +1695,7 @@ CIP fair value (Layer 02·A):
 
             <div class="chart-card">
                 <div class="chart-card-head">
-                    <div class="chart-card-title">DXY — Broad Dollar Index</div>
+                    <div class="chart-card-title">DXY �?Broad Dollar Index</div>
                     <div class="chart-card-sub">FRED Trade-Weighted, ~95% corr to ICE DXY</div>
                 </div>
                 <div id="chart-dxy" style="height:280px"></div>
@@ -1694,7 +1703,7 @@ CIP fair value (Layer 02·A):
 
             <div class="chart-card">
                 <div class="chart-card-head">
-                    <div class="chart-card-title">USD/CNY — Actual vs Multivariate Model</div>
+                    <div class="chart-card-title">USD/CNY �?Actual vs Multivariate Model</div>
                     <div class="chart-card-sub">Residuals = mispricing signal</div>
                 </div>
                 <div id="chart-regression" style="height:520px"></div>
@@ -1711,7 +1720,7 @@ CIP fair value (Layer 02·A):
             <div class="chart-grid-2">
                 <div class="chart-card">
                     <div class="chart-card-head">
-                        <div class="chart-card-title" data-i18n="chart.regBetas">Rolling OLS — β₁ &amp; β₂</div>
+                        <div class="chart-card-title" data-i18n="chart.regBetas">Rolling OLS �?β�?&amp; β�?/div>
                         <div class="chart-card-sub" data-i18n="chart.regBetasSub">252d window: USD/CNY ~ spread + DXY</div>
                     </div>
                     <div id="chart-reg-betas-roll" style="height:280px"></div>
@@ -1719,7 +1728,7 @@ CIP fair value (Layer 02·A):
                 <div class="chart-card">
                     <div class="chart-card-head">
                         <div class="chart-card-title" data-i18n="chart.regFit">Model fit &amp; residual z-score</div>
-                        <div class="chart-card-sub" data-i18n="chart.regFitSub">In-sample R² and rolling (ε−μ)/σ (not pseudo-OOS)</div>
+                        <div class="chart-card-sub" data-i18n="chart.regFitSub">In-sample R² and rolling (ε−�?/σ (not pseudo-OOS)</div>
                     </div>
                     <div id="chart-reg-fit-roll" style="height:280px"></div>
                 </div>
@@ -1731,7 +1740,7 @@ CIP fair value (Layer 02·A):
                 <p class="chapter-lead" data-i18n-html="roadmap.reg.body">
                     Rolling coefficients and R² are a first diagnostic step. Further work: expanding-factor controls
                     (e.g. terms-of-trade proxies), <strong>pseudo out-of-sample</strong> forecasts, and comparison vs.
-                    <strong>rolling OLS with shorter windows, ridge, or small VARs</strong> — published only when
+                    <strong>rolling OLS with shorter windows, ridge, or small VARs</strong> �?published only when
                     the specification passes stability checks rather than a single static β.
                 </p>
             </div>
@@ -1740,7 +1749,7 @@ CIP fair value (Layer 02·A):
                 <div class="chart-card">
                     <div class="chart-card-head">
                         <div class="chart-card-title">CIP Deviation</div>
-                        <div class="chart-card-sub">Spot − CIP-implied fair value</div>
+                        <div class="chart-card-sub">Spot �?CIP-implied fair value</div>
                     </div>
                     <div id="chart-cip" style="height:300px"></div>
                 </div>
@@ -1750,12 +1759,12 @@ CIP fair value (Layer 02·A):
             <div class="findings">
                 <h4 data-i18n="find.title">Key Findings</h4>
                 <ul id="findings-02">
-                    <li>Loading…</li>
+                    <li>Loading�?/li>
                 </ul>
             </div>
         </section>
 
-        <!-- ═══════════════════ CHAPTER 03 ═══════════════════ -->
+        <!-- ══════════════════�?CHAPTER 03 ══════════════════�?-->
         <section id="chapter-03" class="chapter">
             <div class="chapter-head">
                 <div class="chapter-num">03</div>
@@ -1779,7 +1788,7 @@ CIP fair value (Layer 02·A):
                     Fixing bias is one observable lever. A fuller toolkit would add <strong>CNH liquidity / CNH Hibor</strong>,
                     <strong>PBOC offshore bill issuance</strong>, <strong>FX risk reserve ratio</strong> changes,
                     evidence of <strong>counter-cyclical factor</strong> use, <strong>verbal guidance</strong>,
-                    <strong>state-bank spot behaviour</strong>, and the <strong>CNY–CNH spread</strong> — wired in as
+                    <strong>state-bank spot behaviour</strong>, and the <strong>CNY–CNH spread</strong> �?wired in as
                     data becomes available in this open pipeline.
                 </p>
             </div>
@@ -1788,16 +1797,16 @@ CIP fair value (Layer 02·A):
                 <span class="method-label" data-i18n="method">Method</span>
                 <h3 data-i18n="method.dxyadj">DXY-Adjusted Bias</h3>
                 <div class="formula">
-<em>Naive:</em>&nbsp;&nbsp;Bias_raw = PBOC_Fix − CNH_Prev_Close
+<em>Naive:</em>&nbsp;&nbsp;Bias_raw = PBOC_Fix �?CNH_Prev_Close
 
 <em>Canonical (DXY-adjusted):</em>
 &nbsp;&nbsp;α            = rolling 252d β of CNY returns on DXY returns
 &nbsp;&nbsp;Expected_Fix = Anchor × (1 + α · ΔDXY_overnight)
-&nbsp;&nbsp;Bias         = PBOC_Fix − Expected_Fix
+&nbsp;&nbsp;Bias         = PBOC_Fix �?Expected_Fix
 
-Negative bias  →  PBOC set <em>stronger</em> CNY than DXY-adjusted expectation → DEFENDING
-Positive bias  →  PBOC set <em>weaker</em> CNY than expectation → ALLOWING WEAKNESS
-Defense Intensity = − rolling_mean(bias, 20d) × 10000  [pips]
+Negative bias  �? PBOC set <em>stronger</em> CNY than DXY-adjusted expectation �?DEFENDING
+Positive bias  �? PBOC set <em>weaker</em> CNY than expectation �?ALLOWING WEAKNESS
+Defense Intensity = �?rolling_mean(bias, 20d) × 10000  [pips]
                 </div>
             </div>
 
@@ -1811,15 +1820,15 @@ Defense Intensity = − rolling_mean(bias, 20d) × 10000  [pips]
 
             <div class="chart-card">
                 <div class="chart-card-head">
-                    <div class="chart-card-title" data-i18n="chart.cnhStress">CNH Funding Stress — PBOC Offshore Defence</div>
-                    <div class="chart-card-sub" data-i18n="chart.cnhStressSub">CNH HIBOR 1Y − Shibor 1Y · spikes flag squeezes</div>
+                    <div class="chart-card-title" data-i18n="chart.cnhStress">CNH Funding Stress �?PBOC Offshore Defence</div>
+                    <div class="chart-card-sub" data-i18n="chart.cnhStressSub">CNH HIBOR 1Y �?Shibor 1Y · spikes flag squeezes</div>
                 </div>
                 <div id="chart-cnh-stress" style="height:360px"></div>
             </div>
 
             <div class="chart-card">
                 <div class="chart-card-head">
-                    <div class="chart-card-title">Fixing Bias — Raw vs DXY-Adjusted</div>
+                    <div class="chart-card-title">Fixing Bias �?Raw vs DXY-Adjusted</div>
                     <div class="chart-card-sub">In pips · 20d &amp; 60d trends</div>
                 </div>
                 <div id="chart-fixing" style="height:520px"></div>
@@ -1831,9 +1840,9 @@ Defense Intensity = − rolling_mean(bias, 20d) × 10000  [pips]
                         <tr><th data-i18n="interp.scenario">Scenario</th><th data-i18n="interp.carry">Carry</th><th data-i18n="interp.bias">Bias</th><th data-i18n="interp.impl">Implication</th></tr>
                     </thead>
                     <tbody>
-                        <tr><td data-i18n="interp.maxT">Max Tension</td><td data-i18n="interp.highUp">High ↑</td><td data-i18n="interp.strongNeg">Strongly Negative</td><td data-i18n="interp.maxTd">PBOC burning reserves to hold the line — watch for capitulation.</td></tr>
-                        <tr><td data-i18n="interp.managed">Managed Decline</td><td data-i18n="interp.highUp">High ↑</td><td data-i18n="interp.zero">≈ 0</td><td data-i18n="interp.managedd">PBOC permitting orderly weakness.</td></tr>
-                        <tr><td data-i18n="interp.comfort">Comfortable</td><td data-i18n="interp.lowDown">Low ↓</td><td data-i18n="interp.zero">≈ 0</td><td data-i18n="interp.comfortd">No policy dilemma.</td></tr>
+                        <tr><td data-i18n="interp.maxT">Max Tension</td><td data-i18n="interp.highUp">High �?/td><td data-i18n="interp.strongNeg">Strongly Negative</td><td data-i18n="interp.maxTd">PBOC burning reserves to hold the line �?watch for capitulation.</td></tr>
+                        <tr><td data-i18n="interp.managed">Managed Decline</td><td data-i18n="interp.highUp">High �?/td><td data-i18n="interp.zero">�?0</td><td data-i18n="interp.managedd">PBOC permitting orderly weakness.</td></tr>
+                        <tr><td data-i18n="interp.comfort">Comfortable</td><td data-i18n="interp.lowDown">Low �?/td><td data-i18n="interp.zero">�?0</td><td data-i18n="interp.comfortd">No policy dilemma.</td></tr>
                         <tr><td data-i18n="interp.strong">CNY Strong</td><td data-i18n="interp.negLow">Negative / Low</td><td data-i18n="interp.pos">Positive</td><td data-i18n-html="interp.strongd">PBOC resisting <em>appreciation</em>.</td></tr>
                     </tbody>
                 </table>
@@ -1842,21 +1851,21 @@ Defense Intensity = − rolling_mean(bias, 20d) × 10000  [pips]
             <div class="findings">
                 <h4 data-i18n="find.title">Key Findings</h4>
                 <ul id="findings-03">
-                    <li>Loading…</li>
+                    <li>Loading�?/li>
                 </ul>
             </div>
         </section>
 
-        <!-- ═══════════════════ COMPOSITE TREND ═══════════════════ -->
+        <!-- ══════════════════�?COMPOSITE TREND ══════════════════�?-->
         <section id="composite" class="chapter">
             <div class="chapter-head">
-                <div class="chapter-num">∑</div>
+                <div class="chapter-num">�?/div>
                 <div class="chapter-title-block">
                     <div class="chapter-eyebrow" data-i18n="synth.eyebrow">Synthesis · Composite Trend</div>
                     <h2 data-i18n-html="synth.title">One Number, Three Forces</h2>
                     <p class="chapter-lead" data-i18n-html="synth.lead">
                         A weighted blend of all three layers. Watch sustained crossings into
-                        the 75+ region — historically the moments when something gives.
+                        the 75+ region �?historically the moments when something gives.
                     </p>
                 </div>
             </div>
@@ -1871,16 +1880,16 @@ Defense Intensity = − rolling_mean(bias, 20d) × 10000  [pips]
             </div>
         </section>
 
-        <!-- ═══════════════════ HISTORICAL STRESS ═══════════════════ -->
+        <!-- ══════════════════�?HISTORICAL STRESS ══════════════════�?-->
         <section id="history-stress" class="chapter">
             <div class="chapter-head">
-                <div class="chapter-num">◷</div>
+                <div class="chapter-num">�?/div>
                 <div class="chapter-title-block">
                     <div class="chapter-eyebrow" data-i18n="hist.eyebrow">Credibility · Historical stress lens</div>
                     <h2 data-i18n-html="hist.title">Episodes to read against the dashboard</h2>
                     <p class="chapter-lead" data-i18n-html="hist.lead">
                         This is <strong>not</strong> a formal event-study or backtest: public rebuilt series lack
-                        point-in-time feeds. Use the table as a qualitative checklist — did composite, fixing bias,
+                        point-in-time feeds. Use the table as a qualitative checklist �?did composite, fixing bias,
                         hedged-carry proxy, and regression residual <em>co-move</em> ahead of known stress windows?
                     </p>
                 </div>
@@ -1908,7 +1917,7 @@ Defense Intensity = − rolling_mean(bias, 20d) × 10000  [pips]
                         <tr>
                             <td data-i18n="hist.r2022.p">2022</td>
                             <td data-i18n="hist.r2022.c">Strong USD / Fed cycle</td>
-                            <td data-i18n-html="hist.r2022.w">DXY-orthogonalised residual — clean China-specific signal vs broad dollar.</td>
+                            <td data-i18n-html="hist.r2022.w">DXY-orthogonalised residual �?clean China-specific signal vs broad dollar.</td>
                         </tr>
                         <tr>
                             <td data-i18n="hist.r2023.p">2023</td>
@@ -1916,7 +1925,7 @@ Defense Intensity = − rolling_mean(bias, 20d) × 10000  [pips]
                             <td data-i18n-html="hist.r2023.w">Sustained composite &gt; 75 with negative fixing bias; hedged-carry proxy trajectory.</td>
                         </tr>
                         <tr>
-                            <td data-i18n="hist.r20245.p">2024–25</td>
+                            <td data-i18n="hist.r20245.p">2024�?5</td>
                             <td data-i18n="hist.r20245.c">Managed defence / range-trading phase</td>
                             <td data-i18n-html="hist.r20245.w">Rolling β stability; residual z extremes; policy percentile vs carry percentile divergence.</td>
                         </tr>
@@ -1925,16 +1934,16 @@ Defense Intensity = − rolling_mean(bias, 20d) × 10000  [pips]
             </div>
         </section>
 
-        <!-- ═══════════════════ CHART BUILDER ═══════════════════ -->
+        <!-- ══════════════════�?CHART BUILDER ══════════════════�?-->
         <section id="builder" class="chapter">
             <div class="chapter-head">
-                <div class="chapter-num">⊞</div>
+                <div class="chapter-num">�?/div>
                 <div class="chapter-title-block">
                     <div class="chapter-eyebrow" data-i18n="build.eyebrow">Explore · Build a Chart</div>
                     <h2 data-i18n-html="build.title">Roll Your Own View</h2>
                     <p class="chapter-lead" data-i18n-html="build.lead">
                         Pick any combination of the underlying series. Rendered live in your
-                        browser — no server round-trip.
+                        browser �?no server round-trip.
                     </p>
                 </div>
             </div>
@@ -1958,10 +1967,10 @@ Defense Intensity = − rolling_mean(bias, 20d) × 10000  [pips]
             </div>
         </section>
 
-        <!-- ═══════════════════ GLOSSARY ═══════════════════ -->
+        <!-- ══════════════════�?GLOSSARY ══════════════════�?-->
         <section id="glossary" class="chapter">
             <div class="chapter-head">
-                <div class="chapter-num">⊕</div>
+                <div class="chapter-num">�?/div>
                 <div class="chapter-title-block">
                     <div class="chapter-eyebrow" data-i18n="gloss.eyebrow">Reference · Variable Glossary</div>
                     <h2 data-i18n-html="gloss.title">Every Field, Sourced</h2>
@@ -1977,10 +1986,10 @@ Defense Intensity = − rolling_mean(bias, 20d) × 10000  [pips]
             </details>
         </section>
 
-        <!-- ═══════════════════ DATA & EXPORT ═══════════════════ -->
+        <!-- ══════════════════�?DATA & EXPORT ══════════════════�?-->
         <section id="data" class="chapter">
             <div class="chapter-head">
-                <div class="chapter-num">↓</div>
+                <div class="chapter-num">�?/div>
                 <div class="chapter-title-block">
                     <div class="chapter-eyebrow" data-i18n="data.eyebrow">Export · Data</div>
                     <h2 data-i18n="data.title">Recent Observations</h2>
@@ -1996,28 +2005,29 @@ Defense Intensity = − rolling_mean(bias, 20d) × 10000  [pips]
                     </table>
                 </div>
                 <div class="dl-row">
-                    <a class="dl-btn" id="download-csv" href="#" download="usdcny_tracker.csv" data-i18n="data.csv">↓ Download CSV (full series)</a>
-                    <a class="dl-btn ghost" id="download-json" href="data.json" download data-i18n="data.json">↓ Download data.json</a>
-                    <a class="dl-btn ghost" href="usdcny_tracker.xlsx" download data-i18n="data.xlsx">↓ Download Excel (.xlsx)</a>
-                    <a class="dl-btn ghost" href="usdcny_tracker_replication.ipynb" download data-i18n="data.ipynb">↓ Replication Notebook (.ipynb)</a>
+                    <a class="dl-btn" id="download-csv" href="#" download="usdcny_tracker.csv" data-i18n="data.csv" data-track="download_csv_full">�?Download CSV (full series)</a>
+                    <a class="dl-btn ghost" id="download-json" href="data.json" download data-i18n="data.json" data-track="download_data_json">�?Download data.json</a>
+                    <a class="dl-btn ghost" href="usdcny_tracker.xlsx" download data-i18n="data.xlsx" data-track="download_excel">�?Download Excel (.xlsx)</a>
+                    <a class="dl-btn ghost" href="usdcny_tracker_replication.ipynb" download data-i18n="data.ipynb" data-track="download_notebook">�?Replication Notebook (.ipynb)</a>
                 </div>
             </div>
         </section>
 
-        <!-- ═══════════════════ CITATION ═══════════════════ -->
+        <!-- ══════════════════�?CITATION ══════════════════�?-->
         <section class="featured" id="featured">
             <div class="citation">
                 <div class="citation-label" data-i18n="cite.label">How to Cite</div>
-                <div class="citation-block" id="citation-block">Erick Wei (<span id="cite-year">2026</span>). USD/CNY Macro-Policy Divergence Tracker — 2Y Focus. Online dashboard. Accessed <span id="cite-date">—</span>.</div>
+                <div class="citation-block" id="citation-block">Erick Wei (<span id="cite-year">2026</span>). USD/CNY Macro-Policy Divergence Tracker �?2Y Focus. Online dashboard. Accessed <span id="cite-date">�?/span>.</div>
             </div>
         </section>
 
-        <!-- ═══════════════════ FOOTER ═══════════════════ -->
+        <!-- ══════════════════�?FOOTER ══════════════════�?-->
         <footer class="site">
             <div class="row">
                 <div>
                     <strong>USD/CNY Macro-Policy Divergence Tracker</strong> · v3.6.1 · 2Y Focus<br>
-                    <span data-i18n="footer.gen">Generated</span> <span id="footer-ts">—</span> · <span data-i18n="footer.disclaimer">For research purposes only — not investment advice.</span>
+                    <span data-i18n="footer.gen">Generated</span> <span id="footer-ts">�?/span> · <span data-i18n="footer.disclaimer">For research purposes only �?not investment advice.</span>
+                    <br><a class="privacy-link" href="https://erickviann1-dev.github.io/privacy/" data-track="open_privacy">Privacy</a>
                 </div>
                 <div style="text-align:right">
                     Data: <strong>akshare</strong> (CN bonds, PBOC fixing) · <strong>FRED</strong> (DXY) · <strong>yfinance</strong> (FX)<br>
@@ -2037,6 +2047,8 @@ window.SITE_ANALYTICS_CONFIG = {
 };
 </script>
 <script src="site-analytics.js?v=1"></script>
-<script src="dashboard.js?v=3.6.0"></script>
+<script src="dashboard.js?v=3.6.1"></script>
 </body>
 </html>
+
+

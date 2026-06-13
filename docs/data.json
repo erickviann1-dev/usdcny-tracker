@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-06-13 19:52:31",
-  "generated_at_utc": "2026-06-13 19:52:31 UTC",
-  "generated_at_et": "2026-06-13 15:52 EDT",
+  "generated_at": "2026-06-13 20:20:04",
+  "generated_at_utc": "2026-06-13 20:20:04 UTC",
+  "generated_at_et": "2026-06-13 16:20 EDT",
   "snapshot": {
     "date": "2026-06-12",
     "usdcny": "6.76",
@@ -16,16 +16,16 @@
     "shibor_1y": "1.47",
     "us_1y": "N/A",
     "mm_spread": "N/A",
-    "usdcny_fwd_1y": "6.60",
-    "hedged_carry_proxy": "0.11",
-    "hedged_carry_pct_rank": "5",
+    "usdcny_fwd_1y": "6.59",
+    "hedged_carry_proxy": "-0.00",
+    "hedged_carry_pct_rank": "3",
     "hedged_carry_method": "market_1y_us2y_subst",
     "cnh_hibor_1y": "1.67",
     "cnh_hibor_3m": "1.58",
     "cnh_hibor_on": "1.44",
     "cnh_funding_stress": "0.20",
     "cnh_stress_pct_rank": "9",
-    "hedged_carry_offshore": "-0.09",
+    "hedged_carry_offshore": "-0.20",
     "cip_deviation": "-0.35",
     "reg_residual": "-0.09",
     "reg_residual_uni": "-0.11",
@@ -44,8 +44,8 @@
   "decision": {
     "carry_verdict": {
       "verdict": "marginal",
-      "headline_en": "PROXY MARGINAL — small loss of 0.09% per year",
-      "headline_zh": "代理口径边缘亏损 — 对冲后亏 0.09%/年",
+      "headline_en": "PROXY MARGINAL — small loss of 0.20% per year",
+      "headline_zh": "代理口径边缘亏损 — 对冲后亏 0.20%/年",
       "chain": [
         [
           "Borrow CNY at CNH HIBOR 1Y",
@@ -71,14 +71,14 @@
         [
           "Lock 1Y forward to close",
           "1 年远期锁汇平仓",
-          "6.6000",
+          "6.5900",
           "USD/CNY",
           "USD/CNY"
         ],
         [
           "NET after hedge",
           "对冲后净收益",
-          "-0.09%/yr",
+          "-0.20%/yr",
           "offshore (CNH HIBOR)",
           "离岸口径 (CNH HIBOR)"
         ]
@@ -91,17 +91,17 @@
       "simulation": {
         "notional_cny": 1000000.0,
         "spot": 6.76,
-        "fwd_1y": 6.6,
+        "fwd_1y": 6.59,
         "rUS_pct": 4.09,
         "rUS_source": "US 2Y (substituted)",
         "rCN_pct": 1.67,
         "rCN_source": "CNH HIBOR 1Y",
         "usd_at_t0": 147929.0,
         "usd_at_t1": 153979.0,
-        "cny_back": 1016263.0,
+        "cny_back": 1014724.0,
         "cny_owed": 1016700.0,
-        "pnl_cny": -437.0,
-        "pnl_pct": -0.044
+        "pnl_cny": -1976.0,
+        "pnl_pct": -0.198
       }
     },
     "policy_stance": {
@@ -3861,7 +3861,7 @@
     "stats": {
       "total_return": 0.052818,
       "pct_days_yes": 0.45977,
-      "current_hedged_pctile": 4.8689,
+      "current_hedged_pctile": 2.9963,
       "current_yes_streak": 0,
       "days_yes": 240,
       "days_marginal": 27,
@@ -3885,7 +3885,7 @@
     },
     {
       "input": "usdcny_fwd_1y",
-      "today": 6.6,
+      "today": 6.59,
       "flip_to_yes": null,
       "flip_to_no": null,
       "dist_yes_pct": null,
@@ -31062,17 +31062,17 @@
       "carry_pct_rank_2y": 79.44111776447106,
       "shibor_1y": 1.465,
       "cip_dev_pct": -5.175053069294153,
-      "usdcny_fwd_1y": 6.5986,
-      "forward_premium_pct": -2.417891105038572,
-      "hedged_carry_proxy": 0.10821714876534383,
-      "hedged_carry_pct_rank": 5.220883534136546,
+      "usdcny_fwd_1y": 6.5915,
+      "forward_premium_pct": -2.5228880700242096,
+      "hedged_carry_proxy": -0.0010741920882129108,
+      "hedged_carry_pct_rank": 3.21285140562249,
       "hedged_carry_method": "market_1y_us2y_subst",
       "cnh_hibor_1y": 1.66667,
       "cnh_hibor_3m": 1.58333,
       "cnh_hibor_on": 1.43848,
       "cnh_funding_stress": 0.20167000000000002,
       "cnh_stress_pct_rank": 9.126984126984127,
-      "hedged_carry_offshore": -0.09345285123465441,
+      "hedged_carry_offshore": -0.20274419208821115,
       "cip_fair_spot": 7.112042494696269,
       "cip_deviation": -0.3499422749697061,
       "reg_predicted": 6.853037915615572,

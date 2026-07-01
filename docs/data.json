@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-07-01 17:11:51",
-  "generated_at_utc": "2026-07-01 17:11:51 UTC",
-  "generated_at_et": "2026-07-01 13:11 EDT",
+  "generated_at": "2026-07-01 20:05:43",
+  "generated_at_utc": "2026-07-01 20:05:43 UTC",
+  "generated_at_et": "2026-07-01 16:05 EDT",
   "snapshot": {
     "date": "2026-07-01",
     "usdcny": "6.79",
-    "usdcnh": "6.79",
+    "usdcnh": "6.80",
     "pboc_fix": "6.78",
     "us_2y": "4.14",
     "cn_2y": "1.26",
@@ -16,16 +16,16 @@
     "shibor_1y": "1.48",
     "us_1y": "3.97",
     "mm_spread": "2.49",
-    "usdcny_fwd_1y": "6.60",
-    "hedged_carry_proxy": "-0.49",
-    "hedged_carry_pct_rank": "1",
+    "usdcny_fwd_1y": "6.61",
+    "hedged_carry_proxy": "-0.28",
+    "hedged_carry_pct_rank": "4",
     "hedged_carry_method": "market_1y",
     "cnh_hibor_1y": "1.75",
     "cnh_hibor_3m": "1.66",
     "cnh_hibor_on": "1.38",
     "cnh_funding_stress": "0.27",
     "cnh_stress_pct_rank": "62",
-    "hedged_carry_offshore": "-0.77",
+    "hedged_carry_offshore": "-0.55",
     "cip_deviation": "-0.32",
     "reg_residual": "-0.01",
     "reg_residual_uni": "-0.00",
@@ -44,8 +44,8 @@
   "decision": {
     "carry_verdict": {
       "verdict": "no",
-      "headline_en": "NO — loses roughly 0.77% per year, net of hedge",
-      "headline_zh": "不要做 — 对冲后约亏 0.77%/年",
+      "headline_en": "NO — loses roughly 0.55% per year, net of hedge",
+      "headline_zh": "不要做 — 对冲后约亏 0.55%/年",
       "chain": [
         [
           "Borrow CNY at CNH HIBOR 1Y",
@@ -71,14 +71,14 @@
         [
           "Lock 1Y forward to close",
           "1 年远期锁汇平仓",
-          "6.6000",
+          "6.6100",
           "USD/CNY",
           "USD/CNY"
         ],
         [
           "NET after hedge",
           "对冲后净收益",
-          "-0.77%/yr",
+          "-0.55%/yr",
           "offshore (CNH HIBOR)",
           "离岸口径 (CNH HIBOR)"
         ]
@@ -91,17 +91,17 @@
       "simulation": {
         "notional_cny": 1000000.0,
         "spot": 6.79,
-        "fwd_1y": 6.6,
+        "fwd_1y": 6.61,
         "rUS_pct": 3.97,
         "rUS_source": "US 1Y",
         "rCN_pct": 1.75,
         "rCN_source": "CNH HIBOR 1Y",
         "usd_at_t0": 147275.0,
         "usd_at_t1": 153122.0,
-        "cny_back": 1010607.0,
+        "cny_back": 1012138.0,
         "cny_owed": 1017500.0,
-        "pnl_cny": -6893.0,
-        "pnl_pct": -0.689
+        "pnl_cny": -5362.0,
+        "pnl_pct": -0.536
       }
     },
     "policy_stance": {
@@ -124,7 +124,7 @@
         [
           "Onshore / Offshore basis",
           "在岸 / 离岸价差",
-          "+0.0014",
+          "+0.0017",
           "neutral"
         ]
       ],
@@ -138,13 +138,13 @@
       "name_en": "Hedged carry math identity",
       "name_zh": "对冲后回报数学恒等式",
       "status": "pass",
-      "detail": "on − off = +0.280%, expected ≈ stress +0.270%, |delta| = 0.0100% (< 0.05% ⇒ pass)"
+      "detail": "on − off = +0.270%, expected ≈ stress +0.270%, |delta| = 0.0000% (< 0.05% ⇒ pass)"
     },
     {
       "name_en": "On/Off basis range",
       "name_zh": "在岸/离岸价差范围",
       "status": "pass",
-      "detail": "|CNY − CNH| / CNY = 0.000% (typically < 1%; spike ⇒ liquidity event)"
+      "detail": "|CNY − CNH| / CNY = 0.147% (typically < 1%; spike ⇒ liquidity event)"
     },
     {
       "name_en": "PBOC fix vs spot",
@@ -3868,7 +3868,7 @@
     "stats": {
       "total_return": 0.050451,
       "pct_days_yes": 0.428298,
-      "current_hedged_pctile": 0.9328,
+      "current_hedged_pctile": 3.3582,
       "current_yes_streak": 0,
       "days_yes": 224,
       "days_marginal": 35,
@@ -3880,10 +3880,10 @@
     {
       "input": "usdcny",
       "today": 6.79,
-      "flip_to_yes": 6.711022,
-      "flip_to_no": 6.777304,
-      "dist_yes_pct": -1.1632,
-      "dist_no_pct": -0.187,
+      "flip_to_yes": 6.72119,
+      "flip_to_no": 6.787572,
+      "dist_yes_pct": -1.0134,
+      "dist_no_pct": -0.0358,
       "dist_yes_pp": null,
       "dist_no_pp": null,
       "label_en": "Spot",
@@ -3892,11 +3892,11 @@
     },
     {
       "input": "usdcny_fwd_1y",
-      "today": 6.6,
+      "today": 6.61,
       "flip_to_yes": 6.677671,
       "flip_to_no": 6.612364,
-      "dist_yes_pct": 1.1768,
-      "dist_no_pct": 0.1873,
+      "dist_yes_pct": 1.0238,
+      "dist_no_pct": 0.0358,
       "dist_yes_pp": null,
       "dist_no_pp": null,
       "label_en": "1Y forward",
@@ -3906,12 +3906,12 @@
     {
       "input": "us_1y",
       "today": 3.97,
-      "flip_to_yes": 5.193561,
-      "flip_to_no": 4.164773,
+      "flip_to_yes": 5.034418,
+      "flip_to_no": 4.007186,
       "dist_yes_pct": null,
       "dist_no_pct": null,
-      "dist_yes_pp": 1.223561,
-      "dist_no_pp": 0.194773,
+      "dist_yes_pp": 1.064418,
+      "dist_no_pp": 0.037186,
       "label_en": "UST 1Y",
       "label_zh": "美债 1年",
       "mode": "market_1y_offshore"
@@ -3919,12 +3919,12 @@
     {
       "input": "shibor_1y",
       "today": 1.48,
-      "flip_to_yes": 0.560677,
-      "flip_to_no": 1.560677,
+      "flip_to_yes": 0.7138,
+      "flip_to_no": 1.7138,
       "dist_yes_pct": null,
       "dist_no_pct": null,
-      "dist_yes_pp": -0.919323,
-      "dist_no_pp": 0.080677,
+      "dist_yes_pp": -0.7662,
+      "dist_no_pp": 0.2338,
       "label_en": "Shibor 1Y",
       "label_zh": "Shibor 1年",
       "mode": "market_1y_onshore"
@@ -3932,12 +3932,12 @@
     {
       "input": "cnh_hibor_1y",
       "today": 1.75,
-      "flip_to_yes": 0.560677,
-      "flip_to_no": 1.560677,
+      "flip_to_yes": 0.7138,
+      "flip_to_no": 1.7138,
       "dist_yes_pct": null,
       "dist_no_pct": null,
-      "dist_yes_pp": -1.189323,
-      "dist_no_pp": -0.189323,
+      "dist_yes_pp": -1.0362,
+      "dist_no_pp": -0.0362,
       "label_en": "CNH HIBOR 1Y",
       "label_zh": "CNH HIBOR 1年",
       "mode": "market_1y_offshore"
@@ -32674,9 +32674,9 @@
       "cn_2y": 1.257,
       "yield_spread": 2.8933,
       "usdcny": 6.793600082397461,
-      "usdcnh": 6.795,
+      "usdcnh": 6.7953,
       "pboc_fix": 6.7784,
-      "onoffshore_gap": 0.0013999176025389914,
+      "onoffshore_gap": 0.0016999176025391805,
       "dxy": 101.19000244140625,
       "dxy_ret": 0.0,
       "raw_carry": 2.8933,
@@ -32690,17 +32690,17 @@
       "mm_spread": 2.49,
       "mm_carry": 2.49,
       "cip_dev_pct": -4.704522407705351,
-      "usdcny_fwd_1y": 6.5986,
-      "forward_premium_pct": -2.8703497414090506,
-      "hedged_carry_proxy": -0.4943026261429839,
-      "hedged_carry_pct_rank": 1.0040160642570282,
+      "usdcny_fwd_1y": 6.6126,
+      "forward_premium_pct": -2.6642734367959164,
+      "hedged_carry_proxy": -0.2800450922366915,
+      "hedged_carry_pct_rank": 3.6144578313253013,
       "hedged_carry_method": "market_1y",
       "cnh_hibor_1y": 1.75364,
       "cnh_hibor_3m": 1.66091,
       "cnh_hibor_on": 1.38364,
       "cnh_funding_stress": 0.2736400000000001,
       "cnh_stress_pct_rank": 61.7063492063492,
-      "hedged_carry_offshore": -0.7679426261429922,
+      "hedged_carry_offshore": -0.5536850922366998,
       "cip_fair_spot": 7.113206520563739,
       "cip_deviation": -0.31960643816627776,
       "reg_predicted": 6.802391700007644,

@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-07-11 15:45:45",
-  "generated_at_utc": "2026-07-11 15:45:45 UTC",
-  "generated_at_et": "2026-07-11 11:45 EDT",
+  "generated_at": "2026-07-11 19:19:29",
+  "generated_at_utc": "2026-07-11 19:19:29 UTC",
+  "generated_at_et": "2026-07-11 15:19 EDT",
   "snapshot": {
     "date": "2026-07-10",
     "usdcny": "6.79",
@@ -17,7 +17,7 @@
     "us_1y": "4.02",
     "mm_spread": "2.55",
     "usdcny_fwd_1y": "6.60",
-    "hedged_carry_proxy": "-0.39",
+    "hedged_carry_proxy": "-0.42",
     "hedged_carry_pct_rank": "5",
     "hedged_carry_method": "market_1y",
     "cnh_hibor_1y": "1.72",
@@ -25,7 +25,7 @@
     "cnh_hibor_on": "1.43",
     "cnh_funding_stress": "0.25",
     "cnh_stress_pct_rank": "35",
-    "hedged_carry_offshore": "-0.64",
+    "hedged_carry_offshore": "-0.66",
     "cip_deviation": "-0.32",
     "reg_residual": "0.02",
     "reg_residual_uni": "0.01",
@@ -44,8 +44,8 @@
   "decision": {
     "carry_verdict": {
       "verdict": "no",
-      "headline_en": "NO — loses roughly 0.64% per year, net of hedge",
-      "headline_zh": "不要做 — 对冲后约亏 0.64%/年",
+      "headline_en": "NO — loses roughly 0.66% per year, net of hedge",
+      "headline_zh": "不要做 — 对冲后约亏 0.66%/年",
       "chain": [
         [
           "Borrow CNY at CNH HIBOR 1Y",
@@ -78,7 +78,7 @@
         [
           "NET after hedge",
           "对冲后净收益",
-          "-0.64%/yr",
+          "-0.66%/yr",
           "offshore (CNH HIBOR)",
           "离岸口径 (CNH HIBOR)"
         ]
@@ -138,7 +138,7 @@
       "name_en": "Hedged carry math identity",
       "name_zh": "对冲后回报数学恒等式",
       "status": "pass",
-      "detail": "on − off = +0.250%, expected ≈ stress +0.250%, |delta| = 0.0000% (< 0.05% ⇒ pass)"
+      "detail": "on − off = +0.240%, expected ≈ stress +0.250%, |delta| = 0.0100% (< 0.05% ⇒ pass)"
     },
     {
       "name_en": "On/Off basis range",
@@ -3861,7 +3861,7 @@
     "stats": {
       "total_return": 0.048857,
       "pct_days_yes": 0.413793,
-      "current_hedged_pctile": 4.8689,
+      "current_hedged_pctile": 4.4944,
       "current_yes_streak": 0,
       "days_yes": 216,
       "days_marginal": 35,
@@ -32628,17 +32628,17 @@
       "mm_spread": 2.5471999999999992,
       "mm_carry": 2.5471999999999992,
       "cip_dev_pct": -4.654726879307909,
-      "usdcny_fwd_1y": 6.6003,
-      "forward_premium_pct": -2.823868229759674,
-      "hedged_carry_proxy": -0.3901877325960257,
-      "hedged_carry_pct_rank": 5.220883534136546,
+      "usdcny_fwd_1y": 6.5986,
+      "forward_premium_pct": -2.848897307833309,
+      "hedged_carry_proxy": -0.4162229796082162,
+      "hedged_carry_pct_rank": 4.8192771084337345,
       "hedged_carry_method": "market_1y",
       "cnh_hibor_1y": 1.71939,
       "cnh_hibor_3m": 1.61939,
       "cnh_hibor_on": 1.42848,
       "cnh_funding_stress": 0.24658999999999986,
       "cnh_stress_pct_rank": 34.92063492063492,
-      "hedged_carry_offshore": -0.6367777325960278,
+      "hedged_carry_offshore": -0.6628129796082183,
       "cip_fair_spot": 7.108253654865436,
       "cip_deviation": -0.3161537021676821,
       "reg_predicted": 6.774331376960423,

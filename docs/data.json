@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-07-21 16:16:31",
-  "generated_at_utc": "2026-07-21 16:16:31 UTC",
-  "generated_at_et": "2026-07-21 12:16 EDT",
+  "generated_at": "2026-07-21 19:42:27",
+  "generated_at_utc": "2026-07-21 19:42:27 UTC",
+  "generated_at_et": "2026-07-21 15:42 EDT",
   "snapshot": {
     "date": "2026-07-21",
     "usdcny": "6.77",
@@ -32612,9 +32612,9 @@
       "cn_2y": 1.2689,
       "yield_spread": 2.9409,
       "usdcny": 6.772500038146973,
-      "usdcnh": 6.767950057983398,
+      "usdcnh": 6.767970085144043,
       "pboc_fix": 6.755,
-      "onoffshore_gap": -0.004549980163574219,
+      "onoffshore_gap": -0.0045299530029296875,
       "dxy": 100.98999786376953,
       "dxy_ret": 0.0,
       "raw_carry": 2.9409,

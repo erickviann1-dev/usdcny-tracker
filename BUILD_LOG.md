@@ -4,6 +4,14 @@
 
 ---
 
+## 2026-07-21 16:16:31
+- **Data date:** 2026-07-21
+- **Rows:** 522 · **Payload:** 1006 KB
+- **Composite Score:** 72/100
+- **USD/CNY:** 6.77 · **Raw Carry:** 2.94% · **Fixing Bias:** -200 pips
+- **Coverage:** cn_2y ✅100% · us_2y ✅100% · usdcny ✅100% · usdcnh ❌11% · pboc_fix ✅100% · dxy ✅100% · shibor_1y ✅100% · us_1y ✅100% · usdcny_fwd_1y ❌11% · cnh_hibor_1y ✅100% · cnh_hibor_3m ✅100% · cnh_hibor_on ✅100%
+---
+
 ## 2026-07-21 15:29:15
 - **Data date:** 2026-07-21
 - **Rows:** 522 · **Payload:** 1058 KB

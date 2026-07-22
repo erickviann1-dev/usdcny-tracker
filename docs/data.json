@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-07-22 19:37:18",
-  "generated_at_utc": "2026-07-22 19:37:18 UTC",
-  "generated_at_et": "2026-07-22 15:37 EDT",
+  "generated_at": "2026-07-22 20:18:32",
+  "generated_at_utc": "2026-07-22 20:18:32 UTC",
+  "generated_at_et": "2026-07-22 16:18 EDT",
   "snapshot": {
     "date": "2026-07-22",
     "usdcny": "6.77",
@@ -17,22 +17,22 @@
     "us_1y": "4.03",
     "mm_spread": "2.55",
     "usdcny_fwd_1y": "6.59",
-    "hedged_carry_proxy": "-0.22",
-    "hedged_carry_pct_rank": "9",
+    "hedged_carry_proxy": "-0.12",
+    "hedged_carry_pct_rank": "13",
     "hedged_carry_method": "market_1y",
     "cnh_hibor_1y": "1.65",
     "cnh_hibor_3m": "1.60",
     "cnh_hibor_on": "1.32",
     "cnh_funding_stress": "0.18",
     "cnh_stress_pct_rank": "0",
-    "hedged_carry_offshore": "-0.40",
+    "hedged_carry_offshore": "-0.30",
     "cip_deviation": "-0.34",
-    "reg_residual": "0.02",
-    "reg_residual_uni": "0.04",
+    "reg_residual": "0.01",
+    "reg_residual_uni": "0.03",
     "reg_beta_spread": "-0.396",
     "reg_beta_dxy": "0.0174",
     "reg_r2": "0.620",
-    "reg_residual_z": "1.45",
+    "reg_residual_z": "1.38",
     "alpha_cny_dxy": "-0.007",
     "expected_fix": "6.7689",
     "fixing_bias": "-0.01",
@@ -44,8 +44,8 @@
   "decision": {
     "carry_verdict": {
       "verdict": "marginal",
-      "headline_en": "MARGINAL — small loss of 0.40% per year",
-      "headline_zh": "边缘亏损 — 对冲后亏 0.40%/年",
+      "headline_en": "MARGINAL — small loss of 0.30% per year",
+      "headline_zh": "边缘亏损 — 对冲后亏 0.30%/年",
       "chain": [
         [
           "Borrow CNY at CNH HIBOR 1Y",
@@ -78,7 +78,7 @@
         [
           "NET after hedge",
           "对冲后净收益",
-          "-0.40%/yr",
+          "-0.30%/yr",
           "offshore (CNH HIBOR)",
           "离岸口径 (CNH HIBOR)"
         ]
@@ -105,9 +105,9 @@
       }
     },
     "policy_stance": {
-      "stance": "leaning_defend",
-      "label_en": "MILD DEFENCE",
-      "label_zh": "轻度防御",
+      "stance": "neutral",
+      "label_en": "NEUTRAL · HANDS OFF",
+      "label_zh": "中性 · 被动观察",
       "signals": [
         [
           "Fixing bias (DXY-adj.)",
@@ -124,12 +124,12 @@
         [
           "Onshore / Offshore basis",
           "在岸 / 离岸价差",
-          "+0.0027",
-          "neutral"
+          "+0.0094",
+          "weaken"
         ]
       ],
-      "reading_en": "One of the three defence levers shows activity; the other two are quiet. This is a soft tilt, not full intervention — consistent with PBOC \"speaking through the fix\" rather than spending reserves.",
-      "reading_zh": "三条防御工具中有一条出现动作，另外两条平静。属于软性信号，不是全面干预 —— 跟央行通过中间价\"喊话\"、而非动用外储的姿态一致。",
+      "reading_en": "None of the three defence levers is active. PBOC is letting market dynamics run; the current spot level appears to be inside the policy tolerance band.",
+      "reading_zh": "三条防御工具都没有出手。央行让市场自己跑，当前汇率水平在政策容忍区间之内。",
       "bias_pctile": 73.80952380952381
     }
   },
@@ -3338,7 +3338,7 @@
       0.0006353413822120194,
       0.0,
       0.0,
-      0.0
+      -0.0010188015711088997
     ],
     "benchmark_cumulative": [
       1.0,
@@ -3863,12 +3863,12 @@
       0.9316962427278863,
       0.9316962427278863,
       0.9316962427278863,
-      0.9316962427278863
+      0.9307470291319989
     ],
     "stats": {
       "total_return": 0.047543,
       "pct_days_yes": 0.399618,
-      "current_hedged_pctile": 8.209,
+      "current_hedged_pctile": 11.9403,
       "current_yes_streak": 0,
       "days_yes": 209,
       "days_marginal": 43,
@@ -32673,10 +32673,10 @@
       "us_2y": 4.26,
       "cn_2y": 1.2649,
       "yield_spread": 2.9911,
-      "usdcny": 6.772500038146973,
-      "usdcnh": 6.7752,
+      "usdcny": 6.765600204467773,
+      "usdcnh": 6.775,
       "pboc_fix": 6.760800000000001,
-      "onoffshore_gap": 0.002699961853027233,
+      "onoffshore_gap": 0.009399795532226918,
       "dxy": 101.18000030517578,
       "dxy_ret": 0.0,
       "raw_carry": 2.9911,
@@ -32689,30 +32689,30 @@
       "us_1y": 4.03,
       "mm_spread": 2.5545,
       "mm_carry": 2.5545,
-      "cip_dev_pct": -4.989576934418969,
+      "cip_dev_pct": -5.096649566115209,
       "usdcny_fwd_1y": 6.5918,
-      "forward_premium_pct": -2.6681437745168957,
-      "hedged_carry_proxy": -0.22116996862993066,
-      "hedged_carry_pct_rank": 8.835341365461847,
+      "forward_premium_pct": -2.568880797198181,
+      "hedged_carry_proxy": -0.11790669332527592,
+      "hedged_carry_pct_rank": 12.85140562248996,
       "hedged_carry_method": "market_1y",
       "cnh_hibor_1y": 1.65409,
       "cnh_hibor_3m": 1.60409,
       "cnh_hibor_on": 1.32121,
       "cnh_funding_stress": 0.17859000000000003,
       "cnh_stress_pct_rank": 0.3968253968253968,
-      "hedged_carry_offshore": -0.39975996862993135,
+      "hedged_carry_offshore": -0.2964966933252766,
       "cip_fair_spot": 7.11041913793387,
-      "cip_deviation": -0.33791909978689727,
+      "cip_deviation": -0.3448189334660965,
       "reg_predicted": 6.751845244455401,
-      "reg_residual": 0.020654793691571527,
+      "reg_residual": 0.013754960012372308,
       "reg_predicted_uni": 6.736226026398153,
-      "reg_residual_uni": 0.03627401174881939,
+      "reg_residual_uni": 0.02937417806962017,
       "reg_beta_spread": -0.39649085916958593,
       "reg_beta_dxy": 0.01740130648959376,
       "reg_r2": 0.6198907013195262,
-      "reg_residual_z": 1.452450192364421,
-      "mispricing_score": 77.0,
-      "alpha_cny_dxy": -0.007368533431474942,
+      "reg_residual_z": 1.3802263584271295,
+      "mispricing_score": 73.6,
+      "alpha_cny_dxy": -0.0073321786938442,
       "expected_fix": 6.7689,
       "fixing_bias": -0.008099999999999774,
       "fixing_bias_raw": -0.008099999999999774,
@@ -32720,8 +32720,8 @@
       "bias_60d_mean": -0.014583037015578216,
       "defense_intensity": 0.014948340299629917,
       "policy_score": 74.20634920634922,
-      "composite_score": 83.72222222222223,
-      "composite_score_smooth": 76.46111111111111
+      "composite_score": 82.70222222222222,
+      "composite_score_smooth": 76.25711111111112
     }
   ],
   "methodology": {

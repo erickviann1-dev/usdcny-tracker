@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-07-30 19:43:50",
-  "generated_at_utc": "2026-07-30 19:43:50 UTC",
-  "generated_at_et": "2026-07-30 15:43 EDT",
+  "generated_at": "2026-07-30 20:17:18",
+  "generated_at_utc": "2026-07-30 20:17:18 UTC",
+  "generated_at_et": "2026-07-30 16:17 EDT",
   "snapshot": {
     "date": "2026-07-30",
     "usdcny": "6.77",
@@ -14,10 +14,10 @@
     "carry_pct_rank": "96",
     "carry_pct_rank_2y": "90",
     "shibor_1y": "1.48",
-    "us_1y": "4.09",
-    "mm_spread": "2.61",
+    "us_1y": "4.04",
+    "mm_spread": "2.56",
     "usdcny_fwd_1y": "6.57",
-    "hedged_carry_proxy": "-0.42",
+    "hedged_carry_proxy": "-0.39",
     "hedged_carry_pct_rank": "5",
     "hedged_carry_method": "market_1y",
     "cnh_hibor_1y": "1.70",
@@ -25,14 +25,14 @@
     "cnh_hibor_on": "1.38",
     "cnh_funding_stress": "0.22",
     "cnh_stress_pct_rank": "14",
-    "hedged_carry_offshore": "-0.63",
+    "hedged_carry_offshore": "-0.61",
     "cip_deviation": "-0.33",
-    "reg_residual": "0.01",
-    "reg_residual_uni": "0.02",
+    "reg_residual": "0.00",
+    "reg_residual_uni": "0.01",
     "reg_beta_spread": "-0.396",
     "reg_beta_dxy": "0.0204",
     "reg_r2": "0.669",
-    "reg_residual_z": "1.31",
+    "reg_residual_z": "1.26",
     "alpha_cny_dxy": "-0.004",
     "expected_fix": "6.7778",
     "fixing_bias": "-0.04",
@@ -44,8 +44,8 @@
   "decision": {
     "carry_verdict": {
       "verdict": "no",
-      "headline_en": "NO — loses roughly 0.63% per year, net of hedge",
-      "headline_zh": "不要做 — 对冲后约亏 0.63%/年",
+      "headline_en": "NO — loses roughly 0.61% per year, net of hedge",
+      "headline_zh": "不要做 — 对冲后约亏 0.61%/年",
       "chain": [
         [
           "Borrow CNY at CNH HIBOR 1Y",
@@ -64,7 +64,7 @@
         [
           "Invest in UST 1Y",
           "买入 1 年期美债",
-          "4.09%",
+          "4.04%",
           "USD yield",
           "美元收益"
         ],
@@ -78,7 +78,7 @@
         [
           "NET after hedge",
           "对冲后净收益",
-          "-0.63%/yr",
+          "-0.61%/yr",
           "offshore (CNH HIBOR)",
           "离岸口径 (CNH HIBOR)"
         ]
@@ -92,16 +92,16 @@
         "notional_cny": 1000000.0,
         "spot": 6.77,
         "fwd_1y": 6.57,
-        "rUS_pct": 4.09,
+        "rUS_pct": 4.04,
         "rUS_source": "US 1Y",
         "rCN_pct": 1.7,
         "rCN_source": "CNH HIBOR 1Y",
         "usd_at_t0": 147710.0,
-        "usd_at_t1": 153752.0,
-        "cny_back": 1010150.0,
+        "usd_at_t1": 153678.0,
+        "cny_back": 1009664.0,
         "cny_owed": 1017000.0,
-        "pnl_cny": -6850.0,
-        "pnl_pct": -0.685
+        "pnl_cny": -7336.0,
+        "pnl_pct": -0.734
       }
     },
     "policy_stance": {
@@ -124,7 +124,7 @@
         [
           "Onshore / Offshore basis",
           "在岸 / 离岸价差",
-          "-0.0238",
+          "-0.0185",
           "defend"
         ]
       ],
@@ -138,7 +138,7 @@
       "name_en": "Hedged carry math identity",
       "name_zh": "对冲后回报数学恒等式",
       "status": "pass",
-      "detail": "on − off = +0.210%, expected ≈ stress +0.220%, |delta| = 0.0100% (< 0.05% ⇒ pass)"
+      "detail": "on − off = +0.220%, expected ≈ stress +0.220%, |delta| = 0.0000% (< 0.05% ⇒ pass)"
     },
     {
       "name_en": "On/Off basis range",
@@ -2288,7 +2288,7 @@
       -2.607552151824412e-07,
       -7.050767931585673e-08,
       7.772980707429974e-07,
-      -8.192258796181474e-07
+      -1.786029933264955e-06
     ],
     "cumulative": [
       1.0,
@@ -2813,7 +2813,7 @@
       1.0464438901333875,
       1.0464438163510572,
       1.046444629749817,
-      1.0464437724752946
+      1.0464427607683846
     ],
     "benchmark": [
       0.0,
@@ -3338,7 +3338,7 @@
       -0.00010335872193419936,
       -0.0009008207164682814,
       0.0007833698095407042,
-      0.0
+      -0.00072367134898086
     ],
     "benchmark_cumulative": [
       1.0,
@@ -3863,12 +3863,12 @@
       0.9329733135949208,
       0.9321328719061224,
       0.9328630766564542,
-      0.9328630766564542
+      0.9321879903753557
     ],
     "stats": {
-      "total_return": 0.046444,
+      "total_return": 0.046443,
       "pct_days_yes": 0.388145,
-      "current_hedged_pctile": 4.4776,
+      "current_hedged_pctile": 4.8507,
       "current_yes_streak": 0,
       "days_yes": 203,
       "days_marginal": 48,
@@ -3880,10 +3880,10 @@
     {
       "input": "usdcny",
       "today": 6.77,
-      "flip_to_yes": 6.6915,
-      "flip_to_no": 6.757622,
-      "dist_yes_pct": -1.1595,
-      "dist_no_pct": -0.1828,
+      "flip_to_yes": 6.688286,
+      "flip_to_no": 6.754375,
+      "dist_yes_pct": -1.207,
+      "dist_no_pct": -0.2308,
       "dist_yes_pp": null,
       "dist_no_pp": null,
       "label_en": "Spot",
@@ -3893,10 +3893,10 @@
     {
       "input": "usdcny_fwd_1y",
       "today": 6.57,
-      "flip_to_yes": 6.647075,
-      "flip_to_no": 6.582035,
-      "dist_yes_pct": 1.1731,
-      "dist_no_pct": 0.1832,
+      "flip_to_yes": 6.650269,
+      "flip_to_no": 6.585198,
+      "dist_yes_pct": 1.2218,
+      "dist_no_pct": 0.2313,
       "dist_yes_pp": null,
       "dist_no_pp": null,
       "label_en": "1Y forward",
@@ -3905,13 +3905,13 @@
     },
     {
       "input": "us_1y",
-      "today": 4.09,
+      "today": 4.04,
       "flip_to_yes": 5.311111,
       "flip_to_no": 4.28067,
       "dist_yes_pct": null,
       "dist_no_pct": null,
-      "dist_yes_pp": 1.221111,
-      "dist_no_pp": 0.19067,
+      "dist_yes_pp": 1.271111,
+      "dist_no_pp": 0.24067,
       "label_en": "UST 1Y",
       "label_zh": "美债 1年",
       "mode": "market_1y_offshore"
@@ -3919,12 +3919,12 @@
     {
       "input": "shibor_1y",
       "today": 1.48,
-      "flip_to_yes": 0.514963,
-      "flip_to_no": 1.514963,
+      "flip_to_yes": 0.46644,
+      "flip_to_no": 1.46644,
       "dist_yes_pct": null,
       "dist_no_pct": null,
-      "dist_yes_pp": -0.965037,
-      "dist_no_pp": 0.034963,
+      "dist_yes_pp": -1.01356,
+      "dist_no_pp": -0.01356,
       "label_en": "Shibor 1Y",
       "label_zh": "Shibor 1年",
       "mode": "market_1y_onshore"
@@ -3932,12 +3932,12 @@
     {
       "input": "cnh_hibor_1y",
       "today": 1.7,
-      "flip_to_yes": 0.514963,
-      "flip_to_no": 1.514963,
+      "flip_to_yes": 0.46644,
+      "flip_to_no": 1.46644,
       "dist_yes_pct": null,
       "dist_no_pct": null,
-      "dist_yes_pp": -1.185037,
-      "dist_no_pp": -0.185037,
+      "dist_yes_pp": -1.23356,
+      "dist_no_pp": -0.23356,
       "label_en": "CNH HIBOR 1Y",
       "label_zh": "CNH HIBOR 1年",
       "mode": "market_1y_offshore"
@@ -32631,21 +32631,21 @@
       "carry_pct_rank": 96.4,
       "carry_pct_rank_2y": 90.21956087824351,
       "shibor_1y": 1.481,
-      "us_1y": 4.09,
-      "mm_spread": 2.609,
-      "mm_carry": 2.609,
+      "us_1y": 4.04,
+      "mm_spread": 2.559,
+      "mm_carry": 2.559,
       "cip_dev_pct": -4.836845760641702,
       "usdcny_fwd_1y": 6.5986,
       "forward_premium_pct": -2.5461513923842327,
-      "hedged_carry_proxy": -0.04128898433275463,
-      "hedged_carry_pct_rank": 16.06425702811245,
+      "hedged_carry_proxy": -0.09001590863655373,
+      "hedged_carry_pct_rank": 14.056224899598394,
       "hedged_carry_method": "market_1y",
       "cnh_hibor_1y": 1.69909,
       "cnh_hibor_3m": 1.58333,
       "cnh_hibor_on": 1.37788,
       "cnh_funding_stress": 0.2180899999999999,
       "cnh_stress_pct_rank": 13.888888888888888,
-      "hedged_carry_offshore": -0.25937898433274764,
+      "hedged_carry_offshore": -0.30810590863654674,
       "cip_fair_spot": 7.098502730472051,
       "cip_deviation": -0.3275028220247851,
       "reg_predicted": 6.763209774497792,
@@ -32673,10 +32673,10 @@
       "us_2y": 4.22,
       "cn_2y": 1.2629,
       "yield_spread": 2.9511,
-      "usdcny": 6.770999908447266,
-      "usdcnh": 6.747230052947998,
+      "usdcny": 6.76609992980957,
+      "usdcnh": 6.747620105743408,
       "pboc_fix": 6.7413,
-      "onoffshore_gap": -0.023769855499267578,
+      "onoffshore_gap": -0.01847982406616211,
       "dxy": 100.80000305175781,
       "dxy_ret": 0.0,
       "raw_carry": 2.9511,
@@ -32686,33 +32686,33 @@
       "carry_pct_rank": 96.2,
       "carry_pct_rank_2y": 90.11976047904191,
       "shibor_1y": 1.48,
-      "us_1y": 4.09,
-      "mm_spread": 2.61,
-      "mm_carry": 2.61,
-      "cip_dev_pct": -4.834102736870547,
+      "us_1y": 4.04,
+      "mm_spread": 2.56,
+      "mm_carry": 2.56,
+      "cip_dev_pct": -4.910023114819662,
       "usdcny_fwd_1y": 6.5742,
-      "forward_premium_pct": -2.906511757617136,
-      "hedged_carry_proxy": -0.4153880885036765,
-      "hedged_carry_pct_rank": 4.8192771084337345,
+      "forward_premium_pct": -2.836197097298432,
+      "hedged_carry_proxy": -0.390779460029278,
+      "hedged_carry_pct_rank": 5.220883534136546,
       "hedged_carry_method": "market_1y",
       "cnh_hibor_1y": 1.69909,
       "cnh_hibor_3m": 1.58333,
       "cnh_hibor_on": 1.37788,
       "cnh_funding_stress": 0.21909,
       "cnh_stress_pct_rank": 14.285714285714285,
-      "hedged_carry_offshore": -0.634478088503676,
+      "hedged_carry_offshore": -0.6098694600292776,
       "cip_fair_spot": 7.098317000335017,
-      "cip_deviation": -0.3273170918877515,
+      "cip_deviation": -0.3322170705254468,
       "reg_predicted": 6.762721699397421,
-      "reg_residual": 0.008278209049844776,
+      "reg_residual": 0.0033782304121494633,
       "reg_predicted_uni": 6.75259493782903,
-      "reg_residual_uni": 0.018404970618235872,
+      "reg_residual_uni": 0.01350499198054056,
       "reg_beta_spread": -0.3960001863323608,
       "reg_beta_dxy": 0.020432726105694077,
       "reg_r2": 0.6685846444009622,
-      "reg_residual_z": 1.3109279963412528,
-      "mispricing_score": 77.6,
-      "alpha_cny_dxy": -0.0043953608878800525,
+      "reg_residual_z": 1.259843246390136,
+      "mispricing_score": 76.0,
+      "alpha_cny_dxy": -0.004365999690989386,
       "expected_fix": 6.7778000831604,
       "fixing_bias": -0.03650008316040054,
       "fixing_bias_raw": -0.03650008316040054,
@@ -32720,8 +32720,8 @@
       "bias_60d_mean": -0.02317404153957699,
       "defense_intensity": 0.0064040536232272014,
       "policy_score": 26.5625,
-      "composite_score": 66.246875,
-      "composite_score_smooth": 72.69105900023503
+      "composite_score": 65.766875,
+      "composite_score_smooth": 72.59505900023503
     }
   ],
   "methodology": {

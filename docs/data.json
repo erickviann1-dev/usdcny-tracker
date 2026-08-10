@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-08-10 14:50:26",
-  "generated_at_utc": "2026-08-10 14:50:26 UTC",
-  "generated_at_et": "2026-08-10 10:50 EDT",
+  "generated_at": "2026-08-10 15:51:01",
+  "generated_at_utc": "2026-08-10 15:51:01 UTC",
+  "generated_at_et": "2026-08-10 11:51 EDT",
   "snapshot": {
     "date": "2026-08-10",
     "usdcny": "6.75",
@@ -124,13 +124,13 @@
         [
           "Onshore / Offshore basis",
           "在岸 / 离岸价差",
-          "-0.0032",
+          "-0.0029",
           "neutral"
         ]
       ],
       "reading_en": "One of the three defence levers shows activity; the other two are quiet. This is a soft tilt, not full intervention — consistent with PBOC \"speaking through the fix\" rather than spending reserves.",
       "reading_zh": "三条防御工具中有一条出现动作，另外两条平静。属于软性信号，不是全面干预 —— 跟央行通过中间价\"喊话\"、而非动用外储的姿态一致。",
-      "bias_pctile": 16.901408450704224
+      "bias_pctile": 15.492957746478872
     }
   },
   "cross_checks": [
@@ -32550,9 +32550,9 @@
       "cn_2y": 1.2509,
       "yield_spread": 2.9377000000000004,
       "usdcny": 6.748799800872803,
-      "usdcnh": 6.745550155639648,
-      "pboc_fix": 6.7339,
-      "onoffshore_gap": -0.003249645233154297,
+      "usdcnh": 6.745850086212158,
+      "pboc_fix": 6.7336,
+      "onoffshore_gap": -0.0029497146606445312,
       "dxy": 99.5999984741211,
       "dxy_ret": 0.0,
       "raw_carry": 2.9377000000000004,
@@ -32590,14 +32590,14 @@
       "mispricing_score": 73.0,
       "alpha_cny_dxy": -0.001976556671153924,
       "expected_fix": 6.7778000831604,
-      "fixing_bias": -0.04390008316040017,
-      "fixing_bias_raw": -0.04390008316040017,
-      "bias_20d_mean": -0.027237847258081115,
-      "bias_60d_mean": -0.022726819652602436,
-      "defense_intensity": 0.011597008124576065,
-      "policy_score": 18.30985915492958,
-      "composite_score": 60.43845070422535,
-      "composite_score_smooth": 62.135522488060396
+      "fixing_bias": -0.04420008316040036,
+      "fixing_bias_raw": -0.04420008316040036,
+      "bias_20d_mean": -0.027252847258081126,
+      "bias_60d_mean": -0.02273181965260244,
+      "defense_intensity": 0.011597758124576066,
+      "policy_score": 16.901408450704224,
+      "composite_score": 59.94549295774648,
+      "composite_score_smooth": 62.03693093876463
     }
   ],
   "methodology": {

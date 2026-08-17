@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-08-17 15:17:08",
-  "generated_at_utc": "2026-08-17 15:17:08 UTC",
-  "generated_at_et": "2026-08-17 11:17 EDT",
+  "generated_at": "2026-08-17 18:50:12",
+  "generated_at_utc": "2026-08-17 18:50:12 UTC",
+  "generated_at_et": "2026-08-17 14:50 EDT",
   "snapshot": {
     "date": "2026-08-17",
     "usdcny": "6.74",
@@ -124,7 +124,7 @@
         [
           "Onshore / Offshore basis",
           "在岸 / 离岸价差",
-          "-0.0021",
+          "+0.0003",
           "neutral"
         ]
       ],
@@ -32550,9 +32550,9 @@
       "cn_2y": 1.2295,
       "yield_spread": 2.9405,
       "usdcny": 6.742800235748291,
-      "usdcnh": 6.740749835968018,
-      "pboc_fix": 6.728300000000001,
-      "onoffshore_gap": -0.0020503997802734375,
+      "usdcnh": 6.743150234222412,
+      "pboc_fix": 6.7286,
+      "onoffshore_gap": 0.00034999847412109375,
       "dxy": 99.66999816894531,
       "dxy_ret": 0.0,
       "raw_carry": 2.9405,
@@ -32590,11 +32590,11 @@
       "mispricing_score": 82.0,
       "alpha_cny_dxy": 0.003522400618796758,
       "expected_fix": 6.7778000831604,
-      "fixing_bias": -0.049500083160399555,
-      "fixing_bias_raw": -0.049500083160399555,
-      "bias_20d_mean": -0.03433778995864811,
-      "bias_60d_mean": -0.023146301844599263,
-      "defense_intensity": 0.01879992551607207,
+      "fixing_bias": -0.049200083160400254,
+      "fixing_bias_raw": -0.049200083160400254,
+      "bias_20d_mean": -0.034322789958648146,
+      "bias_60d_mean": -0.023141301844599275,
+      "defense_intensity": 0.01879917551607207,
       "policy_score": 13.157894736842104,
       "composite_score": 61.05526315789473,
       "composite_score_smooth": 61.14638769266743

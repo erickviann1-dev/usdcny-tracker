@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-10-14 21:31:12",
-  "generated_at_utc": "2026-10-14 21:31:12 UTC",
-  "generated_at_et": "2026-10-14 17:31 EDT",
+  "generated_at": "2026-10-14 22:08:14",
+  "generated_at_utc": "2026-10-14 22:08:14 UTC",
+  "generated_at_et": "2026-10-14 18:08 EDT",
   "snapshot": {
     "date": "2026-10-14",
     "usdcny": "6.69",
-    "usdcnh": "6.70",
+    "usdcnh": "6.69",
     "pboc_fix": "6.69",
     "us_2y": "4.82",
     "cn_2y": "1.26",
@@ -124,7 +124,7 @@
         [
           "Onshore / Offshore basis",
           "在岸 / 离岸价差",
-          "+0.0030",
+          "+0.0022",
           "neutral"
         ]
       ],
@@ -144,7 +144,7 @@
       "name_en": "On/Off basis range",
       "name_zh": "在岸/离岸价差范围",
       "status": "pass",
-      "detail": "|CNY − CNH| / CNY = 0.149% (typically < 1%; spike ⇒ liquidity event)"
+      "detail": "|CNY − CNH| / CNY = 0.000% (typically < 1%; spike ⇒ liquidity event)"
     },
     {
       "name_en": "PBOC fix vs spot",
@@ -32674,9 +32674,9 @@
       "cn_2y": 1.2595,
       "yield_spread": 3.5605,
       "usdcny": 6.691999912261963,
-      "usdcnh": 6.695030212402344,
+      "usdcnh": 6.694220066070557,
       "pboc_fix": 6.686699999999999,
-      "onoffshore_gap": 0.0030303001403808594,
+      "onoffshore_gap": 0.00222015380859375,
       "dxy": 102.18000030517578,
       "dxy_ret": 0.0,
       "raw_carry": 3.5605,

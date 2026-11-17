@@ -1,15 +1,15 @@
 {
-  "generated_at": "2026-11-16 23:34:53",
-  "generated_at_utc": "2026-11-16 23:34:53 UTC",
-  "generated_at_et": "2026-11-16 18:34 EST",
+  "generated_at": "2026-11-17 01:47:48",
+  "generated_at_utc": "2026-11-17 01:47:48 UTC",
+  "generated_at_et": "2026-11-16 20:47 EST",
   "snapshot": {
-    "date": "2026-11-16",
+    "date": "2026-11-17",
     "usdcny": "6.67",
-    "usdcnh": "6.66",
+    "usdcnh": "6.67",
     "pboc_fix": "N/A",
-    "us_2y": "2.49",
+    "us_2y": "2.47",
     "cn_2y": "N/A",
-    "dxy": "103.41",
+    "dxy": "103.68",
     "raw_carry": "N/A",
     "carry_pct_rank": "N/A",
     "carry_pct_rank_2y": "N/A",
@@ -39,7 +39,7 @@
     "fixing_bias_raw": "0.01",
     "bias_20d_mean": "0.00",
     "defense_intensity": "-0.00",
-    "composite_score": "44"
+    "composite_score": "47"
   },
   "decision": {
     "carry_verdict": {
@@ -77,7 +77,7 @@
       ],
       "reading_en": "None of the three defence levers is active. PBOC is letting market dynamics run; the current spot level appears to be inside the policy tolerance band.",
       "reading_zh": "三条防御工具都没有出手。央行让市场自己跑，当前汇率水平在政策容忍区间之内。",
-      "bias_pctile": 63.095238095238095
+      "bias_pctile": 62.301587301587304
     }
   },
   "cross_checks": [
@@ -85,7 +85,7 @@
       "name_en": "On/Off basis range",
       "name_zh": "在岸/离岸价差范围",
       "status": "pass",
-      "detail": "|CNY − CNH| / CNY = 0.150% (typically < 1%; spike ⇒ liquidity event)"
+      "detail": "|CNY − CNH| / CNY = 0.000% (typically < 1%; spike ⇒ liquidity event)"
     },
     {
       "name_en": "DXY day-over-day move",
@@ -97,13 +97,13 @@
       "name_en": "US 2Y in plausible range",
       "name_zh": "美国 2 年国债利率合理性",
       "status": "pass",
-      "detail": "us_2y = 2.490% (expected 0.5–8%)"
+      "detail": "us_2y = 2.470% (expected 0.5–8%)"
     },
     {
       "name_en": "Composite score bounds",
       "name_zh": "综合分数边界 [0,100]",
       "status": "pass",
-      "detail": "composite_score = 44.0 (must be 0–100)"
+      "detail": "composite_score = 47.0 (must be 0–100)"
     }
   ],
   "backtest": {
@@ -628,9 +628,11 @@
       "2026-11-11",
       "2026-11-12",
       "2026-11-13",
-      "2026-11-16"
+      "2026-11-16",
+      "2026-11-17"
     ],
     "verdict": [
+      "unknown",
       "unknown",
       "unknown",
       "unknown",
@@ -1674,9 +1676,11 @@
       0.0,
       0.0,
       0.0,
+      0.0,
       0.0
     ],
     "daily_pnl": [
+      0.0,
       0.0,
       0.0,
       0.0,
@@ -2720,6 +2724,7 @@
       1.0,
       1.0,
       1.0,
+      1.0,
       1.0
     ],
     "benchmark": [
@@ -3243,6 +3248,7 @@
       -0.00035966272169137096,
       0.0,
       1.501218882502672e-05,
+      8.992880969498335e-05,
       0.0
     ],
     "benchmark_cumulative": [
@@ -3766,7 +3772,8 @@
       0.9224588654585899,
       0.9224588654585899,
       0.9224727135852614,
-      0.9224727135852614
+      0.9225556704583702,
+      0.9225556704583702
     ],
     "stats": {
       "total_return": 0.0,
@@ -3776,7 +3783,7 @@
       "days_yes": 0,
       "days_marginal": 0,
       "days_no": 0,
-      "n_days": 521
+      "n_days": 522
     }
   },
   "flip_lines": [
@@ -3855,7 +3862,7 @@
     "dxy": 1.0,
     "shibor_1y": 0.0,
     "us_1y": 1.0,
-    "usdcny_fwd_1y": 0.274,
+    "usdcny_fwd_1y": 0.276,
     "cnh_hibor_1y": 0.0,
     "cnh_hibor_3m": 0.0,
     "cnh_hibor_on": 0.0
@@ -27263,13 +27270,58 @@
     },
     {
       "date": "2026-11-16",
-      "us_2y": 2.490499973297119,
+      "us_2y": 2.4674999713897705,
       "cn_2y": null,
       "yield_spread": null,
-      "usdcny": 6.670400142669678,
+      "usdcny": 6.671000003814697,
       "usdcnh": 6.6647,
-      "onoffshore_gap": -0.005700142669677888,
-      "dxy": 103.41000366210938,
+      "onoffshore_gap": -0.006300003814697419,
+      "dxy": 103.67500305175781,
+      "dxy_ret": 0.002562608841155445,
+      "raw_carry": null,
+      "carry_ma20": null,
+      "carry_ma60": null,
+      "carry_ma120": null,
+      "carry_pct_rank": null,
+      "carry_pct_rank_2y": null,
+      "us_1y": 4.65,
+      "cip_dev_pct": null,
+      "usdcny_fwd_1y": 6.4619,
+      "forward_premium_pct": null,
+      "hedged_carry_proxy": null,
+      "hedged_carry_pct_rank": null,
+      "hedged_carry_method": "",
+      "cip_fair_spot": null,
+      "cip_deviation": null,
+      "reg_predicted": null,
+      "reg_residual": null,
+      "reg_predicted_uni": null,
+      "reg_residual_uni": null,
+      "reg_beta_spread": null,
+      "reg_beta_dxy": null,
+      "reg_r2": null,
+      "reg_residual_z": null,
+      "mispricing_score": 50.0,
+      "alpha_cny_dxy": null,
+      "expected_fix": null,
+      "fixing_bias": 0.006300003814697419,
+      "fixing_bias_raw": 0.006300003814697419,
+      "bias_20d_mean": 0.0039799657440186655,
+      "bias_60d_mean": 0.0015833268483479953,
+      "defense_intensity": -0.003581703100204541,
+      "policy_score": 65.47619047619048,
+      "composite_score": 55.41666666666667,
+      "composite_score_smooth": 44.47222222222222
+    },
+    {
+      "date": "2026-11-17",
+      "us_2y": 2.4674999713897705,
+      "cn_2y": null,
+      "yield_spread": null,
+      "usdcny": 6.671000003814697,
+      "usdcnh": 6.6653,
+      "onoffshore_gap": -0.005700003814697041,
+      "dxy": 103.67500305175781,
       "dxy_ret": 0.0,
       "raw_carry": null,
       "carry_ma20": null,
@@ -27297,14 +27349,14 @@
       "mispricing_score": 50.0,
       "alpha_cny_dxy": null,
       "expected_fix": null,
-      "fixing_bias": 0.005700142669677888,
-      "fixing_bias_raw": 0.005700142669677888,
-      "bias_20d_mean": 0.003949972686767689,
-      "bias_60d_mean": 0.0015733291625976698,
-      "defense_intensity": -0.0035802034473419926,
-      "policy_score": 63.49206349206349,
-      "composite_score": 54.722222222222214,
-      "composite_score_smooth": 44.33333333333333
+      "fixing_bias": 0.005700003814697041,
+      "fixing_bias_raw": 0.005700003814697041,
+      "bias_20d_mean": 0.003449973487854097,
+      "bias_60d_mean": 0.00159832714080812,
+      "defense_intensity": -0.0037622004413605504,
+      "policy_score": 62.698412698412696,
+      "composite_score": 54.44444444444444,
+      "composite_score_smooth": 47.05555555555556
     }
   ],
   "methodology": {

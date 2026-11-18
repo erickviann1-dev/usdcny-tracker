@@ -1,15 +1,15 @@
 {
-  "generated_at": "2026-11-17 22:43:31",
-  "generated_at_utc": "2026-11-17 22:43:31 UTC",
-  "generated_at_et": "2026-11-17 17:43 EST",
+  "generated_at": "2026-11-18 00:50:47",
+  "generated_at_utc": "2026-11-18 00:50:47 UTC",
+  "generated_at_et": "2026-11-17 19:50 EST",
   "snapshot": {
-    "date": "2026-11-17",
-    "usdcny": "6.67",
+    "date": "2026-11-18",
+    "usdcny": "6.66",
     "usdcnh": "6.67",
     "pboc_fix": "N/A",
-    "us_2y": "2.47",
+    "us_2y": "2.45",
     "cn_2y": "N/A",
-    "dxy": "103.55",
+    "dxy": "103.60",
     "raw_carry": "N/A",
     "carry_pct_rank": "N/A",
     "carry_pct_rank_2y": "N/A",
@@ -35,11 +35,11 @@
     "reg_residual_z": "N/A",
     "alpha_cny_dxy": "N/A",
     "expected_fix": "N/A",
-    "fixing_bias": "0.00",
-    "fixing_bias_raw": "0.00",
+    "fixing_bias": "-0.00",
+    "fixing_bias_raw": "-0.00",
     "bias_20d_mean": "0.00",
     "defense_intensity": "-0.00",
-    "composite_score": "47"
+    "composite_score": "45"
   },
   "decision": {
     "carry_verdict": {
@@ -58,7 +58,7 @@
         [
           "Fixing bias (DXY-adj.)",
           "中间价偏离 (剔除 DXY)",
-          "+0 pips",
+          "-0 pips",
           "neutral"
         ],
         [
@@ -71,13 +71,13 @@
         [
           "Onshore / Offshore basis",
           "在岸 / 离岸价差",
-          "-0.0040",
+          "+0.0047",
           "neutral"
         ]
       ],
       "reading_en": "None of the three defence levers is active. PBOC is letting market dynamics run; the current spot level appears to be inside the policy tolerance band.",
       "reading_zh": "三条防御工具都没有出手。央行让市场自己跑，当前汇率水平在政策容忍区间之内。",
-      "bias_pctile": 54.761904761904766
+      "bias_pctile": 24.206349206349206
     }
   },
   "cross_checks": [
@@ -85,7 +85,7 @@
       "name_en": "On/Off basis range",
       "name_zh": "在岸/离岸价差范围",
       "status": "pass",
-      "detail": "|CNY − CNH| / CNY = 0.000% (typically < 1%; spike ⇒ liquidity event)"
+      "detail": "|CNY − CNH| / CNY = 0.150% (typically < 1%; spike ⇒ liquidity event)"
     },
     {
       "name_en": "DXY day-over-day move",
@@ -97,13 +97,13 @@
       "name_en": "US 2Y in plausible range",
       "name_zh": "美国 2 年国债利率合理性",
       "status": "pass",
-      "detail": "us_2y = 2.470% (expected 0.5–8%)"
+      "detail": "us_2y = 2.450% (expected 0.5–8%)"
     },
     {
       "name_en": "Composite score bounds",
       "name_zh": "综合分数边界 [0,100]",
       "status": "pass",
-      "detail": "composite_score = 47.0 (must be 0–100)"
+      "detail": "composite_score = 45.0 (must be 0–100)"
     }
   ],
   "backtest": {
@@ -629,9 +629,11 @@
       "2026-11-12",
       "2026-11-13",
       "2026-11-16",
-      "2026-11-17"
+      "2026-11-17",
+      "2026-11-18"
     ],
     "verdict": [
+      "unknown",
       "unknown",
       "unknown",
       "unknown",
@@ -1677,9 +1679,11 @@
       0.0,
       0.0,
       0.0,
+      0.0,
       0.0
     ],
     "daily_pnl": [
+      0.0,
       0.0,
       0.0,
       0.0,
@@ -2725,6 +2729,7 @@
       1.0,
       1.0,
       1.0,
+      1.0,
       1.0
     ],
     "benchmark": [
@@ -3249,6 +3254,7 @@
       0.0,
       1.501218882502672e-05,
       8.992880969498335e-05,
+      -0.0010193636200339082,
       0.0
     ],
     "benchmark_cumulative": [
@@ -3773,7 +3779,8 @@
       0.9224588654585899,
       0.9224727135852614,
       0.9225556704583702,
-      0.9225556704583702
+      0.9216152507704489,
+      0.9216152507704489
     ],
     "stats": {
       "total_return": 0.0,
@@ -3783,13 +3790,13 @@
       "days_yes": 0,
       "days_marginal": 0,
       "days_no": 0,
-      "n_days": 522
+      "n_days": 523
     }
   },
   "flip_lines": [
     {
       "input": "usdcny",
-      "today": 6.67,
+      "today": 6.66,
       "flip_to_yes": null,
       "flip_to_no": null,
       "dist_yes_pct": null,
@@ -3862,7 +3869,7 @@
     "dxy": 1.0,
     "shibor_1y": 0.0,
     "us_1y": 1.0,
-    "usdcny_fwd_1y": 0.276,
+    "usdcny_fwd_1y": 0.277,
     "cnh_hibor_1y": 0.0,
     "cnh_hibor_3m": 0.0,
     "cnh_hibor_on": 0.0
@@ -27315,13 +27322,58 @@
     },
     {
       "date": "2026-11-17",
-      "us_2y": 2.4674999713897705,
+      "us_2y": 2.450000047683716,
       "cn_2y": null,
       "yield_spread": null,
-      "usdcny": 6.671000003814697,
+      "usdcny": 6.6641998291015625,
       "usdcnh": 6.667,
-      "onoffshore_gap": -0.00400000381469745,
-      "dxy": 103.55000305175781,
+      "onoffshore_gap": 0.0028001708984373153,
+      "dxy": 103.5979995727539,
+      "dxy_ret": 0.0004635105705608211,
+      "raw_carry": null,
+      "carry_ma20": null,
+      "carry_ma60": null,
+      "carry_ma120": null,
+      "carry_pct_rank": null,
+      "carry_pct_rank_2y": null,
+      "us_1y": 4.62,
+      "cip_dev_pct": null,
+      "usdcny_fwd_1y": 6.4601,
+      "forward_premium_pct": null,
+      "hedged_carry_proxy": null,
+      "hedged_carry_pct_rank": null,
+      "hedged_carry_method": "",
+      "cip_fair_spot": null,
+      "cip_deviation": null,
+      "reg_predicted": null,
+      "reg_residual": null,
+      "reg_predicted_uni": null,
+      "reg_residual_uni": null,
+      "reg_beta_spread": null,
+      "reg_beta_dxy": null,
+      "reg_r2": null,
+      "reg_residual_z": null,
+      "mispricing_score": 50.0,
+      "alpha_cny_dxy": null,
+      "expected_fix": null,
+      "fixing_bias": -0.0028001708984373153,
+      "fixing_bias_raw": -0.0028001708984373153,
+      "bias_20d_mean": 0.003024964752197379,
+      "bias_60d_mean": 0.0014566575622558808,
+      "defense_intensity": -0.0037409500045777143,
+      "policy_score": 29.761904761904763,
+      "composite_score": 42.916666666666664,
+      "composite_score_smooth": 44.75
+    },
+    {
+      "date": "2026-11-18",
+      "us_2y": 2.450000047683716,
+      "cn_2y": null,
+      "yield_spread": null,
+      "usdcny": 6.6641998291015625,
+      "usdcnh": 6.6689,
+      "onoffshore_gap": 0.004700170898437328,
+      "dxy": 103.5979995727539,
       "dxy_ret": 0.0,
       "raw_carry": null,
       "carry_ma20": null,
@@ -27349,14 +27401,14 @@
       "mispricing_score": 50.0,
       "alpha_cny_dxy": null,
       "expected_fix": null,
-      "fixing_bias": 0.00400000381469745,
-      "fixing_bias_raw": 0.00400000381469745,
-      "bias_20d_mean": 0.003364973487854117,
-      "bias_60d_mean": 0.0015699938074747936,
-      "defense_intensity": -0.003757950441360551,
-      "policy_score": 55.158730158730165,
-      "composite_score": 51.80555555555556,
-      "composite_score_smooth": 46.52777777777778
+      "fixing_bias": -0.004700170898437328,
+      "fixing_bias_raw": -0.004700170898437328,
+      "bias_20d_mean": 0.002609964332580672,
+      "bias_60d_mean": 0.0014149847539266216,
+      "defense_intensity": -0.0038406978435517164,
+      "policy_score": 24.6031746031746,
+      "composite_score": 41.11111111111111,
+      "composite_score_smooth": 44.58333333333333
     }
   ],
   "methodology": {

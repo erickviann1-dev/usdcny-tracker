@@ -1,15 +1,15 @@
 {
-  "generated_at": "2026-11-20 00:30:58",
-  "generated_at_utc": "2026-11-20 00:30:58 UTC",
-  "generated_at_et": "2026-11-19 19:30 EST",
+  "generated_at": "2026-11-20 01:04:52",
+  "generated_at_utc": "2026-11-20 01:04:52 UTC",
+  "generated_at_et": "2026-11-19 20:04 EST",
   "snapshot": {
     "date": "2026-11-20",
     "usdcny": "6.67",
-    "usdcnh": "6.69",
+    "usdcnh": "6.68",
     "pboc_fix": "N/A",
     "us_2y": "2.43",
     "cn_2y": "N/A",
-    "dxy": "103.92",
+    "dxy": "103.89",
     "raw_carry": "N/A",
     "carry_pct_rank": "N/A",
     "carry_pct_rank_2y": "N/A",
@@ -71,13 +71,13 @@
         [
           "Onshore / Offshore basis",
           "在岸 / 离岸价差",
-          "+0.0182",
+          "+0.0153",
           "weaken"
         ]
       ],
       "reading_en": "None of the three defence levers is active. PBOC is letting market dynamics run; the current spot level appears to be inside the policy tolerance band.",
       "reading_zh": "三条防御工具都没有出手。央行让市场自己跑，当前汇率水平在政策容忍区间之内。",
-      "bias_pctile": 5.952380952380952
+      "bias_pctile": 8.333333333333332
     }
   },
   "cross_checks": [
@@ -85,7 +85,7 @@
       "name_en": "On/Off basis range",
       "name_zh": "在岸/离岸价差范围",
       "status": "pass",
-      "detail": "|CNY − CNH| / CNY = 0.300% (typically < 1%; spike ⇒ liquidity event)"
+      "detail": "|CNY − CNH| / CNY = 0.150% (typically < 1%; spike ⇒ liquidity event)"
     },
     {
       "name_en": "DXY day-over-day move",
@@ -27328,8 +27328,8 @@
       "usdcny": 6.667600154876709,
       "usdcnh": 6.6924,
       "onoffshore_gap": 0.024799845123291142,
-      "dxy": 103.92400360107422,
-      "dxy_ret": 0.0006162429265024194,
+      "dxy": 103.88700103759766,
+      "dxy_ret": 0.00025996945010042793,
       "raw_carry": null,
       "carry_ma20": null,
       "carry_ma60": null,
@@ -27371,9 +27371,9 @@
       "cn_2y": null,
       "yield_spread": null,
       "usdcny": 6.667600154876709,
-      "usdcnh": 6.6858,
-      "onoffshore_gap": 0.018199845123291425,
-      "dxy": 103.92400360107422,
+      "usdcnh": 6.6829,
+      "onoffshore_gap": 0.015299845123291078,
+      "dxy": 103.88700103759766,
       "dxy_ret": 0.0,
       "raw_carry": null,
       "carry_ma20": null,
@@ -27401,14 +27401,14 @@
       "mispricing_score": 50.0,
       "alpha_cny_dxy": null,
       "expected_fix": null,
-      "fixing_bias": -0.018199845123291425,
-      "fixing_bias_raw": -0.018199845123291425,
-      "bias_20d_mean": -0.00017498386383052456,
-      "bias_60d_mean": 0.0008216683578491442,
-      "defense_intensity": -0.003729700891494834,
-      "policy_score": 6.349206349206349,
-      "composite_score": 34.72222222222222,
-      "composite_score_smooth": 41.72222222222222
+      "fixing_bias": -0.015299845123291078,
+      "fixing_bias_raw": -0.015299845123291078,
+      "bias_20d_mean": -2.9983863830507217e-05,
+      "bias_60d_mean": 0.0008700016911824833,
+      "defense_intensity": -0.0037369508914948343,
+      "policy_score": 8.73015873015873,
+      "composite_score": 35.55555555555556,
+      "composite_score_smooth": 41.88888888888889
     }
   ],
   "methodology": {

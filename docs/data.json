@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-11-21 00:39:37",
-  "generated_at_utc": "2026-11-21 00:39:37 UTC",
-  "generated_at_et": "2026-11-20 19:39 EST",
+  "generated_at": "2026-11-21 20:17:04",
+  "generated_at_utc": "2026-11-21 20:17:04 UTC",
+  "generated_at_et": "2026-11-21 15:17 EST",
   "snapshot": {
     "date": "2026-11-20",
     "usdcny": "6.67",
@@ -9,7 +9,7 @@
     "pboc_fix": "N/A",
     "us_2y": "2.35",
     "cn_2y": "N/A",
-    "dxy": "103.84",
+    "dxy": "103.81",
     "raw_carry": "N/A",
     "carry_pct_rank": "N/A",
     "carry_pct_rank_2y": "N/A",
@@ -91,7 +91,7 @@
       "name_en": "DXY day-over-day move",
       "name_zh": "DXY 日内变动",
       "status": "pass",
-      "detail": "|Δ DXY| = 0.058% (alarm if > 5%)"
+      "detail": "|Δ DXY| = 0.087% (alarm if > 5%)"
     },
     {
       "name_en": "US 2Y in plausible range",
@@ -27315,14 +27315,14 @@
     },
     {
       "date": "2026-11-20",
-      "us_2y": 2.3504998683929443,
+      "us_2y": 2.3505001068115234,
       "cn_2y": null,
       "yield_spread": null,
       "usdcny": 6.666500091552734,
       "usdcnh": 6.6752,
       "onoffshore_gap": 0.00869990844726587,
-      "dxy": 103.83999633789062,
-      "dxy_ret": -0.000577528268595251,
+      "dxy": 103.80999755859375,
+      "dxy_ret": -0.0008662556878089589,
       "raw_carry": null,
       "carry_ma20": null,
       "carry_ma60": null,

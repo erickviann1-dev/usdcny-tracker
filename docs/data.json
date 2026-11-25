@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-11-25 02:09:04",
-  "generated_at_utc": "2026-11-25 02:09:04 UTC",
-  "generated_at_et": "2026-11-24 21:09 EST",
+  "generated_at": "2026-11-25 02:57:47",
+  "generated_at_utc": "2026-11-25 02:57:47 UTC",
+  "generated_at_et": "2026-11-24 21:57 EST",
   "snapshot": {
     "date": "2026-11-25",
     "usdcny": "6.66",
@@ -71,13 +71,13 @@
         [
           "Onshore / Offshore basis",
           "在岸 / 离岸价差",
-          "-0.0050",
+          "-0.0021",
           "neutral"
         ]
       ],
       "reading_en": "None of the three defence levers is active. PBOC is letting market dynamics run; the current spot level appears to be inside the policy tolerance band.",
       "reading_zh": "三条防御工具都没有出手。央行让市场自己跑，当前汇率水平在政策容忍区间之内。",
-      "bias_pctile": 59.12698412698413
+      "bias_pctile": 48.41269841269841
     }
   },
   "cross_checks": [
@@ -27328,8 +27328,8 @@
       "usdcny": 6.664299964904785,
       "usdcnh": 6.6649,
       "onoffshore_gap": 0.0006000350952151123,
-      "dxy": 103.88099670410156,
-      "dxy_ret": -0.004208234202520256,
+      "dxy": 103.88300323486328,
+      "dxy_ret": -0.004188999820162187,
       "raw_carry": null,
       "carry_ma20": null,
       "carry_ma60": null,
@@ -27371,9 +27371,9 @@
       "cn_2y": null,
       "yield_spread": null,
       "usdcny": 6.664299964904785,
-      "usdcnh": 6.6593,
-      "onoffshore_gap": -0.004999964904785159,
-      "dxy": 103.88099670410156,
+      "usdcnh": 6.6622,
+      "onoffshore_gap": -0.0020999649047848123,
+      "dxy": 103.88300323486328,
       "dxy_ret": 0.0,
       "raw_carry": null,
       "carry_ma20": null,
@@ -27401,14 +27401,14 @@
       "mispricing_score": 50.0,
       "alpha_cny_dxy": null,
       "expected_fix": null,
-      "fixing_bias": 0.004999964904785159,
-      "fixing_bias_raw": 0.004999964904785159,
-      "bias_20d_mean": -4.4995002746528454e-05,
-      "bias_60d_mean": 0.0009983381271362556,
-      "defense_intensity": -0.0033229563636780605,
-      "policy_score": 59.523809523809526,
-      "composite_score": 53.33333333333333,
-      "composite_score_smooth": 46.41666666666667
+      "fixing_bias": 0.0020999649047848123,
+      "fixing_bias_raw": 0.0020999649047848123,
+      "bias_20d_mean": -0.0001899950027465458,
+      "bias_60d_mean": 0.0009500047938029166,
+      "defense_intensity": -0.0033157063636780593,
+      "policy_score": 48.80952380952381,
+      "composite_score": 49.58333333333333,
+      "composite_score_smooth": 45.66666666666667
     }
   ],
   "methodology": {

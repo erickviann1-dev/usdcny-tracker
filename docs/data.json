@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-11-27 02:03:30",
-  "generated_at_utc": "2026-11-27 02:03:30 UTC",
-  "generated_at_et": "2026-11-26 21:03 EST",
+  "generated_at": "2026-11-27 22:24:33",
+  "generated_at_utc": "2026-11-27 22:24:33 UTC",
+  "generated_at_et": "2026-11-27 17:24 EST",
   "snapshot": {
     "date": "2026-11-27",
     "usdcny": "6.66",
@@ -9,12 +9,12 @@
     "pboc_fix": "N/A",
     "us_2y": "2.33",
     "cn_2y": "N/A",
-    "dxy": "103.77",
+    "dxy": "103.67",
     "raw_carry": "N/A",
     "carry_pct_rank": "N/A",
     "carry_pct_rank_2y": "N/A",
     "shibor_1y": "N/A",
-    "us_1y": "4.59",
+    "us_1y": "4.56",
     "mm_spread": "N/A",
     "usdcny_fwd_1y": "6.46",
     "hedged_carry_proxy": "N/A",
@@ -35,11 +35,11 @@
     "reg_residual_z": "N/A",
     "alpha_cny_dxy": "N/A",
     "expected_fix": "N/A",
-    "fixing_bias": "0.00",
-    "fixing_bias_raw": "0.00",
+    "fixing_bias": "0.01",
+    "fixing_bias_raw": "0.01",
     "bias_20d_mean": "-0.00",
     "defense_intensity": "-0.00",
-    "composite_score": "50"
+    "composite_score": "52"
   },
   "decision": {
     "carry_verdict": {
@@ -58,8 +58,8 @@
         [
           "Fixing bias (DXY-adj.)",
           "中间价偏离 (剔除 DXY)",
-          "+0 pips",
-          "neutral"
+          "+100 pips",
+          "weaken"
         ],
         [
           "CNH funding stress",
@@ -71,13 +71,13 @@
         [
           "Onshore / Offshore basis",
           "在岸 / 离岸价差",
-          "-0.0018",
-          "neutral"
+          "-0.0089",
+          "defend"
         ]
       ],
       "reading_en": "None of the three defence levers is active. PBOC is letting market dynamics run; the current spot level appears to be inside the policy tolerance band.",
       "reading_zh": "三条防御工具都没有出手。央行让市场自己跑，当前汇率水平在政策容忍区间之内。",
-      "bias_pctile": 46.82539682539682
+      "bias_pctile": 73.4126984126984
     }
   },
   "cross_checks": [
@@ -103,7 +103,7 @@
       "name_en": "Composite score bounds",
       "name_zh": "综合分数边界 [0,100]",
       "status": "pass",
-      "detail": "composite_score = 50.0 (must be 0–100)"
+      "detail": "composite_score = 52.0 (must be 0–100)"
     }
   ],
   "backtest": {
@@ -3822,7 +3822,7 @@
     },
     {
       "input": "us_1y",
-      "today": 4.59,
+      "today": 4.56,
       "flip_to_yes": null,
       "flip_to_no": null,
       "dist_yes_pct": null,
@@ -27291,7 +27291,7 @@
       "carry_ma120": null,
       "carry_pct_rank": null,
       "carry_pct_rank_2y": null,
-      "us_1y": 4.59,
+      "us_1y": 4.56,
       "cip_dev_pct": null,
       "usdcny_fwd_1y": 6.5986,
       "forward_premium_pct": null,
@@ -27328,17 +27328,17 @@
       "usdcny": 6.664000034332275,
       "usdcnh": 6.6613,
       "onoffshore_gap": -0.0027000343322756137,
-      "dxy": 103.77200317382812,
-      "dxy_ret": 0.0009839394876478558,
+      "dxy": 103.66999816894531,
+      "dxy_ret": 0.0,
       "raw_carry": null,
       "carry_ma20": null,
       "carry_ma60": null,
       "carry_ma120": null,
       "carry_pct_rank": null,
       "carry_pct_rank_2y": null,
-      "us_1y": 4.59,
+      "us_1y": 4.56,
       "cip_dev_pct": null,
-      "usdcny_fwd_1y": 6.4624,
+      "usdcny_fwd_1y": 6.5986,
       "forward_premium_pct": null,
       "hedged_carry_proxy": null,
       "hedged_carry_pct_rank": null,
@@ -27371,9 +27371,9 @@
       "cn_2y": null,
       "yield_spread": null,
       "usdcny": 6.664000034332275,
-      "usdcnh": 6.6622,
-      "onoffshore_gap": -0.0018000343322750467,
-      "dxy": 103.77200317382812,
+      "usdcnh": 6.6551,
+      "onoffshore_gap": -0.008900034332275375,
+      "dxy": 103.66999816894531,
       "dxy_ret": 0.0,
       "raw_carry": null,
       "carry_ma20": null,
@@ -27381,9 +27381,9 @@
       "carry_ma120": null,
       "carry_pct_rank": null,
       "carry_pct_rank_2y": null,
-      "us_1y": 4.59,
+      "us_1y": 4.56,
       "cip_dev_pct": null,
-      "usdcny_fwd_1y": 6.4624,
+      "usdcny_fwd_1y": 6.4556,
       "forward_premium_pct": null,
       "hedged_carry_proxy": null,
       "hedged_carry_pct_rank": null,
@@ -27401,14 +27401,14 @@
       "mispricing_score": 50.0,
       "alpha_cny_dxy": null,
       "expected_fix": null,
-      "fixing_bias": 0.0018000343322750467,
-      "fixing_bias_raw": 0.0018000343322750467,
-      "bias_20d_mean": -0.0010799713134765465,
-      "bias_60d_mean": 0.0007266783396403298,
-      "defense_intensity": -0.002746462886810381,
-      "policy_score": 47.22222222222222,
-      "composite_score": 49.02777777777777,
-      "composite_score_smooth": 49.72222222222222
+      "fixing_bias": 0.008900034332275375,
+      "fixing_bias_raw": 0.008900034332275375,
+      "bias_20d_mean": -0.0007249713134765301,
+      "bias_60d_mean": 0.0008450116729736685,
+      "defense_intensity": -0.002764212886810382,
+      "policy_score": 73.80952380952381,
+      "composite_score": 58.33333333333333,
+      "composite_score_smooth": 51.583333333333336
     }
   ],
   "methodology": {

@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-11-27 01:38:00",
-  "generated_at_utc": "2026-11-27 01:38:00 UTC",
-  "generated_at_et": "2026-11-26 20:38 EST",
+  "generated_at": "2026-11-27 02:03:30",
+  "generated_at_utc": "2026-11-27 02:03:30 UTC",
+  "generated_at_et": "2026-11-26 21:03 EST",
   "snapshot": {
     "date": "2026-11-27",
     "usdcny": "6.66",
@@ -9,7 +9,7 @@
     "pboc_fix": "N/A",
     "us_2y": "2.33",
     "cn_2y": "N/A",
-    "dxy": "103.80",
+    "dxy": "103.77",
     "raw_carry": "N/A",
     "carry_pct_rank": "N/A",
     "carry_pct_rank_2y": "N/A",
@@ -71,13 +71,13 @@
         [
           "Onshore / Offshore basis",
           "在岸 / 离岸价差",
-          "-0.0036",
+          "-0.0018",
           "neutral"
         ]
       ],
       "reading_en": "None of the three defence levers is active. PBOC is letting market dynamics run; the current spot level appears to be inside the policy tolerance band.",
       "reading_zh": "三条防御工具都没有出手。央行让市场自己跑，当前汇率水平在政策容忍区间之内。",
-      "bias_pctile": 53.57142857142857
+      "bias_pctile": 46.82539682539682
     }
   },
   "cross_checks": [
@@ -27328,8 +27328,8 @@
       "usdcny": 6.664000034332275,
       "usdcnh": 6.6613,
       "onoffshore_gap": -0.0027000343322756137,
-      "dxy": 103.80400085449219,
-      "dxy_ret": 0.0012925888676924568,
+      "dxy": 103.77200317382812,
+      "dxy_ret": 0.0009839394876478558,
       "raw_carry": null,
       "carry_ma20": null,
       "carry_ma60": null,
@@ -27371,9 +27371,9 @@
       "cn_2y": null,
       "yield_spread": null,
       "usdcny": 6.664000034332275,
-      "usdcnh": 6.6604,
-      "onoffshore_gap": -0.0036000343322752926,
-      "dxy": 103.80400085449219,
+      "usdcnh": 6.6622,
+      "onoffshore_gap": -0.0018000343322750467,
+      "dxy": 103.77200317382812,
       "dxy_ret": 0.0,
       "raw_carry": null,
       "carry_ma20": null,
@@ -27401,14 +27401,14 @@
       "mispricing_score": 50.0,
       "alpha_cny_dxy": null,
       "expected_fix": null,
-      "fixing_bias": 0.0036000343322752926,
-      "fixing_bias_raw": 0.0036000343322752926,
-      "bias_20d_mean": -0.0009899713134765343,
-      "bias_60d_mean": 0.0007566783396403339,
-      "defense_intensity": -0.002750962886810382,
-      "policy_score": 53.96825396825397,
-      "composite_score": 51.388888888888886,
-      "composite_score_smooth": 50.19444444444444
+      "fixing_bias": 0.0018000343322750467,
+      "fixing_bias_raw": 0.0018000343322750467,
+      "bias_20d_mean": -0.0010799713134765465,
+      "bias_60d_mean": 0.0007266783396403298,
+      "defense_intensity": -0.002746462886810381,
+      "policy_score": 47.22222222222222,
+      "composite_score": 49.02777777777777,
+      "composite_score_smooth": 49.72222222222222
     }
   ],
   "methodology": {
